@@ -1,0 +1,362 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
+.tableMainContainer {
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem 0 2rem 0;
+    border-radius: 10px;
+}
+
+.section {
+    width: 95%;
+    margin-bottom: 2rem;
+}
+
+h1.purchaseHeader {
+    font-family: 'Poppins';
+    font-weight: normal;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.tableContainer {
+    overflow-x: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tableBody {
+    width: 100%;
+    border-collapse: separate;
+    background-color: white;
+    border: 1px solid #F2F2F2;
+    border-radius: 10px;
+    table-layout: fixed;
+    overflow: hidden;
+}
+
+.tableHeader th:first-child {
+    border-top-left-radius: 10px;
+}
+
+.tableHeader th:last-child {
+    border-top-right-radius: 10px;
+}
+
+.tableHeader {
+    background-color: #F3F4F6;
+    height: 4rem;
+}
+
+.thText, .tdText {
+    text-align: center;
+    vertical-align: middle;
+    padding: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+}
+
+.thText {
+    color: #4C4C4C;
+    font-weight: normal;
+    font-size: .9rem;
+}
+
+.tdText {
+    font-size: .9rem;
+    color: #5D5D5D;
+}
+
+.nameColumn {
+    text-decoration: underline;
+}
+
+.order {
+    cursor: pointer;
+    border-bottom: 1px solid #ccc;
+    height: 4rem;
+}
+
+.linkButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.linkButton:hover {
+    opacity: 0.7;
+}
+
+.checkMark {
+    color: green;
+    margin-left: 5px;
+    display: inline-block;
+    width: 1em;
+}
+
+.markOrderButton, .markItemButton {
+    background-color: #7044F2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+}
+
+.markOrderButton:hover, .markItemButton:hover {
+    background-color: #5936C5;
+}
+
+.expandedOrder {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px;
+    padding: 10px;
+}
+
+.expandedOrderContent {
+    border: 1px solid #E8E8E8;
+    padding: 1rem;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: .9rem;
+}
+
+a.itemNameLink{
+    color: #7044F2;
+}
+
+a.itemNameLink:hover{
+    color: #5936C5;
+}
+
+.expandedOrderContent h4 {
+    text-overflow: ellipsis;
+    font-weight: normal;
+    text-decoration: underline;
+    font-size: .9rem;
+    margin-top: 0;
+}
+
+.itemLeftCol p {
+    margin: 0.2rem 0;
+    color: #5D5D5D;
+}
+
+.itemRightCol {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.placedItemRightCol{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.placedItemRightCol p{
+    margin: 0.2rem 0;
+    color: #5D5D5D;
+}
+
+.itemStatusText {
+    font-size: 0.7rem;
+}
+
+.itemStatusDelivered {
+    color: #44CF6C;
+    border: 1px solid #44CF6C;
+    background-color: rgba(68, 207, 108, 0.05);
+    border-radius: 5px;
+    padding: 0.5rem;
+}
+
+.itemStatusToOrder {
+    padding: 0.5rem;
+    color: #DE3C4B;
+    border: 1px solid #DE3C4B;
+    background-color: rgba(222, 60, 75, 0.05);
+    border-radius: 5px;
+}
+
+.itemStatusPickedUp {
+    color: #888888;
+    border: 1px solid #888888;
+    background-color: rgba(136, 136, 136, 0.05);
+    border-radius: 5px;
+    padding: 0.5rem;
+}
+
+.itemStatusShipped {
+    padding: 0.5rem;
+    color: #EB8258;
+    border: 1px solid #EB8258;
+    background-color: rgba(198, 152, 134, 0.05);
+    border-radius: 5px;
+}
+
+.itemStatus {
+    margin-right: 1rem;
+}
+
+.datePlacedColumn {
+    width: 12.5%;
+}
+
+.vendorColumn {
+    width: 10%;
+}
+
+.linkColumn {
+    width: 5%;
+}
+
+.priceColumn {
+    width: 10%;
+}
+
+.subteamColumn {
+    width: 10%;
+}
+
+.statusColumn {
+    width: 10px;
+}
+
+.costBreakdownColumn {
+    text-align: center;
+}
+
+.costBreakdownText {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.breakdownItem {
+    margin-bottom: 0.5rem;
+    font-size: .9rem;
+    color: #5D5D5D;
+}
+
+.orderStatusToOrder {
+    font-size: .9rem;
+    padding: 0.5rem;
+    color: #DE3C4B;
+    border: 1px solid #DE3C4B;
+    background-color: rgba(222, 60, 75, 0.05);
+    border-radius: 5px;
+}
+
+.orderStatusPlaced {
+    font-size: .9rem;
+    padding: 0.5rem;
+    color: #4489CF;
+    border: 1px solid #4489CF;
+    background-color: rgba(68, 137, 207, 0.05);
+    border-radius: 5px;
+}
+
+.orderStatusProcessed {
+    font-size: .9rem;
+    padding: 0.5rem;
+    color: #CF44C1;
+    border: 1px solid #CF44C1;
+    background-color: rgba(207, 68, 193, 0.05);
+    border-radius: 5px;
+}
+
+.orderStatusShipped {
+    font-size: .9rem;
+    padding: 0.5rem;
+    color: #EB8258;
+    border: 1px solid #EB8258;
+    background-color: rgba(198, 152, 134, 0.05);
+    border-radius: 5px;
+}
+
+.orderStatusPartial{
+    color: #A790A5;
+    border: 1px solid #A790A5;
+    background-color: rgba(167, 144, 165, 0.05);
+    border-radius: 5px;
+    padding: 0.5rem;
+}
+
+.orderStatusDelivered{
+    color: #44CF6C;
+    border: 1px solid #44CF6C;
+    background-color: rgba(68, 207, 108, 0.05);
+    border-radius: 5px;
+    padding: 0.5rem;
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    color: #5D5D5D;
+    font-family: 'Poppins', sans-serif;
+}
+
+.emptyState p {
+    font-size: 1rem;
+    margin-top: 0.5rem;
+}
+
+.emptyState img {
+    margin-bottom: 1rem;
+}
+
+
+/* Add styles for the documents column */
+.documentsColumn {
+    width: 12.5%; /* Adjust the width to fit your layout */
+    text-align: center;
+}
+
+/* Style for the documents container */
+.docsContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Style for each document link */
+.docLink {
+    display: flex;
+    align-items: center;
+    margin: 0.2rem 0;
+    text-decoration: none;
+    color: #7044F2; /* Match your link color */
+    font-size: 0.9rem; /* Match existing font size */
+}
+
+.docLink:hover {
+    color: #5936C5; /* Hover effect */
+}
+
+.docIcon {
+    margin-right: 0.5rem;
+}
+
+.docName {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px; /* Adjust as needed */
+}

@@ -1,33 +1,143 @@
-.container {
-    display: flex;
-    height: 100vh;
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
 }
 
 .sidebar {
-    width: 200px;
-    background-color: #333;
-    color: #fff;
-    padding: 20px;
-    box-sizing: border-box;
+  width: 280px;
+  flex-shrink: 0;
+  background-color: #fff;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  border-right: 1px solid #eee;
+  transition: width 0.3s ease;
 }
 
-.sidebar ul {
-    list-style: none;
-    padding: 0;
+.sidebar.collapsed {
+  width: 80px;
 }
 
-.sidebar ul li {
-    margin-bottom: 15px;
+.main {
+  flex: 1;
+  padding: 20px;
+  transition: margin-left 0.3s ease;
 }
 
-.sidebar ul li a {
-    color: #fff;
-    text-decoration: none;
-    font-size: 18px;
+.sidebar.collapsed .logoText,
+.sidebar.collapsed .navLinks span,
+.sidebar.collapsed .menuLabel {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
-.content {
-    flex: 1;
-    padding: 20px;
-    box-sizing: border-box;
+.sidebar.collapsed .navLinks li a {
+  padding-left:11px;
+  transition: padding 0.3s ease;
+}
+
+.sidebar.collapsed .teamLogoContainer {
+  display: none;
+}
+
+.toggleButton {
+  position: absolute;
+  right: -12px;
+  top: 20px;
+  width: 24px;
+  height: 24px;
+  background-color: white;
+  border: 1px solid #eee;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.toggleButton:hover {
+  background-color: #f5f5f5;
+  transform: scale(1.1);
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.logoText {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.divider {
+  height: 1px;
+  background-color: #CCCCCC;
+  margin-bottom: 15px;
+}
+
+.menuLabel {
+  color: #BEBEBE;
+  font-size: 0.7rem;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.navLinks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.navLinks li {
+  margin-bottom: 12px;
+}
+
+.navLinks li a {
+  color: #000;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.navLinks li.active a {
+  background-color: rgba(112, 68, 242, 0.05);
+  color: #7044F2;
+  border: 1px solid #7044F2;
+}
+
+.activeIcon {
+  filter: invert(35%) sepia(71%) saturate(1557%) hue-rotate(229deg) brightness(95%) contrast(93%);
+}
+
+.bottomSection {
+  margin-top: auto;
+}
+
+.teamLogoContainer {
+  background-color: #F3F5F6;
+  padding: 12px;
+  border: 1px solid #BEBEBE;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

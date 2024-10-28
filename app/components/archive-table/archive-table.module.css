@@ -32,23 +32,26 @@ h1.purchaseHeader{
 
 .tableBody {
     width: 95%;
+    border-collapse: separate;
     background-color: white;
     border: 1px solid #F2F2F2;
     border-radius: 10px;
     table-layout: fixed;
+    overflow: hidden;
 }
 
-.tableHeader {
-    border-radius: 10px;
-    background-color: #F3F4F6;
-    height: 4rem;
-}
 .tableHeader th:first-child {
     border-top-left-radius: 10px;
 }
 
 .tableHeader th:last-child {
     border-top-right-radius: 10px;
+}
+
+.tableHeader {
+    border-radius: 10px;
+    background-color: #F3F4F6;
+    height: 4rem;
 }
 
 
@@ -82,7 +85,6 @@ button.orderButton{
 }
 
 button.orderButton:hover{
-    background-color: #5938C4;
     cursor: pointer;
 }
 
@@ -171,14 +173,6 @@ button.orderButton:hover{
     border-radius: 5px;
 }
 
-.orderStatusDelivered{
-    color: #44CF6C;
-    border: 1px solid #44CF6C;
-    background-color: rgba(68, 207, 108, 0.05);
-    border-radius: 5px;
-    padding: 0.5rem;
-}
-
 .orderStatusShipped {
     font-size: .9rem;
     padding: 1rem;
@@ -186,6 +180,16 @@ button.orderButton:hover{
     color: #EB8258;
     border: 1px solid #EB8258;
     background-color: rgba(198, 152, 134, 0.05);
+    border-radius: 5px;
+}
+
+.orderStatusArchived {
+    font-size: .9rem;
+    padding: 1rem;
+    text-align: center;
+    color: #6A7152;
+    border: 1px solid #6A7152;
+    background-color: rgba(106, 113, 82, 0.05);
     border-radius: 5px;
 }
 
@@ -200,6 +204,16 @@ button.orderButton:hover{
     border-radius: 5px;
 }
 
+.itemStatusArchived {
+    font-size: .9rem;
+    padding: 1rem;
+    text-align: center;
+    color: #6A7152;
+    border: 1px solid #6A7152;
+    background-color: rgba(106, 113, 82, 0.05);
+    border-radius: 5px;
+}
+
 .tableSearch {
     display: flex;
     justify-content: flex-end;
@@ -208,11 +222,8 @@ button.orderButton:hover{
 
 .order {
     cursor: pointer;
+    border-bottom: 1px solid #ccc;
     height: 4rem;
-}
-
-.tableBody tr.order {
-    border-bottom: 1px solid #ccc !important;
 }
 
 .expandedOrder {
@@ -243,12 +254,12 @@ button.orderButton:hover{
     font-size: .9rem;
 }
 
-.itemLeftCol p{
-    color: #5D5D5D;
-}
-
 .itemRightCol{
     margin-left: 1rem;
+}
+
+.itemLeftCol p{
+    color: #5D5D5D;
 }
 
 .checkMark {
@@ -343,22 +354,6 @@ button.orderButton:hover{
 
 .priceColumn {
     width: 10%;
-}
-
-.myOrdersButton {
-    margin-left: 1rem;
-    background-color: #F8F9FB; /* Light gray background */
-    color: #545360; /* Darker text color */
-    border: 1px solid #d8d9de; /* Slightly darker border */
-    border-radius: 10px;
-    padding: 1rem 1.5rem;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-.myOrdersButton:hover {
-    cursor: pointer;
-    background-color: #eceef2; /* Subtle hover color */
-    border-color: #d1d3d8; /* Subtle darker border on hover */
 }
 
 .emptyState {

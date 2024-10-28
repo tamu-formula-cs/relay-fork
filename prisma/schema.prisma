@@ -39,6 +39,10 @@ model Order {
   totalCost        Float     @default(0.0)
   costVerified     Boolean   @default(false)
   comments         String?
+  url              String?
+  carrier         String?
+  trackingId      String?
+  costBreakdown    Json?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   items            Item[]    @relation("OrderItems")
@@ -68,8 +72,6 @@ model Item {
   priceVerified   Boolean   @default(false)
   vendor          String
   link            String?
-  carrier         String?
-  trackingId      String?
   status          ItemStatus
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -85,9 +87,9 @@ enum ItemStatus {
 }
 
 model Document {
-  id        Int      @id @default(autoincrement())
-  url       String
-  order     Order    @relation(fields: [orderId], references: [id])
-  orderId   Int
+  id         Int      @id @default(autoincrement())
+  url        String
+  order      Order    @relation(fields: [orderId], references: [id])
+  orderId    Int
   uploadedAt DateTime @default(now())
 }

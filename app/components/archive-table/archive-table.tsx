@@ -1,24 +1,14 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import styles from './order-table.module.css';
-import OrderForm from '../order-form/order-form';
-import { Item, ItemStatus, Order, OrderStatus } from '@prisma/client';
+import React, { useState, useMemo } from 'react';
+import styles from './archive-table.module.css';
+import { ItemStatus, OrderStatus } from '@prisma/client';
 import SettingsMenu from '../settings-component/settings';
 import Settings from "../../../assets/settings.svg";
 import LinkIcon from "../../../assets/link.svg";
 import EmptyIcon from "../../../assets/empty.svg"
 import Image from 'next/image';
 import useSWR, { mutate } from 'swr';
-
-interface CostBreakdown {
-    AERO: number;
-    CHS: number;
-    SUS: number;
-    BAT: number;
-    ECE: number;
-    PT: number;
-}
 
 export interface SerializedOrderWithRelations {
     id: number;
@@ -33,9 +23,8 @@ export interface SerializedOrderWithRelations {
     url: string | null;
     carrier: string | null;
     trackingId: string | null;
-    costBreakdown: CostBreakdown | null;
-    createdAt: Date | string;
-    updatedAt: Date;
+    createdAt: string;
+    updatedAt: string;
     user: {
         id: number;
         name: string;
@@ -43,7 +32,7 @@ export interface SerializedOrderWithRelations {
         subteam: string;
         role: string;
         createdAt: string;
-        updatedAt: Date;
+        updatedAt: string;
     };
     items: {
         id: number;
@@ -58,28 +47,23 @@ export interface SerializedOrderWithRelations {
         vendor: string;
         link: string | null;
         status: ItemStatus;
-        createdAt: Date;
-        updatedAt: Date;
+        createdAt: string;
+        updatedAt: string;
     }[];
 }
 
-interface OrderTableProps {}
-
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-const OrderTable: React.FC<OrderTableProps> = () => {
+const ArchiveTable: React.FC = () => {
     const [expandedOrderIds, setExpandedOrderIds] = useState<number[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [showOrderForm, setShowOrderForm] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<SerializedOrderWithRelations | null>(null);
     const [selectedItem, setSelectedItem] = useState<any>(null);
     const [showSettingsMenu, setShowSettingsMenu] = useState<boolean>(false);
 
-    const currentUserSubteam = "Powertrain";
+    const { data, error } = useSWR('/api/orders/archived', fetcher, { refreshInterval: 60000 });
 
-    const { data, error } = useSWR('/api/orders', fetcher, { refreshInterval: 60000 });
-
-    const orders = useMemo(() => (data?.orders as SerializedOrderWithRelations[] || []).filter(order => order.status !== 'ARCHIVED'), [data]);
+    const orders = useMemo(() => data?.orders as SerializedOrderWithRelations[] || [], [data]);
 
     const filteredOrders = useMemo(() => {
         if (searchQuery === '') {
@@ -119,10 +103,11 @@ const OrderTable: React.FC<OrderTableProps> = () => {
     };
 
     const updateOrderInState = () => {
-        mutate('/api/orders');
+        // Re-fetch data after update
+        mutate('/api/orders/archived');
     };
 
-    const toggleExpand = (orderId: number, orderItems: Item[], orderUrl: string | null) => {
+    const toggleExpand = (orderId: number, orderItems: SerializedOrderWithRelations['items'], orderUrl: string | null) => {
         if (orderItems.length === 0 && orderUrl) {
             // Do nothing
         } else if (orderItems.length > 0) {
@@ -140,52 +125,27 @@ const OrderTable: React.FC<OrderTableProps> = () => {
     };
 
     if (error) {
-        return <div>Error loading orders.</div>;
+        return <div>Error loading archived orders.</div>;
     }
 
     if (!data) {
-        return <div>Loading orders...</div>;
+        return <div>Loading archived orders...</div>;
     }
-
-    const handleStatusClick = (event: React.MouseEvent, order : SerializedOrderWithRelations) => {
-        event.stopPropagation();
-
-        if (order.carrier === "FEDEX" && order.trackingId) {
-            window.open(`https://www.fedex.com/fedextrack/?trknbr=${order.trackingId}`, '_blank');
-        } else if (order.carrier === "UPS" && order.trackingId) {
-            window.open(`https://www.ups.com/track?loc=en_US&tracknum=${order.trackingId}&requester=WT/trackdetails`, '_blank');
-        }
-    };    
 
     return (
         <div className={styles.tableMainContainer}>
             <div className={styles.tableTop}>
-                <h1 className={styles.purchaseHeader}>Purchase Orders</h1>
+                <h1 className={styles.purchaseHeader}>Archived Orders</h1>
                 <div className={styles.tableSearch}>
                     <input
                         type="text"
                         placeholder="Search..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={handleSearch}
                         className={styles.searchBar}
                     />
-                    
-                    <button
-                        className={styles.myOrdersButton}  // Add this style in CSS
-                        onClick={() => setSearchQuery(currentUserSubteam.toLowerCase())}
-                    >
-                        My Orders
-                    </button>
-                    
-                    <button
-                        className={styles.orderButton}
-                        onClick={() => setShowOrderForm(true)}
-                    >
-                        Place Order
-                    </button>
                 </div>
             </div>
-            {showOrderForm && <OrderForm onClose={() => setShowOrderForm(false)} />}
             {showSettingsMenu && (
                 <SettingsMenu
                     order={selectedOrder}
@@ -218,12 +178,12 @@ const OrderTable: React.FC<OrderTableProps> = () => {
                                     className={styles.order}
                                 >
                                     <td className={`${styles.tdText} ${styles.idColumn}`}>
-                                        {order.meenOrderId ? "#" + order.meenOrderId : "N/A"}
+                                        #{order.id}
                                     </td>
                                     <td className={`${styles.tdText} ${styles.textColumn}`}>
                                         {new Date(order.createdAt).toLocaleDateString()}
                                     </td>
-                                    <td className={`${styles.tdText} ${styles.nameColumn} ${styles.nameColumn}`}>
+                                    <td className={`${styles.tdText} ${styles.nameColumn}`}>
                                         {order.name}
                                     </td>
                                     <td className={`${styles.tdText} ${styles.textColumn} ${styles.vendorColumn}`}>
@@ -257,19 +217,10 @@ const OrderTable: React.FC<OrderTableProps> = () => {
                                     </td>
                                     <td
                                         className={`${styles.tdText} ${
-                                            order.status === OrderStatus.TO_ORDER
-                                                ? styles.orderStatusToOrder
-                                                : order.status === OrderStatus.PLACED
-                                                ? styles.orderStatusPlaced
-                                                : order.status === OrderStatus.PROCESSED
-                                                ? styles.orderStatusProcessed
-                                                : order.status === OrderStatus.DELIVERED
-                                                ? styles.orderStatusDelivered
-                                                : order.status === OrderStatus.PARTIAL
-                                                ? styles.orderStatusPartial
-                                                : styles.orderStatusShipped
+                                            order.status === OrderStatus.ARCHIVED
+                                                ? styles.orderStatusArchived
+                                                : styles.orderStatusDefault
                                         }`}
-                                        onClick={(event)=>handleStatusClick(event, order)}
                                     >
                                         {order.status.toUpperCase()}
                                     </td>
@@ -307,8 +258,8 @@ const OrderTable: React.FC<OrderTableProps> = () => {
                                                     >
                                                         <div className={styles.itemLeftCol}>
                                                             <h4>
-                                                                {item.name.length > 21
-                                                                    ? item.name.slice(0, 21) + '...'
+                                                                {item.name.length > 18
+                                                                    ? item.name.slice(0, 18) + '...'
                                                                     : item.name}
                                                             </h4>
                                                             <p>{item.vendor}</p>
@@ -316,17 +267,7 @@ const OrderTable: React.FC<OrderTableProps> = () => {
                                                         </div>
                                                         <div className={styles.itemRightCol}>
                                                             <p
-                                                                className={`${styles.itemStatusText} ${
-                                                                    item.status === ItemStatus.TO_ORDER
-                                                                        ? styles.orderStatusToOrder
-                                                                        : item.status === ItemStatus.PLACED
-                                                                        ? styles.orderStatusPlaced
-                                                                        : item.status === ItemStatus.PROCESSED
-                                                                        ? styles.orderStatusProcessed
-                                                                        : item.status === ItemStatus.DELIVERED
-                                                                        ? styles.itemStatusDelivered
-                                                                        : styles.orderStatusShipped
-                                                                } ${styles.itemStatus}`}
+                                                                className={`${styles.itemStatusText} ${styles.itemStatus} ${styles.itemStatusArchived}`}
                                                             >
                                                                 {item.status.toUpperCase()}
                                                             </p>
@@ -349,19 +290,19 @@ const OrderTable: React.FC<OrderTableProps> = () => {
                 </table>
             </div>
             {filteredOrders.length === 0 && (
-            <div className={styles.emptyState}>
-                <p>No active orders at the moment. 🎉</p>
-                <p>Looks like everything is all set!</p>
-                <Image
-                    src={EmptyIcon.src}
-                    height={100}
-                    width={100}
-                    alt="No orders"
-                />
-            </div>
-        )}
+                <div className={styles.emptyState}>
+                    <p>No archived orders to show. 🎉</p>
+                    <p>Looks like nothing's here!</p>
+                    <Image
+                        src={EmptyIcon.src}
+                        height={100}
+                        width={100}
+                        alt="No orders"
+                    />
+                </div>
+            )}
         </div>
     );
 };
 
-export default OrderTable;
+export default ArchiveTable;

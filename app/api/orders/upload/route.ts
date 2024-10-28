@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
 import { parse } from 'csv-parse/sync';
 import { ItemStatus, OrderStatus } from '@prisma/client';
-import { getServerSession } from 'next-auth';
 
 export async function POST(request: NextRequest) {
-
     const userEmail = 'alice.engineer@example.com';
 
     // Get the user from the database
@@ -25,76 +23,99 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    // Read the file content
+    const orderName = formData.get('orderName') as string;
+    const vendor = formData.get('vendor') as string;
+    const notes = formData.get('notes') as string;
+    const link = formData.get('link') as string;
+    const estimatedCost = parseFloat(formData.get('estimatedCost') as string) || 0;
+
+    const costBreakdownEntries: [string, number][] = [];
+    for (const entry of formData.entries()) {
+        const [key, value] = entry;
+        if (key.startsWith('costBreakdown[') && key.endsWith(']')) {
+            const subteam = key.slice(14, -1);
+            const percentage = parseFloat(value as string);
+            if (!isNaN(percentage)) {
+                costBreakdownEntries.push([subteam, percentage]);
+            }
+        }
+    }
+    const costBreakdown = Object.fromEntries(costBreakdownEntries);
+
     const content = await file.text();
 
-    // Parse the CSV content
     let records;
     try {
         records = parse(content, {
-        columns: true,
-        skip_empty_lines: true,
+            columns: true,
+            skip_empty_lines: true,
         });
     } catch (error) {
         console.error('Error parsing CSV:', error);
         return NextResponse.json({ error: 'Invalid CSV format' }, { status: 400 });
     }
 
-    // Validate and process the records
-    const itemsData = [];
-    for (const record of records) {
-        const {
-        Item,
-        'Part Number': partNumber,
-        Notes,
-        'QTY to Buy': qtyToBuy,
-        Cost,
-        Vendor,
-        Link,
-        } = record;
+    const itemsData = records.map((record) => {
+        const { Item, 'Part Number': partNumber, Notes, 'QTY to Buy': qtyToBuy, Cost, Vendor, Link } = record;
 
         if (!Item || !qtyToBuy || !Cost || !Vendor) {
-        return NextResponse.json(
-            { error: 'Missing required fields in CSV' },
-            { status: 400 }
-        );
+            return NextResponse.json({ error: 'Missing required fields in CSV' }, { status: 400 });
         }
 
-        itemsData.push({
-        internalItemId: `ITEM-${Math.floor(Math.random() * 100000)}`,
-        name: Item,
-        partNumber: partNumber || '',
-        notes: Notes || null,
-        quantity: parseInt(qtyToBuy, 10),
-        price: parseFloat(Cost),
-        vendor: Vendor,
-        link: Link || null,
-        status: ItemStatus.TO_ORDER,
-        });
+        return {
+            internalItemId: `ITEM-${Math.floor(Math.random() * 100000)}`,
+            name: Item,
+            partNumber: partNumber || '',
+            notes: Notes || null,
+            quantity: parseInt(qtyToBuy, 10),
+            price: parseFloat(Cost),
+            vendor: Vendor,
+            link: Link || null,
+            status: ItemStatus.TO_ORDER,
+        };
+    });
+
+    const supportingDocs = [];
+    for (let i = 0; formData.has(`supportingDocs[${i}][url]`); i++) {
+        const name = formData.get(`supportingDocs[${i}][name]`) as string;
+        const url = formData.get(`supportingDocs[${i}][url]`) as string;
+        supportingDocs.push({ name, url });
     }
 
-    // Create the order with items
     try {
-        await prisma.order.create({
-        data: {
-            internalOrderId: `ORD-${Math.floor(Math.random() * 100000)}`,
-            name: `Order by ${user.name}`,
-            userId: user.id,
-            subteam: user.subteam,
-            status: OrderStatus.TO_ORDER,
-            vendor: itemsData[0].vendor,
-            totalCost: itemsData.reduce(
-            (sum, item) => sum + item.price * item.quantity,
-            0
-            ),
-            comments: '',
-            items: {
-                create: itemsData,
+        const order = await prisma.order.create({
+            data: {
+                internalOrderId: `ORD-${Math.floor(Math.random() * 100000)}`,
+                name: orderName,
+                userId: user.id,
+                subteam: user.subteam,
+                status: OrderStatus.TO_ORDER,
+                vendor: vendor || '',
+                totalCost: estimatedCost,
+                comments: notes || '',
+                costBreakdown,
             },
-        },
         });
 
-        return NextResponse.json({ message: 'Order created successfully' });
+        if (supportingDocs.length > 0) {
+            await prisma.document.createMany({
+                data: supportingDocs.map((doc) => ({
+                    url: doc.url,
+                    orderId: order.id,
+                })),
+            });
+        }
+
+        if (itemsData.length > 0) {
+            await prisma.item.createMany({
+                data: itemsData.map((item) => ({
+                    ...item,
+                    orderId: order.id,
+                })),
+            });
+        }
+
+        return NextResponse.json({ message: 'Order, items, and documents created successfully' });
     } catch (error) {
         console.error('Error creating order:', error);
         return NextResponse.json({ error: 'Error creating order' }, { status: 500 });

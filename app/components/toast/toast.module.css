@@ -1,0 +1,116 @@
+/* Toast.module.css */
+@keyframes fadeInUp {
+  from {
+      opacity: 0;
+      transform: translateY(20px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+@keyframes fadeOutDown {
+  from {
+      opacity: 1;
+      transform: translateY(0);
+  }
+  to {
+      opacity: 0;
+      transform: translateY(20px);
+  }
+}
+
+.toastViewport {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 280px;
+    width: 100%;
+}
+  
+  .toastViewport.sm {
+    bottom: 0;
+    right: 0;
+    top: auto;
+    flex-direction: column;
+  }
+  
+  .toastViewport.md {
+    max-width: 420px;
+  }
+  
+  .toastContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 90%; 
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+    animation: fadeInUp 0.1s ease-out;
+  }
+
+  .toastContainer[data-state="open"] {
+    animation: fadeInUp 0.1s ease-out;
+}
+
+.toastContainer[data-state="closed"] {
+    animation: fadeOutDown 0.1s ease-in;
+}
+  
+  .toastContainer.default {
+    background-color: #ffffff;
+    color: #333333;
+  }
+  
+  .toastContainer.destructive {
+    background-color: #ffeded;
+    color: #d32f2f;
+    border: 1px solid #d32f2f;
+  }
+
+  .toastContainer.affirmation {
+    background-color: #e6f7ec;
+    color: #3AB15A;
+    border: 1px solid #3AB15A;
+}
+  
+  .toastTitle {
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .toastDescription {
+    font-size: 0.875rem;
+    opacity: 0.9;
+  }
+  
+  .toastActionButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2rem;
+    padding: 0 0.75rem;
+    border-radius: 0.25rem;
+    border: 1px solid #eaeaea;
+    font-size: 0.875rem;
+    transition: background-color 0.3s, border-color 0.3s;
+    background-color: transparent;
+    color: #333333;
+  }
+  
+  .toastCloseButton {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    cursor: pointer;
+    color: #999999;
+  }
+  

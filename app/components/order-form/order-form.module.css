@@ -1,6 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-
-.formBG{
+/* Base Form Styles */
+.formBG {
     top: 0;
     right: 0;
     position: absolute;
@@ -10,33 +9,241 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 2;
 }
 
-.formContainer{
+.formContainer {
     background-color: white;
     border-radius: 10px;
-    font-family: 'Poppins';
+    font-family: 'Poppins', sans-serif;
     padding: 3rem;
+    box-shadow: 0px 0px 20px 10px rgba(0, 0, 0, 0.05);
+    width: 70%;
+    max-width: 900px;
+    z-index: 3;
 }
 
-.formHeader{
-    width: 100%;
+.formContainerSmall{
+    width: 30%;
+}
+
+.formHeader {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-h1.formTitle{
+h1.formTitle {
     margin: 0;
     font-weight: normal;
     font-size: 1.5rem;
 }
 
-button.closeButton{
-    margin: 0;
-}
-
-h1.formParagraph{
+p.formParagraph {
     font-weight: normal;
     font-size: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Input Group Styling */
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    width: 48%;
+}
+
+.inputGroup label {
+    margin-bottom: 0.5rem;
+    font-weight: normal;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.inputGroup input,
+.inputGroup textarea {
+    width: 90%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #D4D4D4;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    color: #333;
+    background-color: #fff;
+    transition: border-color 0.3s ease;
+    font-family: 'Inter';
+}
+
+.inputGroup input::placeholder,
+.inputGroup textarea::placeholder {
+    color: #7C7C7C;
+    font-family: 'Inter';
+}
+
+.inputGroup input:focus,
+.inputGroup textarea:focus {
+    border-color: #7044F2;
+    outline: none;
+}
+
+/* Form Layout */
+.generalRowOne,
+.generalRowTwo,
+.generalRowThree {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    gap: 2rem;
+}
+
+.textarea {
+    resize: none;
+    height: 17px;
+    max-height: 17px;
+    width: 100%;
+}
+
+.costBreakdownRow {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Button Styles */
+
+.fileInput {
+    display: none;
+}
+
+.nextButtonLabel {
+    background-color: #7044F2;
+    color: white;
+    border-radius: 10px;
+    border: none;
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    text-align: center;
+    display: inline-block;
+    font-size: .8rem;
+}
+
+.nextButtonLabel:hover {
+    background-color: #5938C4;
+}
+
+button.closeButton {
+    margin: 0;
+    border: 1px solid #5D5D5D;
+    padding: .5rem .5rem;
+    background-color: transparent;
+    border-radius: 5px;
+    color: #5D5D5D;
+    font-size: .9rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+button.closeButton:hover {
+    cursor: pointer;
+    opacity: 0.75;
+}
+
+button.nextButton,
+button.backButton {
+    background-color: #7044F2;
+    color: white;
+    border-radius: 10px;
+    border: none;
+    padding: 1rem 1.5rem;
+}
+
+button.nextButton:hover{
+    cursor: pointer;
+    background-color: #5938C4;
+}
+
+button.backButton {
+    background-color: #F8F9FB;
+    color: #545360;
+    border: 1px solid #eaeaea;
+}
+
+button.backButton:hover{
+    cursor: pointer;
+    background-color: #eaeaea;
+}
+
+.buttonGroup {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.methodButtonGroup{
+    margin-bottom: 2rem;
+    justify-content: space-between;
+}
+
+button.submitButton {
+    background-color: #7044F2;
+    color: white;
+    border-radius: 10px;
+    border: none;
+    padding: 1rem 1.5rem;
+}
+
+button.submitButton:hover {
+    background-color: #5938C4;
+    cursor: pointer;
+}
+
+.singleLink{
+    margin: 2rem 0;
+    width: 100%;
+}
+
+.uploadButtonContainer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.uploadButton {
+    margin-left: auto;
+    background-color: #F8F9FB;
+    color: #545360;
+    border: 1px solid #eaeaea;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+}
+
+.uploadButton:hover {
+    cursor: pointer;
+    background-color: #eaeaea;
+}
+
+.uploadedFilesContainer {
+    display: flex;
+    margin-top: 0.5rem;
+}
+
+.uploadedFile {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.fileIcon {
+    margin-right: 1rem;
+}
+
+.fileLink {
+    font-family: 'Inter';
+    color: black;
+    text-decoration: none;
+    margin-right: 1rem;
+}
+
+.fileLink:hover {
+    text-decoration: underline;
 }
