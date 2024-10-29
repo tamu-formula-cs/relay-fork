@@ -21,6 +21,8 @@ interface CostBreakdown {
 }
 
 export interface SerializedOrderWithRelations {
+    subteam: any;
+    supportingDocs: boolean;
     id: number;
     internalOrderId: string;
     meenOrderId: string | null;

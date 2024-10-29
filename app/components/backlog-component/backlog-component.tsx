@@ -7,7 +7,9 @@ import useSWR, { mutate } from 'swr';
 import Image from 'next/image';
 import LinkIcon from "../../../assets/link.svg";
 import { ItemStatus, OrderStatus } from '@prisma/client';
+import CloseIcon from "../../../assets/close.svg"
 import EmptyIcon from "../../../assets/empty.svg"
+import { useToast } from '../toast/use-toast';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -23,8 +25,11 @@ const subteamMapping: { [key: string]: string } = {
 
 const BacklogComponent: React.FC = () => {
     const { data, error } = useSWR('/api/orders', fetcher, { refreshInterval: 60000 });
+    const { toast } = useToast();
 
     const orders = useMemo(() => (data?.orders as SerializedOrderWithRelations[] || []), [data]);
+    const [isMeenOrderIdModalOpen, setIsMeenOrderIdModalOpen] = useState(false);
+    const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
     // Orders to be Placed
     const ordersToBePlaced = useMemo(() => orders.filter(order => order.status === 'TO_ORDER'), [orders]);
@@ -33,7 +38,10 @@ const BacklogComponent: React.FC = () => {
     const ordersWithDeliveredItems = useMemo(() => {
         // Only include orders that are not archived
         const nonArchivedOrders = orders.filter(order => order.status !== 'ARCHIVED');
-        return nonArchivedOrders.filter(order => order.items.some(item => item.status === 'DELIVERED'));
+        return nonArchivedOrders.filter(order => 
+            order.status === 'DELIVERED' || 
+            order.items.some(item => item.status === 'DELIVERED')
+        );
     }, [orders]);
 
     // Separate state variables for each table
@@ -60,27 +68,9 @@ const BacklogComponent: React.FC = () => {
         }
     };
 
-    const handleMarkOrder = async (orderId: number) => {
-        const meenOrderId = prompt('Enter the MEEN Order ID:');
-        if (!meenOrderId) return;
-
-        try {
-            const response = await fetch(`/api/orders/${orderId}/updateMeenOrderId`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ meenOrderId }),
-            });
-
-            if (response.ok) {
-                // Update local state
-                mutate('/api/orders');
-            } else {
-                alert('Failed to update order.');
-            }
-        } catch (error) {
-            console.error(error);
-            alert('An error occurred.');
-        }
+    const handleMarkOrder = (orderId: number) => {
+        setSelectedOrderId(orderId);
+        setIsMeenOrderIdModalOpen(true);
     };
 
     const handleMarkOrderAsPickedUp = async (orderId: number) => {
@@ -88,36 +78,62 @@ const BacklogComponent: React.FC = () => {
             const response = await fetch(`/api/orders/${orderId}/markPickedUp`, {
                 method: 'POST',
             });
-
+    
             if (response.ok) {
                 // Update data
                 mutate('/api/orders');
+                toast({
+                    title: "Order Picked Up",
+                    description: "Order has been picked up.",
+                    variant: "affirmation",
+                });
             } else {
-                alert('Failed to update order.');
+                toast({
+                    title: "Update Failed",
+                    description: "Failed to update order.",
+                    variant: "destructive",
+                });
             }
         } catch (error) {
             console.error(error);
-            alert('An error occurred.');
+            toast({
+                title: "Error",
+                description: "An error occurred.",
+                variant: "destructive",
+            });
         }
     };
-
+    
     const handleMarkItem = async (itemId: number) => {
         try {
             const response = await fetch(`/api/items/${itemId}/markPickedUp`, {
                 method: 'POST',
             });
-
+    
             if (response.ok) {
                 // Update data
                 mutate('/api/orders');
+                toast({
+                    title: "Item Picked Up",
+                    description: "Item has been picked up.",
+                    variant: "affirmation",
+                });
             } else {
-                alert('Failed to update item.');
+                toast({
+                    title: "Update Failed",
+                    description: "Failed to update item.",
+                    variant: "destructive",
+                });
             }
         } catch (error) {
             console.error(error);
-            alert('An error occurred.');
+            toast({
+                title: "Error",
+                description: "An error occurred.",
+                variant: "destructive",
+            });
         }
-    };
+    };    
 
     if (error) {
         return <div>Error loading orders.</div>;
@@ -126,6 +142,60 @@ const BacklogComponent: React.FC = () => {
     if (!data) {
         return <div>Loading orders...</div>;
     }
+
+    const MeenOrderIdModal: React.FC<{ onClose: () => void; onSubmit: (meenOrderId: string) => void; }> = ({ onClose, onSubmit }) => {
+        const [meenOrderId, setMeenOrderId] = useState('');
+        const { toast } = useToast();
+    
+        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+            setMeenOrderId(e.target.value);
+        };
+    
+        const handleSubmit = () => {
+            if (meenOrderId.trim() === '') {
+                toast({
+                    title: "Missing MEEN Order ID",
+                    description: "Please enter a MEEN Order ID.",
+                    variant: "destructive",
+                });
+                return;
+            }
+            onSubmit(meenOrderId);
+        };
+    
+        return (
+            <div className={styles.overlay}>
+                <div className={styles.settingsMenu}>
+                    <div className={styles.formHeader}>
+                        <h3 className={styles.formTitle}>Enter MEEN Order ID</h3>
+                        <button className={styles.closeButton} onClick={onClose}>
+                            <Image src={CloseIcon.src} height={10} width={10} alt='close'/>
+                        </button>
+                    </div>
+                    <div className={styles.settingsGroup}>
+                        <div className={styles.inputGroup}>
+                            <label>MEEN Order ID:</label>
+                            <input
+                                type="text"
+                                value={meenOrderId}
+                                onChange={handleChange}
+                                placeholder="Enter MEEN Order ID"
+                            />
+                        </div>
+                    </div>
+                    <div className={styles.buttonGroup}>
+                        <button onClick={onClose} className={`${styles.cancelButton} ${styles.button}`}>
+                            Cancel
+                        </button>
+                        <button onClick={handleSubmit} className={`${styles.saveButton} ${styles.button}`}>
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };    
+
 
     return (
         <div className={styles.tableMainContainer}>
@@ -451,6 +521,44 @@ const BacklogComponent: React.FC = () => {
                 </div>
             )}
             </div>
+            {isMeenOrderIdModalOpen && selectedOrderId !== null && (
+                <MeenOrderIdModal
+                    onClose={() => setIsMeenOrderIdModalOpen(false)}
+                    onSubmit={async (meenOrderId: string) => {
+                        try {
+                            const response = await fetch(`/api/orders/${selectedOrderId}/updateMeenOrderId`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ meenOrderId }),
+                            });
+
+                            if (response.ok) {
+                                // Update local state
+                                mutate('/api/orders');
+                                setIsMeenOrderIdModalOpen(false);
+                                toast({
+                                    title: "Order Updated",
+                                    description: "MEEN Order ID updated successfully.",
+                                    variant: "affirmation",
+                                });
+                            } else {
+                                toast({
+                                    title: "Update Failed",
+                                    description: "Failed to update order.",
+                                    variant: "destructive",
+                                });
+                            }
+                        } catch (error) {
+                            console.error(error);
+                            toast({
+                                title: "Error",
+                                description: "An error occurred.",
+                                variant: "destructive",
+                            });
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 };

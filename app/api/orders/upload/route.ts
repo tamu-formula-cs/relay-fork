@@ -4,7 +4,7 @@ import { parse } from 'csv-parse/sync';
 import { ItemStatus, OrderStatus } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
-    const userEmail = 'alice.engineer@example.com';
+    const userEmail = 'user1@example.com';
 
     // Get the user from the database
     const user = await prisma.user.findUnique({
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
 
         if (itemsData.length > 0) {
             await prisma.item.createMany({
-                data: itemsData.map((item) => ({
+                data: itemsData.map((item: any) => ({
                     ...item,
                     orderId: order.id,
                 })),

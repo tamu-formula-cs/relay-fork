@@ -1,0 +1,173 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap');
+
+.dashboardContainer {
+  background-color: #F3F4F6;
+  padding: 1rem;
+  border-radius: 10px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.dashboardHeader {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+
+.dashboardHeader h1 {
+  font-family: 'Poppins';
+  font-size: 1.25rem;
+  color: black;
+  font-weight: normal;
+  margin: 0 0.5rem;
+}
+
+.mainContent {
+  display: flex;
+  gap: 1rem;
+}
+
+.chartsContainer {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.chartTile {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.chartTile h2 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  color: black;
+  margin: 0;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+.chartWrapper {
+  flex: 1;
+  position: relative;
+  height: 250px;
+}
+
+.pieChartContainer {
+  position: relative;
+  height: 250px;
+}
+
+.pieChartContainer canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.tilesContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.numberTiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.tile {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 10px;
+  text-align: center;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.tileTitle {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  color: black;
+  margin: 0;
+  margin-bottom: 0.5rem;
+}
+
+.amount {
+  font-size: 1.5rem;
+  color: black;
+  font-weight: normal;
+  margin: 0;
+}
+
+.tile p {
+  margin: 0.5rem 0 0 0;
+}
+
+.percentagePositive,
+.percentageNegative {
+  text-align: center;
+  margin: 0.5rem 0 0 0;
+}
+
+.percentagePositive {
+  color: #44cf6c;
+}
+
+.percentageNegative {
+  color: #de3c4b;
+}
+
+.chartTile canvas,
+.pieChartContainer canvas {
+  max-height: 250px;
+}
+
+.chartjs-render-monitor {
+  max-height: 250px;
+}
+
+p.tileSub {
+  font-size: 0.8rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .mainContent {
+    flex-direction: column;
+  }
+
+  .chartsContainer {
+    flex: none;
+  }
+
+  .tilesContainer {
+    flex: none;
+  }
+
+  .chartWrapper,
+  .pieChartContainer {
+    height: 200px;
+  }
+
+  .tileTitle {
+    font-size: 0.9rem;
+  }
+
+  .amount {
+    font-size: 1.2rem;
+  }
+}

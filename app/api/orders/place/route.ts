@@ -4,7 +4,7 @@ import prisma from '../../../lib/prisma';
 import { ItemStatus, OrderStatus } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
-    const userEmail = 'alice.engineer@example.com';
+    const userEmail = 'user1@example.com';
 
     // Get the user from the database
     const user = await prisma.user.findUnique({
@@ -28,6 +28,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Missing required fields for cart URL order' }, { status: 400 });
         }
 
+        const totalCost = parseFloat(body.estimatedCost) || 0;
+
         try {
             const order = await prisma.order.create({
                 data: {
@@ -37,7 +39,7 @@ export async function POST(request: NextRequest) {
                     subteam: user.subteam,
                     status: OrderStatus.TO_ORDER,
                     vendor,
-                    totalCost: totalCost || 0,
+                    totalCost,
                     comments: comments || '',
                     url: cartUrl || null,
                     costBreakdown,
@@ -46,7 +48,7 @@ export async function POST(request: NextRequest) {
     
             if (supportingDocs && supportingDocs.length > 0) {
                 await prisma.document.createMany({
-                  data: supportingDocs.map((doc) => ({
+                  data: supportingDocs.map((doc: { url: any; }) => ({
                     url: doc.url,
                     orderId: order.id,
                   })),

@@ -116,6 +116,9 @@
   font-size: 0.9rem;
   white-space: nowrap;
 }
+.navLinks li a:hover{
+  background-color: rgba(112, 68, 242, 0.05);
+}
 
 .navLinks li.active a {
   background-color: rgba(112, 68, 242, 0.05);

@@ -9,6 +9,8 @@ import BacklogIcon from "../../../assets/backlog.svg";
 import ArchiveIcon from "../../../assets/archive.svg";
 import DashboardIcon from "../../../assets/dashboard.svg";
 import SupportIcon from "../../../assets/support.svg";
+import FinanceIcon from "../../../assets/finance.svg"
+import DownloadIcon from "../../../assets/download.svg"
 import { Toaster } from '../toast/toaster';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -83,6 +85,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <span>Backlog</span>
             </Link>
           </li>
+          <li className={pathname === '/finance' ? styles.active : ''}>
+            <Link href="/finance">
+              <Image 
+                src={FinanceIcon} 
+                alt="Backlog" 
+                width={16} 
+                height={16}
+                className={pathname === '/finance' ? styles.activeIcon : ''}
+              />
+              <span>Finance</span>
+            </Link>
+          </li>
           <li className={pathname === '/archive' ? styles.active : ''}>
             <Link href="/archive">
               <Image 
@@ -105,6 +119,27 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className={styles.menuLabel}>OTHER</div>
           
           <ul className={styles.navLinks}>
+          <li>
+            <Link 
+              href="#"
+              onClick={(e) => {
+                e.preventDefault(); // Prevents navigation due to Link
+                const headers = ["Item,Part Number,Notes,QTY to Buy,Cost,Vendor,Link"];
+                const csvContent = headers.join("\n");
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.setAttribute("download", "Order_Template.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+            >
+              <Image src={DownloadIcon} alt="Download" width={16} height={16} />
+              <span>Order Template</span>
+            </Link>
+          </li>
+
             <li>
               <Link href="mailto:athulraj123@tamu.edu">
                 <Image src={SupportIcon} alt="Support" width={16} height={16} />
