@@ -97,7 +97,7 @@ formula electric order management system
 
 5. now google stuff is done, so you need auth secrets and url
 
-    - for NEXTAUTH_SECRET: if you have a "AUTH_SECRET" use that, otherwise generate a new one in terminal - run ```openssl rand -base64 32``` in terminal - and place in ".env"
+    - for NEXTAUTH_SECRET: if you have a "AUTH_SECRET" use that, otherwise generate a new one in terminal - run ```npx auth secret``` in terminal - this will create a ".env.local" with a secret, place in ".env"
         - "NEXTAUTH_SECRET=“…
     - for NEXTAUTH_URL: this is just the base root url for the site
         - ex. "http://localhost:3000" for local 
