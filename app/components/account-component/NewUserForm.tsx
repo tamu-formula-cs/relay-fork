@@ -18,6 +18,7 @@ interface UserInfoFormProps {
 const UserInfoForm: React.FC<UserInfoFormProps> = ({ sessionEmail, sessionName }) => {
   const [role, setRole] = useState(roles[0]);
   const [subteam, setSubteam] = useState("");
+  const [phone, setPhone] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,7 +41,7 @@ const UserInfoForm: React.FC<UserInfoFormProps> = ({ sessionEmail, sessionName }
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: sessionEmail, name: sessionName, role, subteam }),
+        body: JSON.stringify({ email: sessionEmail, name: sessionName, role, subteam, phone }),
       });
 
       if (response.ok) {
@@ -60,8 +61,18 @@ const UserInfoForm: React.FC<UserInfoFormProps> = ({ sessionEmail, sessionName }
         <h2>{sessionName}, complete your profile!</h2>
 
         <label>
+          Phone Number:
+          <input 
+            type="text"
+            value={phone} 
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="Enter phone number"
+          />
+        </label>
+
+        <label>
           Role:
-          <select value={role} onChange={(e) => handleRoleChange(e.target.value)} required>
+          <select value={role} onChange={(e) => handleRoleChange(e.target.value)} required disabled={!phone} >
             {roles.map((role) => (
               <option key={role} value={role}>
                 {role || "Select a role"}
@@ -72,7 +83,7 @@ const UserInfoForm: React.FC<UserInfoFormProps> = ({ sessionEmail, sessionName }
 
         <label>
           Subteam:
-          <select value={subteam} onChange={(e) => setSubteam(e.target.value)} required disabled={!role}>
+          <select value={subteam} onChange={(e) => setSubteam(e.target.value)} required disabled={!role || !phone} >
             {subteamsByRole[role]?.map((subteam) => (
               <option key={subteam} value={subteam}>
                 {subteam || "Select a subteam"}
@@ -81,9 +92,11 @@ const UserInfoForm: React.FC<UserInfoFormProps> = ({ sessionEmail, sessionName }
           </select>
         </label>
 
-        <button type="submit" disabled={isSubmitted || !role || !subteam}>
+        <button type="submit" disabled={isSubmitted || !role || !subteam || !phone}>
           {isSubmitted ? "Submitted" : "Submit"}
         </button>
+
+        {error && <p className="error">{error}</p>}
       </form>
     </div>
   );
