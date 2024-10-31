@@ -100,7 +100,8 @@ formula electric order management system
     - for NEXTAUTH_SECRET: if you have a "AUTH_SECRET" use that, otherwise generate a new one in terminal - run ```openssl rand -base64 32``` in terminal - and place in ".env"
         - "NEXTAUTH_SECRET=“…
     - for NEXTAUTH_URL: this is just the base root url for the site
-        - ex. "http://localhost:3000" for local 
+        - ex. "http://localhost:3000" for local
+        - "NEXTAUTH_URL=“…
 
 6. now login should work :)
 
