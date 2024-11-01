@@ -311,7 +311,7 @@ const BacklogComponent: React.FC = () => {
                                         </td>
                                     </tr>
                                     {expandedOrderIdsToBePlaced.includes(order.id) && (
-                                        <tr>
+                                        <tr key={`expanded-${order.id}`}>
                                             <td colSpan={8}>
                                             <div className={styles.expandedOrder}>
                                                 {order.items.map((item) => (
@@ -453,7 +453,7 @@ const BacklogComponent: React.FC = () => {
                                         </td>
                                     </tr>
                                     {expandedOrderIdsToBePickedUp.includes(order.id) && (
-                                        <tr>
+                                        <tr key={`expanded-${order.id}`}>
                                             <td colSpan={7}>
                                                 <div className={styles.expandedOrder}>
                                                     {order.items.map((item) => (

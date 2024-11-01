@@ -37,6 +37,8 @@ const Toast = React.forwardRef<
   );
 });
 
+Toast.displayName = ToastPrimitives.Root.displayName;
+
 
 const ToastAction = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Action>,

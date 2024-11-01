@@ -21,7 +21,7 @@ interface CostBreakdown {
 }
 
 export interface SerializedOrderWithRelations {
-    subteam: any;
+    subteam: string;
     supportingDocs: boolean;
     id: number;
     internalOrderId: string;
@@ -65,16 +65,14 @@ export interface SerializedOrderWithRelations {
     }[];
 }
 
-interface OrderTableProps {}
-
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-const OrderTable: React.FC<OrderTableProps> = () => {
+const OrderTable: React.FC = () => {
     const [expandedOrderIds, setExpandedOrderIds] = useState<number[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [showOrderForm, setShowOrderForm] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<SerializedOrderWithRelations | null>(null);
-    const [selectedItem, setSelectedItem] = useState(null);
+    const [selectedItem, setSelectedItem] = useState<Item | null>(null);
     const [showSettingsMenu, setShowSettingsMenu] = useState<boolean>(false);
 
     const currentUserSubteam = "Powertrain";
@@ -105,7 +103,7 @@ const OrderTable: React.FC<OrderTableProps> = () => {
         }
     }, [orders, searchQuery]);
 
-    const handleSettingsClick = (order: SerializedOrderWithRelations, item?) => {
+    const handleSettingsClick = (order: SerializedOrderWithRelations, item?: Item) => {
         if (item) {
             setSelectedItem(item);
         } else {

@@ -248,7 +248,7 @@ const ArchiveTable: React.FC = () => {
                                     </td>
                                 </tr>
                                 {expandedOrderIds.includes(order.id) && (
-                                    <tr>
+                                    <tr key={`expanded-${order.id}`}>
                                         <td colSpan={10}>
                                             <div className={styles.expandedOrder}>
                                                 {order.items.map((item) => (
