@@ -2,25 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
 import { OrderStatus, ItemStatus } from '@prisma/client';
 
-const orderStatusIndices: { [key in OrderStatus]: number } = {
-    TO_ORDER: 0,
-    PLACED: 1,
-    PROCESSED: 2,
-    SHIPPED: 3,
-    PARTIAL: 4,
-    DELIVERED: 5,
-    ARCHIVED: 6,
-};
-
-const itemStatusIndices: { [key in ItemStatus]: number } = {
-    TO_ORDER: 0,
-    PLACED: 1,
-    PROCESSED: 2,
-    SHIPPED: 3,
-    DELIVERED: 4,
-    PICKED_UP: 5,
-};
-
 function mapItemStatusToOrderStatus(itemStatus: ItemStatus): OrderStatus | null {
     switch (itemStatus) {
         case ItemStatus.TO_ORDER:

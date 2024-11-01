@@ -162,10 +162,9 @@ export default function OrderForm({ onClose }: OrderFormProps) {
     return screens[currentScreen];
 }
 
-function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrderData }: any) {
+function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrderData }) {
     const isNextDisabled = !orderData.orderName || !orderData.vendor || orderData.estimatedCost <= 0;
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [uploading, setUploading] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState<{ name: string; url: string }[]>([]);
     const { toast } = useToast();
 
@@ -191,8 +190,6 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
             });
             return;
         }
-        
-        setUploading(true);
     
         try {
             const { url } = await upload(file.name, file, {
@@ -221,8 +218,6 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
                 description: "An error occurred while uploading the PDF.",
                 variant: "destructive",
             });
-        } finally {
-            setUploading(false);
         }
     };
     
@@ -314,7 +309,7 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
     );
 }
 
-function CostBreakdownScreen({ costBreakdown, onCostChange, onNext, onBack, onClose }: any) {
+function CostBreakdownScreen({ costBreakdown, onCostChange, onNext, onBack, onClose }) {
     const totalPercentage = Object.values(costBreakdown).reduce((a, b) => (a as number) + (b as number), 0);
     const isNextDisabled = totalPercentage !== 100;
 
@@ -365,7 +360,7 @@ function CostBreakdownScreen({ costBreakdown, onCostChange, onNext, onBack, onCl
     );
 }
 
-function Method({ orderData, handleSubmitCSV, onNextStep, onBack, onClose }: any) {
+function Method({ orderData, handleSubmitCSV, onNextStep, onBack, onClose }) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
     
@@ -416,7 +411,7 @@ function Method({ orderData, handleSubmitCSV, onNextStep, onBack, onClose }: any
     );
 }
 
-function CartLinkOrder({ orderData, onBack, onClose }: any) {
+function CartLinkOrder({ orderData, onBack, onClose }) {
     const [cartLink, setCartLink] = useState('');
     const { toast } = useToast();
     const handleSubmit = async () => {
@@ -495,7 +490,7 @@ function CartLinkOrder({ orderData, onBack, onClose }: any) {
     );
 }
 
-function SingleItemOrder({ orderData, onBack, onClose }: any) {
+function SingleItemOrder({ orderData, onBack, onClose }) {
     const [name, setName] = useState('');
     const [partNumber, setPartNumber] = useState('');
     const [quantity, setQuantity] = useState(1);

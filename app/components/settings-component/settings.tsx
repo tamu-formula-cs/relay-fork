@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import styles from './settings-menu.module.css';
 import { OrderStatus, ItemStatus } from '@prisma/client';
 import CloseIcon from "../../../assets/close.svg";
 import Image from 'next/image';
-import { mutate } from 'swr';
 import useSWR from 'swr';
 
 interface SettingsMenuProps {
@@ -40,7 +39,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
         setPriceEdited(true);
     };
     
-    const { data: supportingDocs, error } = useSWR(
+    const { data: supportingDocs } = useSWR(
         order ? `/api/orders/${order.id}/documents` : null,
         fetcher
     );

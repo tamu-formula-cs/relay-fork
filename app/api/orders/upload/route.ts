@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
     const orderName = formData.get('orderName') as string;
     const vendor = formData.get('vendor') as string;
     const notes = formData.get('notes') as string;
-    const link = formData.get('link') as string;
     const estimatedCost = parseFloat(formData.get('estimatedCost') as string) || 0;
 
     const costBreakdownEntries: [string, number][] = [];
@@ -108,7 +107,7 @@ export async function POST(request: NextRequest) {
 
         if (itemsData.length > 0) {
             await prisma.item.createMany({
-                data: itemsData.map((item: any) => ({
+                data: itemsData.map((item) => ({
                     ...item,
                     orderId: order.id,
                 })),

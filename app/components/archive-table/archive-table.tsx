@@ -87,7 +87,7 @@ const ArchiveTable: React.FC = () => {
         }
     }, [orders, searchQuery]);
 
-    const handleSettingsClick = (order: SerializedOrderWithRelations, item?: any) => {
+    const handleSettingsClick = (order: SerializedOrderWithRelations, item?) => {
         if (item) {
             setSelectedItem(item);
         } else {
@@ -292,7 +292,7 @@ const ArchiveTable: React.FC = () => {
             {filteredOrders.length === 0 && (
                 <div className={styles.emptyState}>
                     <p>No archived orders to show. 🎉</p>
-                    <p>Looks like nothing's here!</p>
+                    <p>Looks like nothing&apos;s here!</p>
                     <Image
                         src={EmptyIcon.src}
                         height={100}

@@ -12,7 +12,7 @@ export async function POST(request: Request) {
                 allowedContentTypes: ['application/pdf'],
                 tokenPayload: JSON.stringify({ orderId: body.orderId }),
             }),
-            onUploadCompleted: async ({ blob, tokenPayload }) => {
+            onUploadCompleted: async ({}) => {
             },
         });
 

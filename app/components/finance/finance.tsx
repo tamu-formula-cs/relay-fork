@@ -36,7 +36,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
 
   // Calculate total spending per subteam
   const subteamSpending = orders.reduce(
-    (acc: Record<string, number>, order: any) => {
+    (acc: Record<string, number>, order) => {
       const subteam = order.subteam.toUpperCase();
       acc[subteam] = (acc[subteam] || 0) + order.totalCost;
       return acc;
@@ -60,7 +60,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
 
   // Calculate monthly spending
   const monthlySpending = orders.reduce(
-    (acc: Record<string, number>, order: any) => {
+    (acc: Record<string, number>, order) => {
       const date = new Date(order.createdAt);
       const month = date.toLocaleString('default', { month: 'short' });
       acc[month] = (acc[month] || 0) + order.totalCost;
@@ -110,7 +110,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
   // Additional Insights
   // 1. Top Vendors
   const vendorSpending = orders.reduce(
-    (acc: Record<string, number>, order: any) => {
+    (acc: Record<string, number>, order) => {
       const vendor = order.vendor;
       acc[vendor] = (acc[vendor] || 0) + order.totalCost;
       return acc;
@@ -137,25 +137,25 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
 
   // 2. Orders to Place ('TO_ORDER')
   const toOrderOrders = orders.filter(
-    (order: any) => order.status === 'TO_ORDER'
+    (order) => order.status === 'TO_ORDER'
   );
   const toOrderValue = toOrderOrders.reduce(
-    (acc: number, order: any) => acc + order.totalCost,
+    (acc: number, order) => acc + order.totalCost,
     0
   );
 
   // 3. Active Orders (Not Archived)
   const activeOrders = orders.filter(
-    (order: any) => order.status !== 'ARCHIVED'
+    (order) => order.status !== 'ARCHIVED'
   );
   const activeOrderValue = activeOrders.reduce(
-    (acc: number, order: any) => acc + order.totalCost,
+    (acc: number, order) => acc + order.totalCost,
     0
   );
 
   // 4. Budget Utilization
   const totalSpent = orders.reduce(
-    (acc: number, order: any) => acc + order.totalCost,
+    (acc: number, order) => acc + order.totalCost,
     0
   );
   const budgetUtilization = (totalSpent / overallBudget) * 100;
@@ -169,7 +169,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
 
   // 7. Highest Single Order Value
   const highestOrderValue = orders.reduce(
-    (max: number, order: any) =>
+    (max: number, order) =>
       order.totalCost > max ? order.totalCost : max,
     0
   );

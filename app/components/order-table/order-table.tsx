@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import styles from './order-table.module.css';
 import OrderForm from '../order-form/order-form';
-import { Item, ItemStatus, Order, OrderStatus } from '@prisma/client';
+import { Item, ItemStatus, OrderStatus } from '@prisma/client';
 import SettingsMenu from '../settings-component/settings';
 import Settings from "../../../assets/settings.svg";
 import LinkIcon from "../../../assets/link.svg";
@@ -74,7 +74,7 @@ const OrderTable: React.FC<OrderTableProps> = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showOrderForm, setShowOrderForm] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<SerializedOrderWithRelations | null>(null);
-    const [selectedItem, setSelectedItem] = useState<any>(null);
+    const [selectedItem, setSelectedItem] = useState(null);
     const [showSettingsMenu, setShowSettingsMenu] = useState<boolean>(false);
 
     const currentUserSubteam = "Powertrain";
@@ -105,7 +105,7 @@ const OrderTable: React.FC<OrderTableProps> = () => {
         }
     }, [orders, searchQuery]);
 
-    const handleSettingsClick = (order: SerializedOrderWithRelations, item?: any) => {
+    const handleSettingsClick = (order: SerializedOrderWithRelations, item?) => {
         if (item) {
             setSelectedItem(item);
         } else {
@@ -135,10 +135,6 @@ const OrderTable: React.FC<OrderTableProps> = () => {
                     : [...prev, orderId]
             );
         }
-    };
-
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(e.target.value);
     };
 
     if (error) {
