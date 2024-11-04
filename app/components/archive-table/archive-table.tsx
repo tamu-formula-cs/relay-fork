@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import styles from './archive-table.module.css';
-import { ItemStatus, OrderStatus } from '@prisma/client';
+import { ItemStatus, OrderStatus, Item } from '@prisma/client';
 import SettingsMenu from '../settings-component/settings';
 import Settings from "../../../assets/settings.svg";
 import LinkIcon from "../../../assets/link.svg";
@@ -23,16 +23,16 @@ export interface SerializedOrderWithRelations {
     url: string | null;
     carrier: string | null;
     trackingId: string | null;
-    createdAt: string;
-    updatedAt: string;
+    createdAt: Date;
+    updatedAt: Date;
     user: {
         id: number;
         name: string;
         email: string;
         subteam: string;
         role: string;
-        createdAt: string;
-        updatedAt: string;
+        createdAt: Date;
+        updatedAt: Date;
     };
     items: {
         id: number;
@@ -47,23 +47,46 @@ export interface SerializedOrderWithRelations {
         vendor: string;
         link: string | null;
         status: ItemStatus;
-        createdAt: string;
-        updatedAt: string;
+        createdAt: Date;
+        updatedAt: Date;
     }[];
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = async (url: string) => {
+    const res = await fetch(url);
+    const data = await res.json();
+  
+    // Process data.orders to convert date strings to Date objects
+    const orders = data.orders.map((order: SerializedOrderWithRelations) => ({
+      ...order,
+      createdAt: new Date(order.createdAt),
+      updatedAt: new Date(order.updatedAt),
+      items: order.items.map((item) => ({
+        ...item,
+        createdAt: new Date(item.createdAt),
+        updatedAt: new Date(item.updatedAt),
+      })),
+      user: {
+        ...order.user,
+        createdAt: new Date(order.user.createdAt),
+        updatedAt: new Date(order.user.updatedAt),
+      },
+    }));
+  
+    return { orders };
+  };
+  
 
 const ArchiveTable: React.FC = () => {
     const [expandedOrderIds, setExpandedOrderIds] = useState<number[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedOrder, setSelectedOrder] = useState<SerializedOrderWithRelations | null>(null);
-    const [selectedItem, setSelectedItem] = useState<any>(null);
+    const [selectedItem, setSelectedItem] = useState<Item | null>(null);
     const [showSettingsMenu, setShowSettingsMenu] = useState<boolean>(false);
 
     const { data, error } = useSWR('/api/orders/archived', fetcher, { refreshInterval: 60000 });
 
-    const orders = useMemo(() => data?.orders as SerializedOrderWithRelations[] || [], [data]);
+    const orders = useMemo(() => data?.orders as SerializedOrderWithRelations[] || [], [data]);  
 
     const filteredOrders = useMemo(() => {
         if (searchQuery === '') {
@@ -87,7 +110,7 @@ const ArchiveTable: React.FC = () => {
         }
     }, [orders, searchQuery]);
 
-    const handleSettingsClick = (order: SerializedOrderWithRelations, item?) => {
+    const handleSettingsClick = (order: SerializedOrderWithRelations, item?: Item) => {
         if (item) {
             setSelectedItem(item);
         } else {

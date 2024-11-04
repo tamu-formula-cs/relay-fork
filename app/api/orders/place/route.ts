@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     
             if (supportingDocs && supportingDocs.length > 0) {
                 await prisma.document.createMany({
-                  data: supportingDocs.map((doc) => ({
+                  data: supportingDocs.map((doc: { url: any; }) => ({
                     url: doc.url,
                     orderId: order.id,
                   })),

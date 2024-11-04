@@ -162,7 +162,15 @@ export default function OrderForm({ onClose }: OrderFormProps) {
     return screens[currentScreen];
 }
 
-function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrderData }) {
+interface GeneralInfoScreenProps {
+    orderData: OrderData;
+    onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+    onNext: () => void;
+    onClose: () => void;
+    setOrderData: React.Dispatch<React.SetStateAction<OrderData>>;
+}
+
+function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrderData }:  GeneralInfoScreenProps) {
     const isNextDisabled = !orderData.orderName || !orderData.vendor || orderData.estimatedCost <= 0;
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploadedFiles, setUploadedFiles] = useState<{ name: string; url: string }[]>([]);
@@ -309,7 +317,15 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
     );
 }
 
-function CostBreakdownScreen({ costBreakdown, onCostChange, onNext, onBack, onClose }) {
+interface CostBreakdownScreenProps {
+    costBreakdown: Record<string, number>;
+    onCostChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onNext: () => void;
+    onBack: () => void;
+    onClose: () => void;
+}
+
+function CostBreakdownScreen({ costBreakdown, onCostChange, onNext, onBack, onClose }: CostBreakdownScreenProps) {
     const totalPercentage = Object.values(costBreakdown).reduce((a, b) => (a as number) + (b as number), 0);
     const isNextDisabled = totalPercentage !== 100;
 
@@ -360,7 +376,15 @@ function CostBreakdownScreen({ costBreakdown, onCostChange, onNext, onBack, onCl
     );
 }
 
-function Method({ orderData, handleSubmitCSV, onNextStep, onBack, onClose }) {
+interface MethodProps {
+    orderData: OrderData;
+    handleSubmitCSV: (file: File) => Promise<void>;
+    onNextStep: (index: number) => void;
+    onBack: () => void;
+    onClose: () => void;
+}
+
+function Method({ orderData, handleSubmitCSV, onNextStep, onBack, onClose }: MethodProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
     
@@ -411,7 +435,13 @@ function Method({ orderData, handleSubmitCSV, onNextStep, onBack, onClose }) {
     );
 }
 
-function CartLinkOrder({ orderData, onBack, onClose }) {
+interface CartLinkOrderProps {
+    orderData: OrderData;
+    onBack: () => void;
+    onClose: () => void;
+}
+
+function CartLinkOrder({ orderData, onBack, onClose }: CartLinkOrderProps) {
     const [cartLink, setCartLink] = useState('');
     const { toast } = useToast();
     const handleSubmit = async () => {
@@ -490,7 +520,13 @@ function CartLinkOrder({ orderData, onBack, onClose }) {
     );
 }
 
-function SingleItemOrder({ orderData, onBack, onClose }) {
+interface SingleItemOrderProps {
+    orderData: OrderData;
+    onBack: () => void;
+    onClose: () => void;
+}
+
+function SingleItemOrder({ orderData, onBack, onClose }: SingleItemOrderProps) {
     const [name, setName] = useState('');
     const [partNumber, setPartNumber] = useState('');
     const [quantity, setQuantity] = useState(1);

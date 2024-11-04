@@ -6,10 +6,58 @@ import styles from './backlog-component.module.css';
 import useSWR, { mutate } from 'swr';
 import Image from 'next/image';
 import LinkIcon from "../../../assets/link.svg";
-import { ItemStatus, OrderStatus } from '@prisma/client';
+import { Item, ItemStatus, OrderStatus } from '@prisma/client';
 import CloseIcon from "../../../assets/close.svg"
 import EmptyIcon from "../../../assets/empty.svg"
 import { useToast } from '../toast/use-toast';
+
+
+interface Document {
+    id: number;
+    url: string;
+    orderId: number;
+    uploadedAt: string;
+}
+
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    role: Role;
+    subteam: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+enum Role {
+    ENGINEER = 'ENGINEER',
+    FINANCE = 'FINANCE',
+    OPERATIONS = 'OPERATIONS',
+    BUSINESS = 'BUSINESS',
+}
+
+interface Order {
+    id: number;
+    internalOrderId: string;
+    meenOrderId: string | null;
+    name: string;
+    user: User;
+    userId: number;
+    subteam: string;
+    status: OrderStatus;
+    vendor: string;
+    totalCost: number;
+    costVerified: boolean;
+    comments: string | null;
+    url: string | null;
+    carrier: string | null;
+    trackingId: string | null;
+    costBreakdown: Record<string, number> | null;
+    createdAt: string;
+    updatedAt: string;
+    items: Item[];
+    supportingDocs: Document[];
+}
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -280,7 +328,7 @@ const BacklogComponent: React.FC = () => {
                                         <td className={`${styles.tdText} ${styles.documentsColumn}`}>
                                             {order.supportingDocs && order.supportingDocs.length > 0 ? (
                                                 <div className={styles.docsContainer}>
-                                                    {order.supportingDocs.map((doc, index) => (
+                                                    {order.supportingDocs.map((doc: Document, index:number) => (
                                                         <a
                                                             key={index}
                                                             href={doc.url}

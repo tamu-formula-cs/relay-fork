@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
 import { parse } from 'csv-parse/sync';
-import { ItemStatus, OrderStatus } from '@prisma/client';
+import { Item, ItemStatus, OrderStatus } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
     const userEmail = 'user1@example.com';
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid CSV format' }, { status: 400 });
     }
 
-    const itemsData = records.map((record) => {
+    const itemsData = records.map((record: { Item: string; "Part Number": string; Notes: string; "QTY to Buy": string; Cost: string; Vendor: string; Link: string; }) => {
         const { Item, 'Part Number': partNumber, Notes, 'QTY to Buy': qtyToBuy, Cost, Vendor, Link } = record;
 
         if (!Item || !qtyToBuy || !Cost || !Vendor) {
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
 
         if (itemsData.length > 0) {
             await prisma.item.createMany({
-                data: itemsData.map((item) => ({
+                data: itemsData.map((item: Item) => ({
                     ...item,
                     orderId: order.id,
                 })),

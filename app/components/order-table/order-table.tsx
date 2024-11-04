@@ -20,14 +20,22 @@ interface CostBreakdown {
     PT: number;
 }
 
+interface Document {
+    id: number;
+    url: string;
+    orderId: number;
+    uploadedAt: string;
+}
+
 export interface SerializedOrderWithRelations {
     subteam: string;
-    supportingDocs: boolean;
+    supportingDocs: Document[];
     id: number;
     internalOrderId: string;
     meenOrderId: string | null;
     name: string;
-    status: string;
+    userId: number;
+    status: OrderStatus;
     vendor: string;
     totalCost: number;
     costVerified: boolean;
@@ -72,7 +80,7 @@ const OrderTable: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showOrderForm, setShowOrderForm] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<SerializedOrderWithRelations | null>(null);
-    const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+    const [selectedItem, setSelectedItem] = useState<Item | undefined>(undefined);
     const [showSettingsMenu, setShowSettingsMenu] = useState<boolean>(false);
 
     const currentUserSubteam = "Powertrain";
@@ -114,7 +122,7 @@ const OrderTable: React.FC = () => {
 
     const handleCloseSettingsMenu = () => {
         setSelectedOrder(null);
-        setSelectedItem(null);
+        setSelectedItem(undefined);
         setShowSettingsMenu(false);
     };
 

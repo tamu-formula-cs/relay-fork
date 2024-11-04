@@ -5,13 +5,69 @@ import styles from './finance.module.css';
 import useSWR from 'swr';
 import { Bar, Pie } from 'react-chartjs-2';
 import 'chart.js/auto';
+import { LegendItem } from 'chart.js';
 
-interface FinanceDashboardProps {}
+// Enums based on your schema
+enum Role {
+  ENGINEER = 'ENGINEER',
+  FINANCE = 'FINANCE',
+  OPERATIONS = 'OPERATIONS',
+  BUSINESS = 'BUSINESS',
+}
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+enum OrderStatus {
+  TO_ORDER = 'TO_ORDER',
+  PLACED = 'PLACED',
+  PROCESSED = 'PROCESSED',
+  SHIPPED = 'SHIPPED',
+  PARTIAL = 'PARTIAL',
+  DELIVERED = 'DELIVERED',
+  ARCHIVED = 'ARCHIVED',
+}
 
-const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
-  const { data, error } = useSWR('/api/finance', fetcher);
+// Interfaces based on your schema
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: Role;
+  subteam: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Order {
+  id: number;
+  internalOrderId: string;
+  meenOrderId: string | null;
+  name: string;
+  user: User;
+  userId: number;
+  subteam: string;
+  status: OrderStatus;
+  vendor: string;
+  totalCost: number;
+  costVerified: boolean;
+  comments: string | null;
+  url: string | null;
+  carrier: string | null;
+  trackingId: string | null;
+  costBreakdown: any;
+  createdAt: string;
+  updatedAt: string;
+  items: any[];
+  supportingDocs: any[];
+}
+
+interface FinanceData {
+  orders: Order[];
+}
+
+const fetcher = (url: string): Promise<FinanceData> =>
+  fetch(url).then((res: Response) => res.json());
+
+const FinanceDashboard: React.FC = () => {
+  const { data, error } = useSWR<FinanceData>('/api/finance', fetcher);
 
   const subteamBudgets: Record<string, number> = {
     AERO: 10000,
@@ -32,16 +88,16 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
     return <div>Loading finance data...</div>;
   }
 
-  const orders = data.orders;
+  const orders: Order[] = data.orders;
 
   // Calculate total spending per subteam
   const subteamSpending = orders.reduce(
-    (acc: Record<string, number>, order) => {
+    (acc: Record<string, number>, order: Order) => {
       const subteam = order.subteam.toUpperCase();
       acc[subteam] = (acc[subteam] || 0) + order.totalCost;
       return acc;
     },
-    {}
+    {} as Record<string, number>
   );
 
   // Prepare data for the Total Spending by Subteam bar chart
@@ -60,13 +116,13 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
 
   // Calculate monthly spending
   const monthlySpending = orders.reduce(
-    (acc: Record<string, number>, order) => {
+    (acc: Record<string, number>, order: Order) => {
       const date = new Date(order.createdAt);
       const month = date.toLocaleString('default', { month: 'short' });
       acc[month] = (acc[month] || 0) + order.totalCost;
       return acc;
     },
-    {}
+    {} as Record<string, number>
   );
 
   // Months from August to May
@@ -110,12 +166,12 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
   // Additional Insights
   // 1. Top Vendors
   const vendorSpending = orders.reduce(
-    (acc: Record<string, number>, order) => {
+    (acc: Record<string, number>, order: Order) => {
       const vendor = order.vendor;
       acc[vendor] = (acc[vendor] || 0) + order.totalCost;
       return acc;
     },
-    {}
+    {} as Record<string, number>
   );
 
   // Limit to top 5 vendors
@@ -137,25 +193,25 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
 
   // 2. Orders to Place ('TO_ORDER')
   const toOrderOrders = orders.filter(
-    (order) => order.status === 'TO_ORDER'
+    (order: Order) => order.status === OrderStatus.TO_ORDER
   );
   const toOrderValue = toOrderOrders.reduce(
-    (acc: number, order) => acc + order.totalCost,
+    (acc: number, order: Order) => acc + order.totalCost,
     0
   );
 
   // 3. Active Orders (Not Archived)
   const activeOrders = orders.filter(
-    (order) => order.status !== 'ARCHIVED'
+    (order: Order) => order.status !== OrderStatus.ARCHIVED
   );
   const activeOrderValue = activeOrders.reduce(
-    (acc: number, order) => acc + order.totalCost,
+    (acc: number, order: Order) => acc + order.totalCost,
     0
   );
 
   // 4. Budget Utilization
   const totalSpent = orders.reduce(
-    (acc: number, order) => acc + order.totalCost,
+    (acc: number, order: Order) => acc + order.totalCost,
     0
   );
   const budgetUtilization = (totalSpent / overallBudget) * 100;
@@ -169,7 +225,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
 
   // 7. Highest Single Order Value
   const highestOrderValue = orders.reduce(
-    (max: number, order) =>
+    (max: number, order: Order) =>
       order.totalCost > max ? order.totalCost : max,
     0
   );
@@ -228,7 +284,8 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
                         color: '#4C4C4C',
                         boxWidth: 12,
                         boxHeight: 12,
-                        filter: (legendItem) => legendItem.text === 'Budget',
+                        filter: (legendItem: LegendItem) =>
+                          legendItem.text === 'Budget',
                       },
                     },
                   },
@@ -314,18 +371,14 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
             {/* Spending This Month */}
             <div className={styles.tile}>
               <h2 className={styles.tileTitle}>Spending This Month</h2>
-              <p className={styles.amount}>
-                ${spentThisMonth.toFixed(2)}
-              </p>
+              <p className={styles.amount}>${spentThisMonth.toFixed(2)}</p>
               <p
-                className={
-                  `${percentageChange >= 0
-                    ? styles.percentagePositive
-                    : styles.percentageNegative} ${styles.tileSub}`
-                }
+                className={`${percentageChange >= 0
+                  ? styles.percentagePositive
+                  : styles.percentageNegative} ${styles.tileSub}`}
               >
                 {percentageChange >= 0 ? '+' : ''}
-                {percentageChange.toFixed(2)}%  versus last month
+                {percentageChange.toFixed(2)}% versus last month
               </p>
             </div>
 
@@ -358,14 +411,18 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
             <div className={styles.tile}>
               <h2 className={styles.tileTitle}>Orders to Place</h2>
               <p className={styles.amount}>{toOrderOrders.length}</p>
-              <p className={styles.tileSub}>Total Value: ${toOrderValue.toFixed(2)}</p>
+              <p className={styles.tileSub}>
+                Total Value: ${toOrderValue.toFixed(2)}
+              </p>
             </div>
 
             {/* Active Orders */}
             <div className={styles.tile}>
               <h2 className={styles.tileTitle}>Active Orders</h2>
               <p className={styles.amount}>{activeOrders.length}</p>
-              <p className={styles.tileSub}>Total Value: ${activeOrderValue.toFixed(2)}</p>
+              <p className={styles.tileSub}>
+                Total Value: ${activeOrderValue.toFixed(2)}
+              </p>
             </div>
 
             {/* Average Order Value */}
@@ -376,7 +433,7 @@ const FinanceDashboard: React.FC<FinanceDashboardProps> = () => {
               </p>
               <p className={styles.tileSub}>Across all orders</p>
             </div>
-            
+
             {/* Highest Single Order */}
             <div className={styles.tile}>
               <h2 className={styles.tileTitle}>Highest Order Value</h2>
