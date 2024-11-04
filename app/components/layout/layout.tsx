@@ -11,6 +11,7 @@ import DashboardIcon from "../../../assets/dashboard.svg";
 import SupportIcon from "../../../assets/support.svg";
 import FinanceIcon from "../../../assets/finance.svg"
 import DownloadIcon from "../../../assets/download.svg"
+import AccountIcon from "../../../assets/account.svg"
 import { Toaster } from '../toast/toaster';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -119,6 +120,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className={styles.menuLabel}>OTHER</div>
           
           <ul className={styles.navLinks}>
+          <li>  {/* LOGIN/ACCOUNT BUTTON */}
+              <Link href="/account">
+              <Image 
+                src={AccountIcon} 
+                alt="Account" 
+                width="16" 
+                height="16"
+                className={pathname === '/account' ? styles.activeIcon : ''}
+              />
+              <span>Account</span>
+              </Link>
+          </li>
           <li>
             <Link 
               href="#"

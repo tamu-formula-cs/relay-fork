@@ -25,6 +25,7 @@ async function main() {
         create: {
           name: `User ${index}`,
           email: `user${index}@example.com`,
+          phone: null,
           role: Role.ENGINEER,
           subteam: subteam,
         },

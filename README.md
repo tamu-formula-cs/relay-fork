@@ -70,4 +70,38 @@ formula electric order management system
 
     this opens a web interface at http://localhost:5555. navigate through and make sure the data from seed.ts in the prisma folder is there. if so, all is good! if not, contact athul.
 
+## setup google auth
+
+1. go to google cloud (https://cloud.google.com/) navigate to “APIs & Services”
+
+2. create a new project, enter info blah blah
+
+3. on left hand bar, select “OAuth consent screen”
+	- select “External”
+	- fill out required blah blah
+
+4. on left hand bar, select “Credentials”
+
+	- select “ + Create Credentials” then “OAuth Client ID”
+	- select “Web application”
+	- fill out required blah blah
+
+		- for “Authorized JavaScript Origins”, use the main page link 
+			- ex. “http://localhost:3000” for local
+		- for “Authorized redirect URIs”, use the above link and add “/api/auth/callback/google”
+			- ex. “http://localhost:3000/api/auth/callback/google” for local
+
+	- should give you clientID and client secret, place these in “.env”
+		- “GOOGLE_CLIENT_ID=“…
+		- “GOOGLE_CLIENT_SECRET=“…
+
+5. now google stuff is done, so you need auth secrets and url
+
+    - for NEXTAUTH_SECRET: if you have a "AUTH_SECRET" use that, otherwise generate a new one in terminal - run ```npx auth secret``` in terminal - this will create a ".env.local" with a secret, place in ".env"
+        - "NEXTAUTH_SECRET=“…
+    - for NEXTAUTH_URL: this is just the base root url for the site
+        - ex. "http://localhost:3000" for local
+        - "NEXTAUTH_URL=“…
+
+6. now login should work :)
 
