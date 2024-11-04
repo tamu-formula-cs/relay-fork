@@ -36,29 +36,6 @@ enum Role {
     BUSINESS = 'BUSINESS',
 }
 
-interface Order {
-    id: number;
-    internalOrderId: string;
-    meenOrderId: string | null;
-    name: string;
-    user: User;
-    userId: number;
-    subteam: string;
-    status: OrderStatus;
-    vendor: string;
-    totalCost: number;
-    costVerified: boolean;
-    comments: string | null;
-    url: string | null;
-    carrier: string | null;
-    trackingId: string | null;
-    costBreakdown: Record<string, number> | null;
-    createdAt: string;
-    updatedAt: string;
-    items: Item[];
-    supportingDocs: Document[];
-}
-
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const subteamMapping: { [key: string]: string } = {
