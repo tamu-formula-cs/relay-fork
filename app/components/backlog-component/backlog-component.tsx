@@ -19,23 +19,6 @@ interface Document {
     uploadedAt: string;
 }
 
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    role: Role;
-    subteam: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
-enum Role {
-    ENGINEER = 'ENGINEER',
-    FINANCE = 'FINANCE',
-    OPERATIONS = 'OPERATIONS',
-    BUSINESS = 'BUSINESS',
-}
-
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const subteamMapping: { [key: string]: string } = {
