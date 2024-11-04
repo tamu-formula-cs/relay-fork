@@ -96,7 +96,7 @@ const BacklogComponent: React.FC = () => {
     const [expandedOrderIdsToBePlaced, setExpandedOrderIdsToBePlaced] = useState<number[]>([]);
     const [expandedOrderIdsToBePickedUp, setExpandedOrderIdsToBePickedUp] = useState<number[]>([]);
 
-    const toggleExpandToBePlaced = (orderId: number, orderItems: any[]) => {
+    const toggleExpandToBePlaced = (orderId: number, orderItems: Item[]) => {
         if (orderItems.length > 0) {
             setExpandedOrderIdsToBePlaced((prev) =>
                 prev.includes(orderId)
@@ -106,7 +106,7 @@ const BacklogComponent: React.FC = () => {
         }
     };
 
-    const toggleExpandToBePickedUp = (orderId: number, orderItems: any[]) => {
+    const toggleExpandToBePickedUp = (orderId: number, orderItems: Item[]) => {
         if (orderItems.length > 0) {
             setExpandedOrderIdsToBePickedUp((prev) =>
                 prev.includes(orderId)
@@ -559,7 +559,7 @@ const BacklogComponent: React.FC = () => {
                 {ordersWithDeliveredItems.length === 0 && (
                 <div className={styles.emptyState}>
                     <p>No pending pickups. 🚚</p>
-                    <p>Everything's been picked up!</p>
+                    <p>Everything&apos;s been picked up!</p>
                     <Image
                         src={EmptyIcon.src}
                         height={100}

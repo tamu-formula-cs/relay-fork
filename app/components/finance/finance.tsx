@@ -6,6 +6,7 @@ import useSWR from 'swr';
 import { Bar, Pie } from 'react-chartjs-2';
 import 'chart.js/auto';
 import { LegendItem } from 'chart.js';
+import { Item } from '@prisma/client';
 
 // Enums based on your schema
 enum Role {
@@ -36,6 +37,22 @@ interface User {
   updatedAt: string;
 }
 
+interface Document {
+  id: number;
+  url: string;
+  orderId: number;
+  uploadedAt: string;
+}
+
+interface CostBreakdown {
+  AERO: number;
+  CHS: number;
+  SUS: number;
+  BAT: number;
+  ECE: number;
+  PT: number;
+}
+
 interface Order {
   id: number;
   internalOrderId: string;
@@ -52,11 +69,11 @@ interface Order {
   url: string | null;
   carrier: string | null;
   trackingId: string | null;
-  costBreakdown: any;
+  costBreakdown: CostBreakdown | null;
   createdAt: string;
   updatedAt: string;
-  items: any[];
-  supportingDocs: any[];
+  items: Item[];
+  supportingDocs: Document[];
 }
 
 interface FinanceData {

@@ -127,6 +127,7 @@ export default function OrderForm({ onClose }: OrderFormProps) {
 
     const screens = [
         <GeneralInfoScreen
+            key="general-info"
             orderData={orderData}
             setOrderData={setOrderData}
             onInputChange={handleInputChange}
@@ -134,6 +135,7 @@ export default function OrderForm({ onClose }: OrderFormProps) {
             onClose={onClose}
         />,
         <CostBreakdownScreen
+            key="cost-breakdown"
             costBreakdown={orderData.costBreakdown}
             onCostChange={handleCostBreakdownChange}
             onNext={handleNext}
@@ -141,18 +143,20 @@ export default function OrderForm({ onClose }: OrderFormProps) {
             onClose={onClose}
         />,
         <Method
-            orderData={orderData}
+            key="method"
             handleSubmitCSV={handleSubmitCSV}
             onBack={handleBack}
             onClose={onClose}
             onNextStep={onNextStep}
         />,
         <CartLinkOrder
+            key="cart-link-order"
             orderData={orderData}
             onBack={() => setCurrentScreen(2)}
             onClose={onClose}
         />,
         <SingleItemOrder
+            key="single-item-order"
             orderData={orderData}
             onBack={() => setCurrentScreen(2)}
             onClose={onClose}
@@ -377,14 +381,13 @@ function CostBreakdownScreen({ costBreakdown, onCostChange, onNext, onBack, onCl
 }
 
 interface MethodProps {
-    orderData: OrderData;
     handleSubmitCSV: (file: File) => Promise<void>;
     onNextStep: (index: number) => void;
     onBack: () => void;
     onClose: () => void;
 }
 
-function Method({ orderData, handleSubmitCSV, onNextStep, onBack, onClose }: MethodProps) {
+function Method({ handleSubmitCSV, onNextStep, onBack, onClose }: MethodProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
     

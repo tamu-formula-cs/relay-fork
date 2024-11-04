@@ -20,44 +20,14 @@ interface Document {
     uploadedAt: string;
 }
 
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    role: Role;
-    subteam: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
-enum Role {
-    ENGINEER = 'ENGINEER',
-    FINANCE = 'FINANCE',
-    OPERATIONS = 'OPERATIONS',
-    BUSINESS = 'BUSINESS',
-}
-
-interface Order {
-    id: number;
-    internalOrderId: string;
-    meenOrderId: string | null;
-    name: string;
-    user: User;
-    userId: number;
-    subteam: string;
+interface UpdateOrderBody {
     status: OrderStatus;
-    vendor: string;
-    totalCost: number;
-    costVerified: boolean;
-    comments: string | null;
-    url: string | null;
-    carrier: string | null;
-    trackingId: string | null;
-    costBreakdown: Record<string, number> | null;
-    createdAt: string;
-    updatedAt: string;
-    items: Item[];
-    supportingDocs: Document[];
+    totalCost?: number;
+    costVerified?: boolean;
+}
+
+interface UpdateItemBody {
+    status: ItemStatus;
 }
 
 const subteamMapping: { [key: string]: string } = {
@@ -72,16 +42,22 @@ const subteamMapping: { [key: string]: string } = {
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpdateOrder }) => {
-    const [status, setStatus] = useState<OrderStatus | ItemStatus>(
-        item ? item.status : order ? order.status : OrderStatus.TO_ORDER
+    // Separate state variables for order and item status
+    const [orderStatus, setOrderStatus] = useState<OrderStatus>(
+        order ? order.status : OrderStatus.TO_ORDER
+    );
+    const [itemStatus, setItemStatus] = useState<ItemStatus>(
+        item ? item.status : ItemStatus.TO_ORDER
     );
     const [price, setPrice] = useState(order ? order.totalCost : 0);
     const [priceEdited, setPriceEdited] = useState(false);
 
-    const statusOptions = item ? Object.values(ItemStatus) : Object.values(OrderStatus);
+    const handleOrderStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setOrderStatus(e.target.value as OrderStatus);
+    };
 
-    const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setStatus(e.target.value as OrderStatus | ItemStatus);
+    const handleItemStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setItemStatus(e.target.value as ItemStatus);
     };
 
     const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,19 +73,20 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
     const handleSave = async () => {
         try {
         if (item) {
+            const body: UpdateItemBody = { status: itemStatus };
             const response = await fetch(`/api/items/update/${item.id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ status }),
+            body: JSON.stringify(body),
             });
 
             if (response.ok) {
             onUpdateOrder();
             }
         } else if (order) {
-            const body: any = { status };
+            const body: UpdateOrderBody = { status: orderStatus };
             if (priceEdited) {
             body.totalCost = price;
             body.costVerified = true;
@@ -146,7 +123,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
             {!item && order && (
             <div className={styles.infoSection}>
                 <h4 className={styles.infoLabel}>Order Name:</h4>
-                <p className={styles.infoText}>{order ? order.name : 'N/A'}</p>
+                <p className={styles.infoText}>{order.name}</p>
 
                 <h4 className={styles.infoLabel}>Placed By:</h4>
                 <p className={styles.infoText}>{order.user.name}</p>
@@ -197,8 +174,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
             )}
 
             <div className={styles.settingsGroup}>
-            {/* Display status and price for the order */}
-
+            {/* Display item details if an item is provided */}
             {item && (
                 <>
                 <div className={styles.inputGroup}>
@@ -221,41 +197,49 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                         {item.link}
                     </a>
                     ) : (
-                    <p>N/A</p>
+                    <p className={styles.infoText}>N/A</p>
                     )}
                 </div>
                 <div className={styles.inputGroup}>
                     <label>Quantity:</label>
-                    {item.quantity ? (
-                    <p className={styles.infoText}>{item.quantity}</p>
-                    ) : (
-                    <p>N/A</p>
-                    )}
+                    <p className={styles.infoText}>{item.quantity || 'N/A'}</p>
+                </div>
+                <div className={styles.inputGroup}>
+                    <label>Status:</label>
+                    <select value={itemStatus} onChange={handleItemStatusChange}>
+                    {Object.values(ItemStatus).map((option) => (
+                        <option key={option} value={option}>
+                        {option.toUpperCase()}
+                        </option>
+                    ))}
+                    </select>
                 </div>
                 </>
             )}
 
-            <div className={styles.inputGroup}>
-                <label>Status:</label>
-                <select value={status} onChange={handleStatusChange}>
-                {statusOptions.map((option) => (
-                    <option key={option} value={option}>
-                    {option.toUpperCase()}
-                    </option>
-                ))}
-                </select>
-            </div>
-
-            {!item && (
+            {/* Display order status and price if an order is provided */}
+            {order && (
+                <>
                 <div className={styles.inputGroup}>
-                <label>Price:</label>
-                <input
+                    <label>Status:</label>
+                    <select value={orderStatus} onChange={handleOrderStatusChange}>
+                    {Object.values(OrderStatus).map((option) => (
+                        <option key={option} value={option}>
+                        {option.toUpperCase()}
+                        </option>
+                    ))}
+                    </select>
+                </div>
+                <div className={styles.inputGroup}>
+                    <label>Price:</label>
+                    <input
                     type="number"
                     value={price}
                     onChange={handlePriceChange}
                     className={styles.numberInput}
-                />
+                    />
                 </div>
+                </>
             )}
             </div>
 
