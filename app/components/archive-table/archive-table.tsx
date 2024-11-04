@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import styles from './archive-table.module.css';
-import { ItemStatus, OrderStatus, Item } from '@prisma/client';
+import { OrderStatus, Item } from '@prisma/client';
 import SettingsMenu from '../settings-component/settings';
 import Settings from "../../../assets/settings.svg";
 import LinkIcon from "../../../assets/link.svg";
