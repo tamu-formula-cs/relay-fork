@@ -8,49 +8,8 @@ import Settings from "../../../assets/settings.svg";
 import LinkIcon from "../../../assets/link.svg";
 import EmptyIcon from "../../../assets/empty.svg"
 import Image from 'next/image';
+import { SerializedOrderWithRelations } from '../order-table/order-table';
 import useSWR, { mutate } from 'swr';
-
-export interface SerializedOrderWithRelations {
-    id: number;
-    internalOrderId: string;
-    meenOrderId: string | null;
-    name: string;
-    status: string;
-    vendor: string;
-    totalCost: number;
-    costVerified: boolean;
-    comments: string | null;
-    url: string | null;
-    carrier: string | null;
-    trackingId: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-    user: {
-        id: number;
-        name: string;
-        email: string;
-        subteam: string;
-        role: string;
-        createdAt: Date;
-        updatedAt: Date;
-    };
-    items: {
-        id: number;
-        internalItemId: string;
-        orderId: number;
-        name: string;
-        partNumber: string;
-        notes: string | null;
-        quantity: number;
-        price: number;
-        priceVerified: boolean;
-        vendor: string;
-        link: string | null;
-        status: ItemStatus;
-        createdAt: Date;
-        updatedAt: Date;
-    }[];
-}
 
 const fetcher = async (url: string) => {
     const res = await fetch(url);
@@ -81,7 +40,7 @@ const ArchiveTable: React.FC = () => {
     const [expandedOrderIds, setExpandedOrderIds] = useState<number[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedOrder, setSelectedOrder] = useState<SerializedOrderWithRelations | null>(null);
-    const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+    const [selectedItem, setSelectedItem] = useState<Item | undefined>(undefined);
     const [showSettingsMenu, setShowSettingsMenu] = useState<boolean>(false);
 
     const { data, error } = useSWR('/api/orders/archived', fetcher, { refreshInterval: 60000 });
@@ -121,7 +80,7 @@ const ArchiveTable: React.FC = () => {
 
     const handleCloseSettingsMenu = () => {
         setSelectedOrder(null);
-        setSelectedItem(null);
+        setSelectedItem(undefined);
         setShowSettingsMenu(false);
     };
 
