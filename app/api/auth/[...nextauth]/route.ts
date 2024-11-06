@@ -73,6 +73,7 @@ const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/account',
   },
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);
