@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
                 await prisma.document.createMany({
                     data: supportingDocs.map((doc: { url: string; }) => ({
                     url: doc.url,
-                    orderId: order.id,
+                    supportingOrderId: order.id,
                     })),
                 });
                 }

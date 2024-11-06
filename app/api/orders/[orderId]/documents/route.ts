@@ -8,7 +8,7 @@ export async function GET(request: NextRequest, { params }: { params: { orderId:
     try {
         const documents = await prisma.document.findMany({
             where: {
-                orderId: Number(orderId),
+                supportingOrderId: Number(orderId),
             },
             select: {
                 id: true,
