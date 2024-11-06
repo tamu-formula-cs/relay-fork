@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Logo from "../../../assets/logo.svg";
 import styles from "./new-user.module.css";
 import { useToast } from "../toast/use-toast";
+import Image from "next/image";
 import { Toaster } from "../toast/toaster";
 
 const roles = ["", "BUSINESS", "ENGINEER"];
@@ -165,7 +166,7 @@ const UserInfoForm: React.FC = () => {
                 <option value="" disabled>
                   Select a subteam
                 </option>
-                {subteamsByRole[role].slice(1).map((subteamOption) => (
+                {subteamsByRole[role as keyof typeof subteamsByRole].slice(1).map((subteamOption) => (
                   <option key={subteamOption} value={subteamOption}>
                     {subteamOption}
                   </option>
@@ -207,7 +208,7 @@ const UserInfoForm: React.FC = () => {
 
       <footer className={styles.footer}>
         <div className={styles.footerLogo}>
-          <img src={Logo.src} alt="Relay Logo" />
+          <Image src={Logo.src} alt="Relay Logo" height={40} width={40}/>
           <span className={styles.footerText}>Relay</span>
         </div>
         <p className={styles.footerInfo}>Made in CSTX</p>

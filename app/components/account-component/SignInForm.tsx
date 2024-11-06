@@ -6,12 +6,12 @@ import Logo from "../../../assets/logo.svg"
 import styles from "./account.module.css";
 import { useToast } from "../toast/use-toast";
 import { Toaster } from "../toast/toaster";
+import Image from "next/image";
 
 const SignInForm = () => {
     const { toast } = useToast();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,7 +36,7 @@ const SignInForm = () => {
     return (
         <div className={styles.container}>
             <div className={styles.square}>
-                <img src={TeamLogo.src} alt="FSAE Logo" className={styles.logo} />
+                <Image src={TeamLogo.src} alt="FSAE Logo" className={styles.logo} height={40} width={150}/>
                 <h1 className={styles.welcomeText}>Welcome back!</h1>
                 <p className={styles.subheading}>Please login with your TAMU email.</p>
 
@@ -62,15 +62,14 @@ const SignInForm = () => {
                         />
                     </label>
                     <button type="submit" className={styles.button}>Sign In</button>
-                    {error && <p className={styles.error}>{error}</p>}
                     <p className={styles.newAccountLink}>
-                        <a href="/new-user">Don't have an account yet?</a>
+                        <a href="/new-user">Don&apos;t have an account yet?</a>
                     </p>
                 </form>
             </div>
             <footer className={styles.footer}>
                 <div className={styles.footerLogo}>
-                    <img src={Logo.src} alt="Relay Logo" />
+                    <Image src={Logo.src} alt="Relay Logo" height={40} width={40}/>
                     <span className={styles.footerText}>Relay</span>
                 </div>
                 <p className={styles.footerInfo}>Made in CSTX</p>
