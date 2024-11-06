@@ -33,6 +33,11 @@ export async function GET() {
                 createdAt: item.createdAt.toISOString(),
                 updatedAt: item.updatedAt.toISOString(),
             })),
+            supportingDocs: order.supportingDocs.map((doc) => ({
+                ...doc,
+                uploadedAt: doc.uploadedAt.toISOString(),
+            })),
+            costBreakdown: order.costBreakdown ? JSON.parse(JSON.stringify(order.costBreakdown)) : null,
         }));
 
         return NextResponse.json({ orders: serializedOrders });
