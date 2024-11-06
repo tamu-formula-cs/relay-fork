@@ -2,38 +2,54 @@
 
 import React, { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Logo from "../../../assets/logo.svg";
+import styles from "./new-user.module.css";
+import { useToast } from "../toast/use-toast";
+import { Toaster } from "../toast/toaster";
 
 const roles = ["", "BUSINESS", "ENGINEER"];
 
-const subteamsByRole: { [key: string]: string[] } = {
-  BUSINESS: ["", "FINANCE", "LOGISTICS", "MARKETING", "SALES"],
-  ENGINEER: ["", "AERODYNAMICS", "BATTERY", "CHASSIS", "DISTRIBUTED BMS", "ELECTRONICS", "POWERTRAIN", "SOFTWARE", "SUSPENSION"],
+const subteamsByRole = {
+  BUSINESS: ["", "FINANCE", "OPERATIONS"],
+  ENGINEER: ["", "AERODYNAMICS", "BATTERY", "CHASSIS", "DISTRIBUTED BMS", "ELECTRONICS", "POWERTRAIN", "SUSPENSION"],
 };
 
-interface UserInfoFormProps {
-  sessionEmail: string;
-  sessionName: string;
-}
-
-const UserInfoForm: React.FC<UserInfoFormProps> = ({ sessionEmail, sessionName }) => {
-  const [role, setRole] = useState(roles[0]);
+const UserInfoForm: React.FC = () => {
+  const { toast } = useToast();
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [role, setRole] = useState("");
   const [subteam, setSubteam] = useState("");
   const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
 
-  const handleRoleChange = (newRole: string) => {
+  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newRole = e.target.value;
     setRole(newRole);
     setSubteam("");
+  };
+
+  const handleSubteamChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSubteam(e.target.value);
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     setIsSubmitted(false);
-    setError(null);
+
+    if (password !== confirmPassword) {
+      toast({
+          title: "Passwords Do Not Match",
+          description: "Your passwords do not match. Please try again.",
+          variant: "destructive",
+      });
+      return;
+    }
 
     try {
       const response = await fetch("/api/auth/NewUserInfo", {
@@ -41,63 +57,162 @@ const UserInfoForm: React.FC<UserInfoFormProps> = ({ sessionEmail, sessionName }
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: sessionEmail, name: sessionName, role, subteam, phone }),
+        body: JSON.stringify({ email, name, role, subteam, phone, password }),
       });
 
       if (response.ok) {
-        const result = await response.json();
         setIsSubmitted(true);
-        router.push("/");
+        toast({
+            title: "User created",
+            description: "User created successfully!",
+            variant: "affirmation",
+        });
+        router.push("/account");
+      } else {
+        const result = await response.json();
+        toast({
+          title: "Error",
+          description: result.error + ".",
+          variant: "destructive",
+      });
       }
     } catch (error) {
       console.error("An error occurred during submission:", error);
-      setError("An unexpected error occurred. Please try again.");
+      toast({
+        title: "Unexpected Error Occured",
+        description: "Something unexpected happened. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   return (
-    <div className="modal">
-      <form onSubmit={handleSubmit}>
-        <h2>{sessionName}, complete your profile!</h2>
+    <div className={styles.newMain}>
+      <form onSubmit={handleSubmit} className={styles.formContainer}>
+        <h2 className={styles.heading}>Create Your Account</h2>
 
-        <label>
-          Phone Number:
-          <input 
+        <div className={styles.newRow}>
+          <div className={styles.inputGroup}>
+            <label>Email:</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter email address"
+              required
+              className={styles.inputField}
+            />
+          </div>
+
+          <div className={styles.inputGroup}>
+            <label>Name:</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter full name"
+              required
+              className={styles.inputField}
+            />
+          </div>
+        </div>
+
+        <div className={styles.newRow}>
+          <div className={styles.inputGroup}>
+            <label>Password:</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter password"
+              required
+              className={styles.inputField}
+            />
+          </div>
+
+          <div className={styles.inputGroup}>
+            <label>Confirm Password:</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Confirm password"
+              required
+              className={styles.inputField}
+            />
+          </div>
+        </div>
+
+        <div className={styles.newRow}>
+          <div className={styles.inputGroup}>
+            <label>Role:</label>
+            <select value={role} onChange={handleRoleChange} required className={styles.inputField}>
+              <option value="" disabled>
+                Select a role
+              </option>
+              {roles.slice(1).map((roleOption) => (
+                <option key={roleOption} value={roleOption}>
+                  {roleOption}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {role && (
+            <div className={styles.inputGroup}>
+              <label>Subteam:</label>
+              <select value={subteam} onChange={handleSubteamChange} required className={styles.inputField}>
+                <option value="" disabled>
+                  Select a subteam
+                </option>
+                {subteamsByRole[role].slice(1).map((subteamOption) => (
+                  <option key={subteamOption} value={subteamOption}>
+                    {subteamOption}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+
+        <div className={styles.inputGroup}>
+          <label>Phone Number:</label>
+          <input
             type="text"
-            value={phone} 
+            value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="Enter phone number"
+            required
+            className={styles.inputField}
           />
-        </label>
+        </div>
 
-        <label>
-          Role:
-          <select value={role} onChange={(e) => handleRoleChange(e.target.value)} required disabled={!phone} >
-            {roles.map((role) => (
-              <option key={role} value={role}>
-                {role || "Select a role"}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          Subteam:
-          <select value={subteam} onChange={(e) => setSubteam(e.target.value)} required disabled={!role || !phone} >
-            {subteamsByRole[role]?.map((subteam) => (
-              <option key={subteam} value={subteam}>
-                {subteam || "Select a subteam"}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <button type="submit" disabled={isSubmitted || !role || !subteam || !phone}>
+        <button
+          type="submit"
+          className={styles.button}
+          disabled={
+            isSubmitted ||
+            !email ||
+            !name ||
+            !phone ||
+            !password ||
+            !confirmPassword ||
+            !role ||
+            !subteam
+          }
+        >
           {isSubmitted ? "Submitted" : "Submit"}
         </button>
-
-        {error && <p className="error">{error}</p>}
       </form>
+
+      <footer className={styles.footer}>
+        <div className={styles.footerLogo}>
+          <img src={Logo.src} alt="Relay Logo" />
+          <span className={styles.footerText}>Relay</span>
+        </div>
+        <p className={styles.footerInfo}>Made in CSTX</p>
+      </footer>
+      <Toaster />
     </div>
   );
 };

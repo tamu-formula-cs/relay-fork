@@ -144,3 +144,22 @@
   justify-content: center;
   align-items: center;
 }
+
+.toastActionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2rem;
+  padding: 2rem 2rem;
+  border-radius: 0.25rem;
+  font-size: .85rem;
+  transition: background-color 0.3s, border-color 0.3s;
+  background-color: #7044F2;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+}
+
+.toastActionButton:hover {
+  background-color: #5938C4;
+}

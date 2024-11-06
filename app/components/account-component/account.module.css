@@ -1,0 +1,139 @@
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #FFFFFF;
+    font-family: 'Poppins', sans-serif;
+}
+
+.square {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    border: 1px solid #D4D4D4;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    width: 100px;
+    margin-bottom: 20px;
+}
+
+.welcomeText{
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    color: #000;
+}
+
+.newRow{
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+.subheading {
+    font-size: 16px;
+    font-weight: 400;
+    color: #5D5D5D;
+    margin-bottom: 30px;
+}
+
+.newMain{
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+}
+
+.inputContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.inputField {
+    padding: 1rem 1.5rem;
+    border: 1px solid #D4D4D4;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.button {
+    background-color: #7044F2;
+    color: #FFFFFF;
+    padding: 1rem 1.5rem;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #5936c4;
+}
+
+.error {
+    color: #ff0000;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background-color: #7044F2;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+}
+
+.footerLogo {
+    display: flex;
+    align-items: center;
+    color: #FFFFFF;
+    transform: translateX(1.5rem);
+}
+
+.footerText {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.footerInfo {
+    font-size: 14px;
+    color: #FFFFFF;
+    font-weight: 400;
+    transform: translateX(-1.5rem);
+}
+
+.newAccountLink {
+    font-size: 14px;
+    font-weight: 400;
+    color: #5D5D5D;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.newAccountLink a {
+    color: #5D5D5D;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.newAccountLink a:hover {
+    text-decoration: underline;
+}
+

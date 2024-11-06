@@ -48,7 +48,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    max-width: 90%; 
+    max-width: 95%;
     padding: 1.5rem;
     border-radius: 0.5rem;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
@@ -113,4 +113,3 @@
     cursor: pointer;
     color: #999999;
   }
-  

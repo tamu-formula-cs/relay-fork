@@ -4,7 +4,11 @@ import prisma from '../../../lib/prisma';
 import { ItemStatus, OrderStatus } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
-    const userEmail = 'user1@example.com';
+
+    const body = await request.json();
+    const { orderName, cartUrl, items, vendor, totalCost, comments, costBreakdown, supportingDocs } = body;
+
+    const userEmail = body.userEmail;
 
     // Get the user from the database
     const user = await prisma.user.findUnique({
@@ -14,10 +18,7 @@ export async function POST(request: NextRequest) {
     if (!user) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-
-    const body = await request.json();
-    const { orderName, cartUrl, items, vendor, totalCost, comments, costBreakdown, supportingDocs } = body;
-
+    
     if (!orderName || !vendor) {
         return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }

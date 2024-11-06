@@ -4,7 +4,12 @@ import { parse } from 'csv-parse/sync';
 import { Item, ItemStatus, OrderStatus } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
-    const userEmail = 'user1@example.com';
+
+    // Parse the multipart/form-data
+    const formData = await request.formData();
+    const file = formData.get('file') as File | null;
+
+    const userEmail = formData.get('userEmail') as string;
 
     // Get the user from the database
     const user = await prisma.user.findUnique({
@@ -14,10 +19,6 @@ export async function POST(request: NextRequest) {
     if (!user) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-
-    // Parse the multipart/form-data
-    const formData = await request.formData();
-    const file = formData.get('file') as File | null;
 
     if (!file) {
         return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });

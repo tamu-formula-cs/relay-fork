@@ -1,14 +1,30 @@
-"use client"
+"use client";
 
-import Layout from "../components/layout/layout";
-import Signinbutton from "../components/account-component/SignInButton";
-import { SessionProvider } from "next-auth/react";
+import SignInForm from "../components/account-component/SignInForm";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import styles from "./account.module.css"
 
-export default async function Home() {
+export default function AccountPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (session && session.user) {
+      router.push("/");
+    }
+  }, [session, router]);
+
+  if (!session || !session.user) {
+    return (
+        <SignInForm />
+    );
+  }
+
   return (
-    <Layout>
-        <SessionProvider><Signinbutton></Signinbutton></SessionProvider>
-    </Layout>
-  )
+    <div className={styles.loadingScreen}>
+      <div className={styles.loader}></div>
+    </div>
+  );
 }
-

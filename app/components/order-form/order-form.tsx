@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { mutate } from 'swr';
 import { useToast } from '../toast/use-toast';
 import { upload } from '@vercel/blob/client';
+import { useSession } from 'next-auth/react';
 
 interface OrderFormProps {
     onClose: () => void;
@@ -28,7 +29,8 @@ interface OrderData {
 
 export default function OrderForm({ onClose }: OrderFormProps) {
     const { toast } = useToast();
-
+    const { data: session } = useSession();
+    const email = session?.user.email;
     const [currentScreen, setCurrentScreen] = useState(0);
     const [orderData, setOrderData] = useState<OrderData>({
         orderName: '',
@@ -74,12 +76,13 @@ export default function OrderForm({ onClose }: OrderFormProps) {
         }
     
         const formData = new FormData();
+        
         formData.append('file', file);
         formData.append('orderName', orderData.orderName);
         formData.append('vendor', orderData.vendor);
         formData.append('notes', orderData.notes);
         formData.append('estimatedCost', String(orderData.estimatedCost));
-    
+        formData.append('userEmail', email || '');
         for (const [key, value] of Object.entries(orderData.costBreakdown)) {
             formData.append(`costBreakdown[${key}]`, String(value));
         }
@@ -446,6 +449,8 @@ interface CartLinkOrderProps {
 
 function CartLinkOrder({ orderData, onBack, onClose }: CartLinkOrderProps) {
     const [cartLink, setCartLink] = useState('');
+    const { data: session } = useSession();
+    const email = session?.user.email;
     const { toast } = useToast();
     const handleSubmit = async () => {
         if (!cartLink) {
@@ -463,6 +468,7 @@ function CartLinkOrder({ orderData, onBack, onClose }: CartLinkOrderProps) {
             comments: orderData.notes,
             costBreakdown: orderData.costBreakdown,
             supportingDocs: orderData.supportingDocs,
+            userEmail: email,
         };
 
         try {
@@ -536,6 +542,8 @@ function SingleItemOrder({ orderData, onBack, onClose }: SingleItemOrderProps) {
     const [cost, setCost] = useState(0);
     const [link, setLink] = useState('');
     const { toast } = useToast();
+    const { data: session } = useSession();
+    const email = session?.user.email;
     
     const handleSubmit = async () => {
         if (!name || !quantity || !cost) {
@@ -562,6 +570,7 @@ function SingleItemOrder({ orderData, onBack, onClose }: SingleItemOrderProps) {
             comments: orderData.notes,
             costBreakdown: orderData.costBreakdown,
             supportingDocs: orderData.supportingDocs,
+            userEmail: email
         };
 
         try {

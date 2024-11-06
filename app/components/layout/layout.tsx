@@ -9,38 +9,61 @@ import BacklogIcon from "../../../assets/backlog.svg";
 import ArchiveIcon from "../../../assets/archive.svg";
 import DashboardIcon from "../../../assets/dashboard.svg";
 import SupportIcon from "../../../assets/support.svg";
-import FinanceIcon from "../../../assets/finance.svg"
-import DownloadIcon from "../../../assets/download.svg"
-import AccountIcon from "../../../assets/account.svg"
+import FinanceIcon from "../../../assets/finance.svg";
+import DownloadIcon from "../../../assets/download.svg";
+import AccountIcon from "../../../assets/account.svg";
 import { Toaster } from '../toast/toaster';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import SignOutModal from '../signout-component/signout-modal';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingSidebar, setIsLoadingSidebar] = useState(true);
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
 
+
+  const { data: session, status } = useSession();
+  console.log(status)
   // Load sidebar state from local storage on component mount
   useEffect(() => {
     const storedState = localStorage.getItem('sidebar-collapsed');
     if (storedState) {
       setIsCollapsed(JSON.parse(storedState));
     }
-    setIsLoading(false); // Indicate loading is complete
+    setIsLoadingSidebar(false); // Indicate loading is complete
   }, []);
 
+  useEffect(() => {
+    if (status === 'loading') {
+      // Do nothing while loading
+      return;
+    }
+    if (!session) {
+      router.push('/account');
+    }
+  }, [session, status, router]);
+
+  // Render nothing or a loading indicator while checking auth status or loading sidebar state
+  if (status === 'loading' || isLoadingSidebar) {
+    return null;
+  }
+
+  // If user is not authenticated, do not render anything (router.push will handle redirection)
+  if (!session) {
+    return null;
+  }
+
+  // Sidebar toggle function
   const toggleSidebar = () => {
     const newCollapsedState = !isCollapsed;
     setIsCollapsed(newCollapsedState);
     localStorage.setItem('sidebar-collapsed', JSON.stringify(newCollapsedState));
   };
-
-  // Only render after loading is complete to prevent flickering
-  if (isLoading) {
-    return null;
-  }
 
   return (
     <div className={styles.layout}>
@@ -90,7 +113,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Link href="/finance">
               <Image 
                 src={FinanceIcon} 
-                alt="Backlog" 
+                alt="Finance" 
                 width={16} 
                 height={16}
                 className={pathname === '/finance' ? styles.activeIcon : ''}
@@ -120,43 +143,48 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className={styles.menuLabel}>OTHER</div>
           
           <ul className={styles.navLinks}>
-          <li>  {/* LOGIN/ACCOUNT BUTTON */}
-              <Link href="/account">
-              <Image 
-                src={AccountIcon} 
-                alt="Account" 
-                width="16" 
-                height="16"
-                className={pathname === '/account' ? styles.activeIcon : ''}
-              />
-              <span>Account</span>
-              </Link>
-          </li>
           <li>
-            <Link 
-              href="#"
-              onClick={(e) => {
-                e.preventDefault(); // Prevents navigation due to Link
-                const headers = ["Item,Part Number,Notes,QTY to Buy,Cost,Vendor,Link"];
-                const csvContent = headers.join("\n");
-                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.setAttribute("download", "Order_Template.csv");
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-              }}
-            >
-              <Image src={DownloadIcon} alt="Download" width={16} height={16} />
-              <span>Order Template</span>
-            </Link>
-          </li>
-
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowSignOutModal(true);
+                }}
+              >
+                <Image 
+                  src={AccountIcon} 
+                  alt="Account" 
+                  width={16} 
+                  height={16}
+                  className={pathname === '/account' ? styles.activeIcon : ''}
+                />
+                <span>Account</span>
+              </a>
+            </li>
+            <li>
+              <Link 
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault(); // Prevents navigation due to Link
+                  const headers = ["Item,Part Number,Notes,QTY to Buy,Cost,Vendor,Link"];
+                  const csvContent = headers.join("\n");
+                  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                  const link = document.createElement("a");
+                  link.href = URL.createObjectURL(blob);
+                  link.setAttribute("download", "Order_Template.csv");
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+              >
+                <Image src={DownloadIcon} alt="Download" width={16} height={16} />
+                <span>Order Template</span>
+              </Link>
+            </li>
             <li>
               <Link href="mailto:athulraj123@tamu.edu">
                 <Image src={SupportIcon} alt="Support" width={16} height={16} />
-                    <span>Support Center</span>
+                <span>Support Center</span>
               </Link>
             </li>
           </ul>
@@ -165,6 +193,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       
       <main className={styles.main}>
         {children}
+        {showSignOutModal && (
+          <SignOutModal onClose={() => setShowSignOutModal(false)} />
+        )}
         <Toaster />
       </main>
     </div>

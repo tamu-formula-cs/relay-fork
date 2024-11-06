@@ -1,0 +1,135 @@
+/* Main Container */
+.newMain {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Form Container */
+.formContainer {
+    background-color: white;
+    border-radius: 10px;
+    padding: 3rem;
+    box-shadow: 0px 0px 20px 10px rgba(0, 0, 0, 0.05);
+    width: 80%;
+    max-width: 600px;
+}
+
+/* Header */
+.heading {
+    font-size: 24px;
+    font-weight: normal;
+    margin-bottom: 2rem;
+    color: #000;
+    text-align: center;
+}
+
+/* Row Layout */
+.newRow {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+/* Input Group */
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    width: 48%;
+}
+
+.inputGroup label {
+    margin-bottom: 0.5rem;
+    font-weight: normal;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+/* Input Fields */
+.inputField {
+    padding: 0.75rem 1rem;
+    border: 1px solid #D4D4D4;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Poppins', sans-serif;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+.inputField::placeholder {
+    color: #7C7C7C;
+}
+
+.inputField:focus {
+    border-color: #7044F2;
+    outline: none;
+}
+
+/* Button */
+.button {
+    background-color: #7044F2;
+    color: #FFFFFF;
+    padding: 1rem 1.5rem;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: block;
+    margin: 1.5rem auto 0;
+}
+
+.button:hover {
+    background-color: #5936c4;
+}
+
+.button:disabled {
+    background-color: #A4A4A4;
+    cursor: not-allowed;
+}
+
+/* Error Message */
+.error {
+    color: #ff0000;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* Footer */
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background-color: #7044F2;
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+}
+
+.footerLogo {
+    display: flex;
+    align-items: center;
+    color: #FFFFFF;
+    transform: translateX(1.5rem);
+}
+
+.footerText {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.footerInfo {
+    font-size: 14px;
+    color: #FFFFFF;
+    font-weight: 400;
+    transform: translateX(-1.5rem);
+}
