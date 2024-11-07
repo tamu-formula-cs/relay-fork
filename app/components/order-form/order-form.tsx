@@ -2,13 +2,13 @@ import { useState, useRef } from 'react';
 import styles from './order-form.module.css';
 import CloseIcon from "../../../assets/close.svg"
 import Image from 'next/image';
+import { mutate } from 'swr';
 import { useToast } from '../toast/use-toast';
 import { upload } from '@vercel/blob/client';
 import { useSession } from 'next-auth/react';
 
 interface OrderFormProps {
     onClose: () => void;
-    fetchData: () => void;
 }
 
 interface OrderData {
@@ -27,7 +27,7 @@ interface OrderData {
     supportingDocs: { name: string; url: string }[];
 }
 
-export default function OrderForm({ onClose, fetchData }: OrderFormProps) {
+export default function OrderForm({ onClose }: OrderFormProps) {
     const { toast } = useToast();
     const { data: session } = useSession();
     const email = session?.user.email;
@@ -104,7 +104,7 @@ export default function OrderForm({ onClose, fetchData }: OrderFormProps) {
                     description: "Order created successfully!",
                     variant: "affirmation",
                 });
-                fetchData();
+                mutate('/api/orders');
                 onClose();
             } else {
                 const errorData = await response.json();
@@ -157,14 +157,12 @@ export default function OrderForm({ onClose, fetchData }: OrderFormProps) {
             orderData={orderData}
             onBack={() => setCurrentScreen(2)}
             onClose={onClose}
-            fetchData={fetchData}
         />,
         <SingleItemOrder
             key="single-item-order"
             orderData={orderData}
             onBack={() => setCurrentScreen(2)}
             onClose={onClose}
-            fetchData={fetchData}
         />,
     ];
 
@@ -447,10 +445,9 @@ interface CartLinkOrderProps {
     orderData: OrderData;
     onBack: () => void;
     onClose: () => void;
-    fetchData: () => void;
 }
 
-function CartLinkOrder({ orderData, onBack, onClose, fetchData }: CartLinkOrderProps) {
+function CartLinkOrder({ orderData, onBack, onClose }: CartLinkOrderProps) {
     const [cartLink, setCartLink] = useState('');
     const { data: session } = useSession();
     const email = session?.user.email;
@@ -489,7 +486,7 @@ function CartLinkOrder({ orderData, onBack, onClose, fetchData }: CartLinkOrderP
                     description: "Order created successfully!",
                     variant: "affirmation",
                 });
-                fetchData();
+                mutate('/api/orders');
                 onClose();
             } else {
                 const error = await response.json();
@@ -536,10 +533,9 @@ interface SingleItemOrderProps {
     orderData: OrderData;
     onBack: () => void;
     onClose: () => void;
-    fetchData: () => void;
 }
 
-function SingleItemOrder({ orderData, onBack, onClose, fetchData }: SingleItemOrderProps) {
+function SingleItemOrder({ orderData, onBack, onClose }: SingleItemOrderProps) {
     const [name, setName] = useState('');
     const [partNumber, setPartNumber] = useState('');
     const [quantity, setQuantity] = useState(1);
@@ -592,7 +588,7 @@ function SingleItemOrder({ orderData, onBack, onClose, fetchData }: SingleItemOr
                     description: "Order created successfully!",
                     variant: "affirmation",
                 });
-                fetchData();
+                mutate('/api/orders');
                 onClose();
             } else {
                 const error = await response.json();

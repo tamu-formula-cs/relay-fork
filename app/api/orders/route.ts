@@ -40,7 +40,9 @@ export async function GET() {
             costBreakdown: order.costBreakdown ? JSON.parse(JSON.stringify(order.costBreakdown)) : null,
         }));
 
-        return NextResponse.json({ orders: serializedOrders });
+        const response = NextResponse.json({ orders: serializedOrders });
+        response.headers.set('Cache-Control', 'no-store');
+        return response;
     } catch (error) {
         console.error('Error fetching orders:', error);
         return NextResponse.json({ error: 'Error fetching orders' }, { status: 500 });
