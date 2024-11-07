@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import styles from './order-table.module.css';
 import OrderForm from '../order-form/order-form';
 import { Item, ItemStatus, OrderStatus } from '@prisma/client';
@@ -9,7 +9,6 @@ import Settings from "../../../assets/settings.svg";
 import LinkIcon from "../../../assets/link.svg";
 import EmptyIcon from "../../../assets/empty.svg"
 import Image from 'next/image';
-import useSWR, { mutate } from 'swr';
 
 interface CostBreakdown {
     AERO: number;
@@ -73,8 +72,6 @@ export interface SerializedOrderWithRelations {
     }[];
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
-
 const OrderTable: React.FC = () => {
     const [expandedOrderIds, setExpandedOrderIds] = useState<number[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -85,9 +82,33 @@ const OrderTable: React.FC = () => {
 
     const currentUserSubteam = "Powertrain";
 
-    const { data, error } = useSWR('/api/orders', fetcher, { refreshInterval: 60000 });
+    const [orders, setOrders] = useState<SerializedOrderWithRelations[]>([]);
+    const [error, setError] = useState<Error | null>(null);
 
-    const orders = useMemo(() => (data?.orders as SerializedOrderWithRelations[] || []).filter(order => order.status !== 'ARCHIVED'), [data]);
+    const fetchData = async () => {
+        try {
+            const res = await fetch('/api/orders');
+            if (!res.ok) {
+                throw new Error('Failed to fetch orders');
+            }
+            const jsonData = await res.json();
+            setOrders(jsonData.orders);
+        } catch (err) {
+            console.error('Error fetching orders:', err);
+            setError(err as Error);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+        const interval = setInterval(fetchData, 60000);
+        return () => clearInterval(interval);
+    }, []);
+
+    // Function to update order in state when an order is placed or updated
+    const updateOrderInState = () => {
+        fetchData();
+    };
 
     const filteredOrders = useMemo(() => {
         if (searchQuery === '') {
@@ -126,10 +147,6 @@ const OrderTable: React.FC = () => {
         setShowSettingsMenu(false);
     };
 
-    const updateOrderInState = () => {
-        mutate('/api/orders');
-    };
-
     const toggleExpand = (orderId: number, orderItems: Item[], orderUrl: string | null) => {
         if (orderItems.length === 0 && orderUrl) {
             // Do nothing
@@ -145,10 +162,6 @@ const OrderTable: React.FC = () => {
 
     if (error) {
         return <div>Error loading orders.</div>;
-    }
-
-    if (!data) {
-        return <div>Loading orders...</div>;
     }
 
     const handleStatusClick = (event: React.MouseEvent, order : SerializedOrderWithRelations) => {
@@ -175,7 +188,7 @@ const OrderTable: React.FC = () => {
                     />
                     
                     <button
-                        className={styles.myOrdersButton}  // Add this style in CSS
+                        className={styles.myOrdersButton}
                         onClick={() => setSearchQuery(currentUserSubteam.toLowerCase())}
                     >
                         My Orders
@@ -189,7 +202,7 @@ const OrderTable: React.FC = () => {
                     </button>
                 </div>
             </div>
-            {showOrderForm && <OrderForm onClose={() => setShowOrderForm(false)} />}
+            {showOrderForm && <OrderForm onClose={() => setShowOrderForm(false)} fetchData={fetchData}/>}
             {showSettingsMenu && (
                 <SettingsMenu
                     order={selectedOrder}
