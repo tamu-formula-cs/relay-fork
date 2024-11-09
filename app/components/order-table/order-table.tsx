@@ -10,6 +10,7 @@ import LinkIcon from "../../../assets/link.svg";
 import EmptyIcon from "../../../assets/empty.svg"
 import Image from 'next/image';
 import useSWR, { mutate } from 'swr';
+import { useSession } from 'next-auth/react';
 
 interface CostBreakdown {
     AERO: number;
@@ -83,7 +84,8 @@ const OrderTable: React.FC = () => {
     const [selectedItem, setSelectedItem] = useState<Item | undefined>(undefined);
     const [showSettingsMenu, setShowSettingsMenu] = useState<boolean>(false);
 
-    const currentUserSubteam = "Powertrain";
+    const { data: session } = useSession();
+    const currentUserSubteam = session ? session?.user.subteam : "";
 
     const { data, error } = useSWR('/api/orders', fetcher, { refreshInterval: 60000 });
 

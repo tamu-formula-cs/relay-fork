@@ -23,6 +23,8 @@ interface OrderData {
         BAT: number;
         ECE: number;
         PT: number;
+        DBMS: number;
+        SW: number;
     };
     supportingDocs: { name: string; url: string }[];
 }
@@ -44,6 +46,8 @@ export default function OrderForm({ onClose }: OrderFormProps) {
             BAT: 0,
             ECE: 0,
             PT: 0,
+            DBMS: 0,
+            SW: 0
         },
         supportingDocs: [],
     });
@@ -361,7 +365,7 @@ function CostBreakdownScreen({ costBreakdown, onCostChange, onNext, onBack, onCl
                 </div>
                 <p className={styles.formParagraph}>Cost Breakdown (Must add up to 100%)</p>
                 <div className={styles.costBreakdownRow}>
-                    {['AERO', 'CHS', 'SUS', 'BAT', 'ECE', 'PT'].map((subteam) => (
+                    {['AERO', 'CHS', 'SUS', 'BAT', 'ECE', 'PT', 'DBMS', 'SW'].map((subteam) => (
                         <div key={subteam} className={styles.inputGroup}>
                             <label>Order Cost Percentage ({subteam})</label>
                             <input

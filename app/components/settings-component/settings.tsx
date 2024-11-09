@@ -39,6 +39,8 @@ const subteamMapping: { [key: string]: string } = {
     BAT: 'Battery',
     ECE: 'Electronics',
     PT: 'Powertrain',
+    DBMS: 'Distributed BMS',
+    SW: 'Software'
 };
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());

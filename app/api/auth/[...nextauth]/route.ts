@@ -24,6 +24,7 @@ const authOptions: NextAuthOptions = {
             name: true,
             email: true,
             password: true,
+            subteam: true,
           },
         });
 
@@ -43,6 +44,7 @@ const authOptions: NextAuthOptions = {
           id: String(user.id),
           name: user.name,
           email: user.email,
+          subteam: user.subteam
         };
       },
     }),
@@ -53,6 +55,7 @@ const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
+        token.subteam = user.subteam;
       }
       return token;
     },
@@ -62,6 +65,7 @@ const authOptions: NextAuthOptions = {
           id: token.id,
           name: token.name,
           email: token.email,
+          subteam: token.subteam as string
         };
       }
       return session;
