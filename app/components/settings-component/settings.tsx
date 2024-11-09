@@ -427,12 +427,13 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                         onChange={handleFileUpload}
                         />
 
+                    {order && 
                     <button
                             onClick={handleDeleteOrder}
                             className={`${styles.deleteOrderButton} ${styles.button}`}
                         >
-                            Delete Order
-                        </button>
+                        Delete Order
+                    </button>}
             </div>}
 
             <div className={styles.buttonGroup}>
