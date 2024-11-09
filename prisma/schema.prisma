@@ -65,7 +65,7 @@ enum OrderStatus {
 model Item {
   id              Int       @id @default(autoincrement())
   internalItemId  String    @unique
-  order           Order     @relation("OrderItems", fields: [orderId], references: [id])
+  order           Order     @relation("OrderItems", fields: [orderId], references: [id], onDelete: Cascade)
   orderId         Int
   name            String
   partNumber      String
@@ -92,9 +92,9 @@ enum ItemStatus {
 model Document {
   id         Int      @id @default(autoincrement())
   url        String
-  supportingOrder   Order?    @relation("SupportingDocs", fields: [supportingOrderId], references: [id])
+  supportingOrder   Order?    @relation("SupportingDocs", fields: [supportingOrderId], references: [id], onDelete: Cascade)
   supportingOrderId Int?
-  receiptOrder      Order?    @relation("Receipts", fields: [receiptOrderId], references: [id])
+  receiptOrder      Order?    @relation("Receipts", fields: [receiptOrderId], references: [id], onDelete: Cascade)
   receiptOrderId    Int?
   uploadedAt DateTime @default(now())
 }

@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import styles from './settings-menu.module.css';
 import { OrderStatus, ItemStatus, Item } from '@prisma/client';
+import { upload } from '@vercel/blob/client';
+import { useToast } from '../toast/use-toast';
 import CloseIcon from "../../../assets/close.svg";
 import Image from 'next/image';
 import useSWR from 'swr';
 import { SerializedOrderWithRelations } from '../order-table/order-table';
+import { useSession } from 'next-auth/react';
 
 interface SettingsMenuProps {
     order: SerializedOrderWithRelations | null;
@@ -42,6 +45,10 @@ const subteamMapping: { [key: string]: string } = {
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpdateOrder }) => {
+    const { data: session } = useSession();
+    const email = session?.user.email;
+    const admins = process.env.NEXT_PUBLIC_ADMINS?.split(",") || [];
+    const isAdmin = email ? admins.includes(email) : false;
     // Separate state variables for order and item status
     const [orderStatus, setOrderStatus] = useState<OrderStatus>(
         order ? order.status : OrderStatus.TO_ORDER
@@ -51,6 +58,10 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
     );
     const [price, setPrice] = useState(order ? order.totalCost : 0);
     const [priceEdited, setPriceEdited] = useState(false);
+
+    const [receipts, setReceipts] = useState<Document[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { toast } = useToast();
 
     const handleOrderStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setOrderStatus(e.target.value as OrderStatus);
@@ -69,6 +80,18 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
         order ? `/api/orders/${order.id}/documents` : null,
         fetcher
     );
+
+    const { data: receiptsData, mutate: mutateReceipts } = useSWR<Document[]>(
+        order ? `/api/orders/${order.id}/receipts` : null,
+        fetcher
+      );
+    
+      // Update receipts state when data changes
+      React.useEffect(() => {
+        if (receiptsData) {
+          setReceipts(receiptsData);
+        }
+      }, [receiptsData]);
 
     const handleSave = async () => {
         try {
@@ -106,6 +129,125 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
         onClose();
         } catch (error) {
         console.error('Error updating status:', error);
+        }
+    };
+
+    const handleAddReceipt = () => {
+        fileInputRef.current?.click();
+      };
+      
+      const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files && files.length > 0 && order) {
+          try {
+            for (let i = 0; i < files.length; i++) {
+              const file = files[i];
+              if (file.type !== 'application/pdf') {
+                toast({
+                  title: 'Invalid File Type',
+                  description: 'Only PDF files are allowed.',
+                  variant: 'destructive',
+                });
+                continue;
+              }
+      
+              const formData = new FormData();
+              formData.append('file', file);
+      
+              const response = await fetch(`/api/orders/addReceipt?orderId=${order.id}`, {
+                method: 'POST',
+                body: formData,
+              });
+      
+              if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error);
+              }
+      
+              const data = await response.json();
+              // Optionally, update receipts state here
+            }
+      
+            mutateReceipts();
+            toast({
+              title: 'Receipts Uploaded',
+              description: 'Receipts uploaded successfully.',
+              variant: 'affirmation',
+            });
+          } catch (error) {
+            console.error('Error uploading receipts:', error);
+            toast({
+              title: 'Upload Error',
+              description: 'An error occurred while uploading receipts.',
+              variant: 'destructive',
+            });
+          }
+        }
+      };
+
+      const handleDeleteReceipt = async (documentId: number) => {
+        try {
+          const response = await fetch(`/api/orders/deleteReceipt`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ documentId }),
+          });
+      
+          if (response.ok) {
+            mutateReceipts();
+            toast({
+              title: 'Receipt Deleted',
+              description: 'Receipt deleted successfully.',
+              variant: 'affirmation',
+            });
+          } else {
+            const errorData = await response.json();
+            throw new Error(errorData.error);
+          }
+        } catch (error) {
+          console.error('Error deleting receipt:', error);
+          toast({
+            title: 'Deletion Error',
+            description: 'An error occurred while deleting the receipt.',
+            variant: 'destructive',
+          });
+        }
+      };
+
+    const handleDeleteOrder = async () => {
+        if (order) {
+            try {
+                const confirmed = window.confirm(
+                    'Are you sure you want to delete this order? This action cannot be undone.'
+                );
+                if (!confirmed) return;
+
+                const response = await fetch(`/api/orders/delete`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderId: order.id }),
+                });
+
+                if (response.ok) {
+                    toast({
+                        title: 'Order Deleted',
+                        description: 'Order deleted successfully.',
+                        variant: 'affirmation',
+                    });
+                    onUpdateOrder();
+                    onClose();
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error);
+                }
+            } catch (error) {
+                console.error('Error deleting order:', error);
+                toast({
+                    title: 'Deletion Error',
+                    description: 'An error occurred while deleting the order.',
+                    variant: 'destructive',
+                });
+            }
         }
     };
 
@@ -152,7 +294,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                 )}
 
                 {supportingDocs && supportingDocs.length > 0 && (
-                <div className={styles.infoSection}>
+                <div className={styles.docSection}>
                     <h4 className={styles.infoLabel}>Supporting Documents:</h4>
                     <div className={styles.docsContainer}>
                     {supportingDocs.map((doc: Document, index: number) => (
@@ -168,6 +310,33 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                         </a>
                     ))}
                     </div>
+                </div>
+                )}
+
+                {receipts && receipts.length > 0 ? (
+                <div className={styles.receiptSection}>
+                    <h4 className={styles.infoLabel}>Receipts:</h4>
+                    <div className={styles.docsContainer}>
+                    {receipts.map((doc: Document) => (
+                        <div key={doc.id} className={styles.docItem}>
+                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className={styles.docLink}>
+                            <span className={styles.docIcon}>📄</span>
+                            <span className={styles.docName}>{doc.url.split('/').pop()}</span>
+                        </a>
+                        {
+                            isAdmin && 
+                            <button onClick={() => handleDeleteReceipt(doc.id)} className={styles.deleteButton}>
+                                Delete
+                            </button>
+                        }
+                        </div>
+                    ))}
+                    </div>
+                </div>
+                ) : (
+                <div className={styles.receiptSection}>
+                    <h4 className={styles.infoLabel}>Receipts:</h4>
+                    <p className={styles.infoText}>No receipts added yet.</p>
                 </div>
                 )}
             </div>
@@ -204,21 +373,24 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                     <label>Quantity:</label>
                     <p className={styles.infoText}>{item.quantity || 'N/A'}</p>
                 </div>
-                <div className={styles.inputGroup}>
-                    <label>Status:</label>
-                    <select value={itemStatus} onChange={handleItemStatusChange}>
-                    {Object.values(ItemStatus).map((option) => (
-                        <option key={option} value={option}>
-                        {option.toUpperCase()}
-                        </option>
-                    ))}
-                    </select>
-                </div>
+                {
+                    isAdmin && 
+                    <div className={styles.inputGroup}>
+                        <label>Status:</label>
+                        <select value={itemStatus} onChange={handleItemStatusChange}>
+                        {Object.values(ItemStatus).map((option) => (
+                            <option key={option} value={option}>
+                            {option.toUpperCase()}
+                            </option>
+                        ))}
+                        </select>
+                    </div>
+                }
                 </>
             )}
 
             {/* Display order status and price if an order is provided */}
-            {order && (
+            {order && isAdmin && (
                 <>
                 <div className={styles.inputGroup}>
                     <label>Status:</label>
@@ -242,6 +414,28 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                 </>
             )}
             </div>
+            
+            {isAdmin && 
+            <div className={styles.receiptButton}>
+                <button onClick={handleAddReceipt} className={`${styles.saveButton} ${styles.button}`}>
+                        Add Receipt
+                    </button>
+                    <input
+                        type="file"
+                        multiple
+                        accept="application/pdf"
+                        ref={fileInputRef}
+                        style={{ display: 'none' }}
+                        onChange={handleFileUpload}
+                        />
+
+                    <button
+                            onClick={handleDeleteOrder}
+                            className={`${styles.deleteOrderButton} ${styles.button}`}
+                        >
+                            Delete Order
+                        </button>
+            </div>}
 
             <div className={styles.buttonGroup}>
             <button onClick={onClose} className={`${styles.cancelButton} ${styles.button}`}>

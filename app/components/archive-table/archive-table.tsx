@@ -113,7 +113,7 @@ const ArchiveTable: React.FC = () => {
     if (!data) {
         return <div>Loading archived orders...</div>;
     }
-
+    
     return (
         <div className={styles.tableMainContainer}>
             <div className={styles.tableTop}>

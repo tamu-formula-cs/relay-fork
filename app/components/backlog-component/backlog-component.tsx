@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { SerializedOrderWithRelations } from '../order-table/order-table';
 import styles from './backlog-component.module.css';
 import useSWR, { mutate } from 'swr';
@@ -10,7 +10,7 @@ import { Item, ItemStatus, OrderStatus } from '@prisma/client';
 import CloseIcon from "../../../assets/close.svg"
 import EmptyIcon from "../../../assets/empty.svg"
 import { useToast } from '../toast/use-toast';
-
+import { useSession } from 'next-auth/react';
 
 interface Document {
     id: number;
@@ -32,6 +32,17 @@ const subteamMapping: { [key: string]: string } = {
 };
 
 const BacklogComponent: React.FC = () => {
+    const { data: session } = useSession();
+    const email = session?.user.email;
+    const admins = process.env.NEXT_PUBLIC_ADMINS?.split(",") || [];
+    const isAdmin = email ? admins.includes(email) : false;
+
+    useEffect(() => {
+        if (!isAdmin) {
+            window.location.href = '/';
+        }
+    }, []);
+    
     const { data, error } = useSWR('/api/orders', fetcher, { refreshInterval: 60000 });
     const { toast } = useToast();
 
@@ -150,6 +161,8 @@ const BacklogComponent: React.FC = () => {
     if (!data) {
         return <div>Loading orders...</div>;
     }
+
+    if (!isAdmin) return null;
 
     const MeenOrderIdModal: React.FC<{ onClose: () => void; onSubmit: (meenOrderId: string) => void; }> = ({ onClose, onSubmit }) => {
         const [meenOrderId, setMeenOrderId] = useState('');

@@ -57,6 +57,7 @@
 }
 
 .inputGroup label {
+    text-decoration: underline;
     margin-bottom: 0.5rem;
     font-weight: normal;
     color: #333;
@@ -151,12 +152,15 @@
     list-style-type: none;
     padding: 0;
     font-size: .9rem;
-    margin-bottom: 2rem;
 }
 
 .inputGroup p{
     margin: 0;
     font-size: 0.9rem;
+    color: #555;
+}
+
+li.breakdownItem{
     color: #555;
 }
 
@@ -169,6 +173,7 @@
     color: #333;
     font-size: .9rem;
     margin-bottom: 0;
+    text-decoration: underline;
 }
 
 .infoText {
@@ -216,4 +221,40 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 200px; /* Adjust max-width as needed */
+}
+
+.docItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+  
+.deleteButton {
+    background-color: transparent;
+    border: none;
+    color: #ff4d4f;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+  
+.deleteButton:hover {
+    color: #d9363e;
+}
+
+.deleteOrderButton {
+    background-color: #DE3C4B;
+    color: white;
+    margin-left: 1rem;
+}
+
+.deleteOrderButton:hover {
+    background-color: #d9363e;
+}
+
+.receiptButton {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 2rem;
+    gap: 1rem;
 }

@@ -26,9 +26,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [isLoadingSidebar, setIsLoadingSidebar] = useState(true);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
 
+  const { data: session } = useSession();
+  const email = session?.user.email;
+  const admins = process.env.NEXT_PUBLIC_ADMINS?.split(",") || [];
+  const isAdmin = email ? admins.includes(email) : false;
 
-  const { data: session, status } = useSession();
-  console.log(status)
   // Load sidebar state from local storage on component mount
   useEffect(() => {
     const storedState = localStorage.getItem('sidebar-collapsed');
@@ -97,18 +99,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <span>Dashboard</span>
             </Link>
           </li>
-          <li className={pathname === '/backlog' ? styles.active : ''}>
-            <Link href="/backlog">
-              <Image 
-                src={BacklogIcon} 
-                alt="Backlog" 
-                width={16} 
-                height={16}
-                className={pathname === '/backlog' ? styles.activeIcon : ''}
-              />
-              <span>Backlog</span>
-            </Link>
-          </li>
+          {
+            isAdmin &&
+            <li className={pathname === '/backlog' ? styles.active : ''}>
+              <Link href="/backlog">
+                <Image 
+                  src={BacklogIcon} 
+                  alt="Backlog" 
+                  width={16} 
+                  height={16}
+                  className={pathname === '/backlog' ? styles.activeIcon : ''}
+                />
+                <span>Backlog</span>
+              </Link>
+            </li>
+          }
           <li className={pathname === '/finance' ? styles.active : ''}>
             <Link href="/finance">
               <Image 
