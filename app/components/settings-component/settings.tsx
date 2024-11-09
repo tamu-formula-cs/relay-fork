@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 import styles from './settings-menu.module.css';
 import { OrderStatus, ItemStatus, Item } from '@prisma/client';
-import { upload } from '@vercel/blob/client';
 import { useToast } from '../toast/use-toast';
 import CloseIcon from "../../../assets/close.svg";
 import Image from 'next/image';
@@ -163,9 +162,6 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                 const errorData = await response.json();
                 throw new Error(errorData.error);
               }
-      
-              const data = await response.json();
-              // Optionally, update receipts state here
             }
       
             mutateReceipts();

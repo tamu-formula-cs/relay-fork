@@ -41,7 +41,7 @@ const BacklogComponent: React.FC = () => {
         if (!isAdmin) {
             window.location.href = '/';
         }
-    }, []);
+    }, [isAdmin]);
     
     const { data, error } = useSWR('/api/orders', fetcher, { refreshInterval: 60000 });
     const { toast } = useToast();

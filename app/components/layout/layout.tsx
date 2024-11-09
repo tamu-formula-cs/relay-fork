@@ -41,17 +41,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (status === 'loading') {
-      // Do nothing while loading
-      return;
-    }
     if (!session) {
       router.push('/account');
     }
-  }, [session, status, router]);
+  }, [session, router]);
 
   // Render nothing or a loading indicator while checking auth status or loading sidebar state
-  if (status === 'loading' || isLoadingSidebar) {
+  if (isLoadingSidebar) {
     return null;
   }
 
