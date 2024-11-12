@@ -5,7 +5,6 @@ import styles from './finance.module.css';
 import useSWR from 'swr';
 import { Bar, Pie } from 'react-chartjs-2';
 import 'chart.js/auto';
-import { LegendItem } from 'chart.js';
 import { Item } from '@prisma/client';
 
 // Enums based on your schema
@@ -106,19 +105,6 @@ const FinanceDashboard: React.FC = () => {
   };
 
   const overallBudget = 105000;
-
-  const subteamNameToAbbreviation: Record<string, string> = {
-    "AERODYNAMICS": "AERO",
-    "CHASSIS": "CHS",
-    "SUSPENSION": "SUS",
-    "BATTERY": "BAT",
-    "ELECTRONICS": "ECE",
-    "POWERTRAIN": "PT",
-    "SOFTWARE": "SW",
-    "DISTRIBUTED BMS": "DBMS",
-    "OPERATIONS": "OPS",
-    "UNKNOWN": "UNKNOWN",
-  };
 
   if (error) {
     return <div>Error loading finance data.</div>;
