@@ -85,14 +85,13 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
     const { data: receiptsData, mutate: mutateReceipts } = useSWR<Document[]>(
         order ? `/api/orders/${order.id}/receipts` : null,
         fetcher
-      );
+    );
     
-      // Update receipts state when data changes
-      React.useEffect(() => {
+    React.useEffect(() => {
         if (receiptsData) {
           setReceipts(receiptsData);
         }
-      }, [receiptsData]);
+    }, [receiptsData]);
 
     const handleSave = async () => {
         try {

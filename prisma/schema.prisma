@@ -12,7 +12,8 @@ model User {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
-  phone     String?   
+  phone     String? 
+  carrier   String?
   role      Role
   password  String
   subteam   String

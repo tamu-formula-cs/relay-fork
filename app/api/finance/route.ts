@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import prisma from '../../lib/prisma';
 
@@ -28,9 +30,14 @@ export async function GET() {
         createdAt: item.createdAt.toISOString(),
         updatedAt: item.updatedAt.toISOString(),
       })),
+      costBreakdown: order.costBreakdown
+        ? JSON.parse(JSON.stringify(order.costBreakdown))
+        : null,
     }));
 
-    return NextResponse.json({ orders: serializedOrders });
+    const response = NextResponse.json({ orders: serializedOrders });
+    response.headers.set('Cache-Control', 'no-store');
+    return response;
   } catch (error) {
     console.error('Error fetching orders:', error);
     return NextResponse.json({ error: 'Error fetching orders' }, { status: 500 });

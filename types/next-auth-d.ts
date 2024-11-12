@@ -5,12 +5,14 @@ declare module 'next-auth' {
         user: {
             id: string;
             subteam: string; // Add subteam to Session user
+            carrier: string;
         } & DefaultSession['user'];
     }
 
     interface User extends DefaultUser {
         id: string;
         subteam: string; // Add subteam to User
+        carrier: string;
     }
 }
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
+import { del } from '@vercel/blob';
 
 export async function DELETE(request: Request) {
   try {
@@ -12,16 +13,34 @@ export async function DELETE(request: Request) {
 
     const orderIdNum = Number(orderId);
 
-    // Start transaction
-    await prisma.$transaction([
-      // Delete related receipts
-      prisma.document.deleteMany({
-        where: { receiptOrderId: orderIdNum },
-      }),
+    // Fetch all documents (receipts and supporting documents) associated with the order
+    const documents = await prisma.document.findMany({
+      where: {
+        OR: [
+          { receiptOrderId: orderIdNum },
+          { supportingOrderId: orderIdNum },
+        ],
+      },
+    });
 
-      // Delete related supporting documents
+    // Extract URLs of the blobs
+    const urls = documents.map((doc) => doc.url);
+
+    // Delete blobs from Vercel Blob storage
+    if (urls.length > 0) {
+      await del(urls);
+    }
+
+    // Proceed to delete records from the database within a transaction
+    await prisma.$transaction([
+      // Delete related receipts and supporting documents
       prisma.document.deleteMany({
-        where: { supportingOrderId: orderIdNum },
+        where: {
+          OR: [
+            { receiptOrderId: orderIdNum },
+            { supportingOrderId: orderIdNum },
+          ],
+        },
       }),
 
       // Delete related items

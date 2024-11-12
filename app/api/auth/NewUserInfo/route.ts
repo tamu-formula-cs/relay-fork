@@ -3,7 +3,7 @@ import prisma from '../../../lib/prisma';
 import { hash } from 'bcryptjs';
 
 export async function POST(request: Request) {
-    const { email, name, role, subteam, phone, password } = await request.json();
+    const { email, name, role, subteam, phone, carrier, password } = await request.json();
     const auth_emails = (process.env.AUTHORIZED_EMAILS || "").split(',');
 
     if (!auth_emails.includes(email)) {
@@ -20,6 +20,7 @@ export async function POST(request: Request) {
             role,
             subteam,
             phone,
+            carrier,
             password: hashedPassword,
         },
         });

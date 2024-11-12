@@ -12,7 +12,7 @@ const roles = ["", "BUSINESS", "ENGINEER"];
 
 const subteamsByRole = {
   BUSINESS: ["", "FINANCE", "OPERATIONS"],
-  ENGINEER: ["", "AERODYNAMICS", "BATTERY", "CHASSIS", "DISTRIBUTED BMS", "ELECTRONICS", "POWERTRAIN", "SUSPENSION", "DISTRIBUTED BMS", "SOFTWARE"],
+  ENGINEER: ["", "AERODYNAMICS", "BATTERY", "CHASSIS","ELECTRONICS", "POWERTRAIN", "SUSPENSION", "DISTRIBUTED BMS", "SOFTWARE"],
 };
 
 const UserInfoForm: React.FC = () => {
@@ -22,9 +22,12 @@ const UserInfoForm: React.FC = () => {
   const [role, setRole] = useState("");
   const [subteam, setSubteam] = useState("");
   const [phone, setPhone] = useState("");
+  const [carrier, setCarrier] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const carriers = ["", "AT&T", "Verizon", "T-Mobile", "Sprint"];
 
   const router = useRouter();
 
@@ -58,7 +61,7 @@ const UserInfoForm: React.FC = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, name, role, subteam, phone, password }),
+        body: JSON.stringify({ email, name, role, subteam, phone, carrier, password }),
       });
 
       if (response.ok) {
@@ -176,16 +179,38 @@ const UserInfoForm: React.FC = () => {
           )}
         </div>
 
-        <div className={styles.inputGroup}>
-          <label>Phone Number:</label>
-          <input
-            type="text"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="Enter phone number"
-            required
-            className={styles.inputField}
-          />
+        <div className={styles.newRow}>
+          <div className={styles.inputGroup}>
+            <label>Phone Number:</label>
+            <input
+              type="text"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="Enter phone number"
+              required
+              className={styles.inputField}
+            />
+          </div>
+          
+          <div className={styles.inputGroup}>
+            <label>Cell Carrier:</label>
+            <select
+              value={carrier}
+              onChange={(e) => setCarrier(e.target.value)}
+              required
+              className={styles.inputField}
+            >
+              <option value="" disabled>
+                Select a carrier
+              </option>
+              {carriers.slice(1).map((carrierOption) => (
+                <option key={carrierOption} value={carrierOption}>
+                  {carrierOption}
+                </option>
+              ))}
+            </select>
+          </div>
+
         </div>
 
         <button

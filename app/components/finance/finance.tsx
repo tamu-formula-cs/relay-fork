@@ -80,8 +80,15 @@ interface FinanceData {
   orders: Order[];
 }
 
-const fetcher = (url: string): Promise<FinanceData> =>
-  fetch(url).then((res: Response) => res.json());
+const fetcher = async (url: string): Promise<FinanceData> => {
+  const res = await fetch(url, { cache: 'no-store' });
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || 'Error fetching data');
+  }
+  return res.json();
+};
+
 
 const FinanceDashboard: React.FC = () => {
   const { data, error } = useSWR<FinanceData>('/api/finance', fetcher);
@@ -90,12 +97,28 @@ const FinanceDashboard: React.FC = () => {
     AERO: 10000,
     CHS: 8000,
     SUS: 12000,
-    BAT: 35000,
+    BAT: 15000,
     ECE: 9000,
     PT: 11000,
+    SW: 10000,
+    DBMS: 10000,
+    OPS: 5000,
   };
 
-  const overallBudget = 505000;
+  const overallBudget = 105000;
+
+  const subteamNameToAbbreviation: Record<string, string> = {
+    "AERODYNAMICS": "AERO",
+    "CHASSIS": "CHS",
+    "SUSPENSION": "SUS",
+    "BATTERY": "BAT",
+    "ELECTRONICS": "ECE",
+    "POWERTRAIN": "PT",
+    "SOFTWARE": "SW",
+    "DISTRIBUTED BMS": "DBMS",
+    "OPERATIONS": "OPS",
+    "UNKNOWN": "UNKNOWN",
+  };
 
   if (error) {
     return <div>Error loading finance data.</div>;
@@ -107,24 +130,34 @@ const FinanceDashboard: React.FC = () => {
 
   const orders: Order[] = data.orders;
 
-  // Calculate total spending per subteam
   const subteamSpending = orders.reduce(
-    (acc: Record<string, number>, order: Order) => {
-      const subteam = order.subteam.toUpperCase();
-      acc[subteam] = (acc[subteam] || 0) + order.totalCost;
-      return acc;
-    },
-    {} as Record<string, number>
-  );
+  (acc: Record<string, number>, order: Order) => {
+    const costBreakdown = order.costBreakdown;
+    if (costBreakdown) {
+      for (const subteam in costBreakdown) {
+        const abbreviation = subteam.toUpperCase() as keyof CostBreakdown;
+        const percentage = costBreakdown[abbreviation];
+        const amount = (percentage / 100) * order.totalCost;
+        acc[abbreviation] = (acc[abbreviation] || 0) + amount;
+      }
+    } else {
+      // If there's no cost breakdown, assign to UNKNOWN
+      acc["UNKNOWN"] = (acc["UNKNOWN"] || 0) + order.totalCost;
+    }
+    return acc;
+  },
+  {} as Record<string, number>
+);
 
-  // Prepare data for the Total Spending by Subteam bar chart
   const subteamLabels = Object.keys(subteamBudgets);
   const subteamBudgetData = subteamLabels.map(
     (subteam) => subteamBudgets[subteam]
   );
-  const subteamSpentData = subteamLabels.map(
-    (subteam) => subteamSpending[subteam] || 0
-  );
+
+  const subteamSpentData = subteamLabels.map((subteam) => {
+    const spent = subteamSpending[subteam] || 0;
+    return spent;
+  });
 
   // Determine over-budget subteams
   const subteamOverBudget = subteamLabels.map((subteam, index) => {
@@ -249,7 +282,8 @@ const FinanceDashboard: React.FC = () => {
 
   // 8. Budget Remaining Amount
   const budgetRemainingAmount = overallBudget - totalSpent;
-
+  console.log("BUDGET" + subteamBudgetData)
+  console.log("SPENT" + subteamSpentData)
   return (
     <div className={styles.dashboardContainer}>
       <div className={styles.dashboardHeader}>
@@ -296,14 +330,7 @@ const FinanceDashboard: React.FC = () => {
                   },
                   plugins: {
                     legend: {
-                      position: 'bottom',
-                      labels: {
-                        color: '#4C4C4C',
-                        boxWidth: 12,
-                        boxHeight: 12,
-                        filter: (legendItem: LegendItem) =>
-                          legendItem.text === 'Budget',
-                      },
+                      display: false
                     },
                   },
                 }}

@@ -7,7 +7,8 @@ import { Item, ItemStatus, OrderStatus } from '@prisma/client';
 import SettingsMenu from '../settings-component/settings';
 import Settings from "../../../assets/settings.svg";
 import LinkIcon from "../../../assets/link.svg";
-import EmptyIcon from "../../../assets/empty.svg"
+import EmptyIcon from "../../../assets/empty.svg";
+import SortIcon from "../../../assets/sort.svg"
 import Image from 'next/image';
 import useSWR, { mutate } from 'swr';
 import { useSession } from 'next-auth/react';
@@ -83,6 +84,8 @@ const OrderTable: React.FC = () => {
     const [selectedOrder, setSelectedOrder] = useState<SerializedOrderWithRelations | null>(null);
     const [selectedItem, setSelectedItem] = useState<Item | undefined>(undefined);
     const [showSettingsMenu, setShowSettingsMenu] = useState<boolean>(false);
+    const [sortedColumn, setSortedColumn] = useState<string | null>(null);
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
     const { data: session } = useSession();
     const currentUserSubteam = session ? session?.user.subteam : "";
@@ -91,12 +94,23 @@ const OrderTable: React.FC = () => {
 
     const orders = useMemo(() => (data?.orders as SerializedOrderWithRelations[] || []).filter(order => order.status !== 'ARCHIVED'), [data]);
 
-    const filteredOrders = useMemo(() => {
-        if (searchQuery === '') {
-            return orders;
+    const handleSort = (column: string) => {
+        if (sortedColumn === column) {
+            // Toggle sort order if the same column is clicked
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
         } else {
+            // Set new column and default to ascending order
+            setSortedColumn(column);
+            setSortOrder('asc');
+        }
+    };
+
+    const filteredOrders = useMemo(() => {
+        let result = orders;
+
+        if (searchQuery !== '') {
             const query = searchQuery.toLowerCase();
-            return orders.filter((order) => {
+            result = result.filter((order) => {
                 return (
                     order.name.toLowerCase().includes(query) ||
                     order.vendor.toLowerCase().includes(query) ||
@@ -111,7 +125,28 @@ const OrderTable: React.FC = () => {
                 );
             });
         }
-    }, [orders, searchQuery]);
+
+        if (sortedColumn) {
+            result = result.slice().sort((a, b) => {
+                let aValue = 0;
+                let bValue = 0;
+                if (sortedColumn === 'datePlaced') {
+                    aValue = new Date(a.createdAt).getTime();
+                    bValue = new Date(b.createdAt).getTime();
+                } else if (sortedColumn === 'price') {
+                    aValue = a.totalCost;
+                    bValue = b.totalCost;
+                }
+                if (sortOrder === 'asc') {
+                    return aValue - bValue;
+                } else {
+                    return bValue - aValue;
+                }
+            });
+        }
+
+        return result;
+    }, [orders, searchQuery, sortedColumn, sortOrder]);
 
     const handleSettingsClick = (order: SerializedOrderWithRelations, item?: Item) => {
         if (item) {
@@ -177,7 +212,7 @@ const OrderTable: React.FC = () => {
                     />
                     
                     <button
-                        className={styles.myOrdersButton}  // Add this style in CSS
+                        className={styles.myOrdersButton}
                         onClick={() => setSearchQuery(currentUserSubteam.toLowerCase())}
                     >
                         My Orders
@@ -205,11 +240,35 @@ const OrderTable: React.FC = () => {
                     <thead className={styles.tableHeader}>
                         <tr>
                             <th className={`${styles.thText} ${styles.idColumn}`}>ID</th>
-                            <th className={`${styles.thText} ${styles.datePlacedColumn}`}>Date Placed</th>
+                            <th
+                                className={`${styles.thText} ${styles.datePlacedColumn} ${styles.sortableHeader}`}
+                                onClick={() => handleSort('datePlaced')}
+                            >
+                                <span>Date Placed</span>
+                                <Image
+                                    src={SortIcon.src}
+                                    height={10}
+                                    width={10}
+                                    alt="Sort Icon"
+                                    className={`${styles.sortIcon} ${sortedColumn === 'datePlaced' && sortOrder === 'desc' ? styles.desc : styles.asc}`}
+                                />
+                            </th>
                             <th className={`${styles.thText}`}>Name</th>
                             <th className={`${styles.thText} ${styles.vendorColumn}`}>Vendor</th>
                             <th className={`${styles.thText} ${styles.linkColumn}`}>Link</th>
-                            <th className={`${styles.thText} ${styles.priceColumn}`}>Price</th>
+                            <th
+                                className={`${styles.thText} ${styles.priceColumn} ${styles.sortableHeader}`}
+                                onClick={() => handleSort('price')}
+                            >
+                                <span>Price</span>
+                                <Image
+                                    src={SortIcon.src}
+                                    height={10}
+                                    width={10}
+                                    alt="Sort Icon"
+                                    className={`${styles.sortIcon} ${sortedColumn === 'price' && sortOrder === 'desc' ? styles.desc : styles.asc}`}
+                                />
+                            </th>
                             <th className={`${styles.thText} ${styles.statusColumn}`}>Status</th>
                             <th className={`${styles.thText} ${styles.subteamColumn}`}>Subteam</th>
                             <th className={`${styles.thText} ${styles.commentsColumnHeader} ${styles.commentsColumn}`}>Comments</th>
@@ -279,8 +338,20 @@ const OrderTable: React.FC = () => {
                                     >
                                         {order.status.toUpperCase()}
                                     </td>
-                                    <td className={`${styles.tdText} ${styles.textColumn}`}>
-                                        {order.user.subteam}
+                                    <td className={`${styles.tdText} ${styles.costBreakdownColumn}`}>
+                                        {order.costBreakdown ? (
+                                            <div className={styles.costBreakdownText}>
+                                                {Object.entries(order.costBreakdown)
+                                                    .filter(([, percentage]) => percentage > 0)
+                                                    .map(([subteam, percentage]) => (
+                                                        <div key={subteam} className={styles.breakdownItem}>
+                                                            {subteam}: {percentage}%
+                                                        </div>
+                                                    ))}
+                                            </div>
+                                        ) : (
+                                            'N/A'
+                                        )}
                                     </td>
                                     <td className={`${styles.tdText} ${styles.commentsColumn}`}>
                                         {order.comments || 'N/A'}

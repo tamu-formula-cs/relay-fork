@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap');
 
 .tableMainContainer {
     background-color: white;
@@ -43,6 +43,7 @@ h1.purchaseHeader{
     background-color: #F3F4F6;
     height: 4rem;
 }
+
 .tableHeader th:first-child {
     border-top-left-radius: 10px;
 }
@@ -50,7 +51,6 @@ h1.purchaseHeader{
 .tableHeader th:last-child {
     border-top-right-radius: 10px;
 }
-
 
 .searchBar {
     border: 1px solid #D4D4D4;
@@ -347,9 +347,9 @@ button.orderButton:hover{
 
 .myOrdersButton {
     margin-left: 1rem;
-    background-color: #F8F9FB; /* Light gray background */
-    color: #545360; /* Darker text color */
-    border: 1px solid #d8d9de; /* Slightly darker border */
+    background-color: #F8F9FB;
+    color: #545360;
+    border: 1px solid #d8d9de;
     border-radius: 10px;
     padding: 1rem 1.5rem;
     transition: background-color 0.3s ease, border-color 0.3s ease;
@@ -357,8 +357,8 @@ button.orderButton:hover{
 
 .myOrdersButton:hover {
     cursor: pointer;
-    background-color: #eceef2; /* Subtle hover color */
-    border-color: #d1d3d8; /* Subtle darker border on hover */
+    background-color: #eceef2;
+    border-color: #d1d3d8;
 }
 
 .emptyState {
@@ -379,4 +379,47 @@ button.orderButton:hover{
 
 .emptyState img {
     margin-bottom: 1rem;
+}
+
+.costBreakdownColumn {
+    text-align: center;
+}
+
+.costBreakdownText {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.breakdownItem {
+    margin-bottom: 0.5rem;
+    font-size: .9rem;
+    color: #5D5D5D;
+}
+
+/* Sorting Arrow Styles */
+.sortableHeader {
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.2s ease;
+}
+
+.sortableHeader:hover {
+    background-color: #F0F0F0;
+}
+
+.sortIcon {
+    transition: transform 0.2s ease;
+}
+
+.asc {
+    transform: translateX(.4rem) rotate(0deg);
+}
+
+.desc {
+    transform: translateX(.4rem) rotate(180deg);
+}
+
+.sortableHeader:hover {
+    background-color: #F0F0F0;
 }
