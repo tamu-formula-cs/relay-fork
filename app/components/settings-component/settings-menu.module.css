@@ -12,20 +12,19 @@
     z-index: 1000;
 }
 
-  /* Settings Menu Container */
-
+/* Settings Menu Container */
 .settingsMenu {
     background-color: white;
     border-radius: 10px;
-    padding: 3rem;
+    padding: 2rem;
     box-shadow: 0px 0px 20px 10px rgba(0, 0, 0, 0.05);
-    width: 20%;
-    max-width: 500px;
+    width: 800px; /* Adjust the width as needed */
+    max-width: 90%;
     font-family: 'Inter', sans-serif;
     margin-bottom: 1rem;
 }
 
-  /* Header */
+/* Header */
 .formHeader {
     display: flex;
     justify-content: space-between;
@@ -39,16 +38,24 @@
     font-size: 1.25rem;
 }
 
-  /* Input Group */
-
-.settingsGroup{
+/* Content Container */
+.contentContainer {
     display: flex;
-    flex-direction: column;
     justify-content: space-between;
     align-items: flex-start;
-    width: 100%;
 }
 
+/* Info Section */
+.infoSection {
+    flex: 1;
+    margin-right: 2rem;
+}
+
+.settingsGroup {
+    flex: 1;
+}
+
+/* Input Group */
 .inputGroup {
     display: flex;
     flex-direction: column;
@@ -76,8 +83,8 @@
     font-family: 'Inter', sans-serif;
 }
 
-.inputGroup input{
-    width: 50%;
+.inputGroup input, .inputGroup select {
+    width: 100%;
 }
 
 .inputGroup input::placeholder,
@@ -91,14 +98,15 @@
     outline: none;
 }
 
-  /* Button Group */
+/* Button Group */
 .buttonGroup {
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
+    margin-top: 2rem;
 }
 
-  /* Buttons */
+/* Buttons */
 .button {
     padding: 1rem 1.5rem;
     border-radius: 10px;
@@ -128,7 +136,7 @@
     background-color: #eaeaea;
 }
 
-  /* Close Button */
+/* Close Button */
 .closeButton {
     margin: 0;
     border: 1px solid #5D5D5D;
@@ -147,31 +155,28 @@
     opacity: 0.75;
 }
 
-
+/* Cost Breakdown List */
 .costBreakdownList {
     list-style-type: none;
     padding: 0;
-    font-size: .9rem;
+    font-size: 0.9rem;
 }
 
-.inputGroup p{
+li.breakdownItem {
+    color: #555;
+}
+
+.inputGroup p {
     margin: 0;
     font-size: 0.9rem;
     color: #555;
 }
 
-li.breakdownItem{
-    color: #555;
-}
-
-.infoSection {
-    margin-bottom: 2rem;
-}
-
+/* Info Labels and Text */
 .infoLabel {
     font-weight: normal;
     color: #333;
-    font-size: .9rem;
+    font-size: 0.9rem;
     margin-bottom: 0;
     text-decoration: underline;
 }
@@ -179,7 +184,7 @@ li.breakdownItem{
 .infoText {
     font-size: 0.9rem;
     color: #555;
-    margin-bottom: 0rem;
+    margin-bottom: 1rem;
 }
 
 .itemLink {
@@ -191,6 +196,7 @@ li.breakdownItem{
     color: #5938C4;
 }
 
+/* Documents Container */
 .docsContainer {
     display: flex;
     flex-direction: column;
@@ -220,7 +226,7 @@ li.breakdownItem{
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 200px; /* Adjust max-width as needed */
+    max-width: 200px;
 }
 
 .docItem {
@@ -228,8 +234,8 @@ li.breakdownItem{
     align-items: center;
     justify-content: space-between;
     margin-bottom: 0.5rem;
-  }
-  
+}
+
 .deleteButton {
     background-color: transparent;
     border: none;
@@ -237,7 +243,7 @@ li.breakdownItem{
     cursor: pointer;
     font-size: 0.9rem;
 }
-  
+
 .deleteButton:hover {
     color: #d9363e;
 }
@@ -255,6 +261,17 @@ li.breakdownItem{
 .receiptButton {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: 2rem;
+    margin-top: 2rem;
     gap: 1rem;
+}
+
+.numberInput,
+.textInput {
+    width: 100%;
+}
+
+.infoSection h4,
+.infoSection p,
+.infoSection ul {
+    margin-bottom: 1rem;
 }

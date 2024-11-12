@@ -2,8 +2,8 @@ import './globals.css';
 import Providers from './providers';
 
 export const metadata = {
-  title: 'Order Management System',
-  description: 'TAMU Formula Electric Order Management System',
+  title: 'Relay',
+  description: 'Relay - The TAMU Formula Electric Order Management System.',
 };
 
 export default function RootLayout({
