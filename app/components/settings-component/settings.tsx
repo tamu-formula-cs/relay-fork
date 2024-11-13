@@ -28,6 +28,7 @@ interface UpdateOrderBody {
     costVerified?: boolean;
     carrier?: string;
     trackingId?: string;
+    meenOrderId?: string;
 }
 
 interface UpdateItemBody {
@@ -51,7 +52,9 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
     const { data: session } = useSession();
     const email = session?.user.email;
     const admins = process.env.NEXT_PUBLIC_ADMINS?.split(",") || [];
+    const leads = process.env.NEXT_PUBLIC_LEADS?.split(",") || [];
     const isAdmin = email ? admins.includes(email) : false;
+    const isLead = email ? leads.includes(email) : false;
 
     const [orderStatus, setOrderStatus] = useState<OrderStatus>(
         order ? order.status : OrderStatus.TO_ORDER
@@ -68,6 +71,29 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
 
     const [carrier, setCarrier] = useState<string>(order?.carrier || '');
     const [trackingId, setTrackingId] = useState<string>(order?.trackingId || '');
+    const [meenOrderId, setMeenOrderId] = useState<string>(order?.meenOrderId || '');
+
+    const userSubteam = session?.user.subteam;
+    const [canDeleteOrder, setCanDeleteOrder] = useState(false);
+    console.log(session?.user.subteam)
+    console.log(order?.subteam)
+    console.log(canDeleteOrder)
+    useEffect(() => {
+        
+        if (order && isLead && userSubteam === order.subteam) {
+            const orderCreatedAt = new Date(order.createdAt);
+            const currentTime = new Date();
+    
+            // Define the time interval in milliseconds (e.g., 12 hours)
+            const timeInterval = 1 * 60 * 60 * 1000; // 1 hours in milliseconds
+            // For 5 seconds, you can set: const timeInterval = 5 * 1000;
+    
+            const timeDifference = currentTime.getTime() - orderCreatedAt.getTime();
+            if (timeDifference <= timeInterval) {
+                setCanDeleteOrder(true);
+            }
+        }
+    }, [order, isLead, userSubteam]);    
 
     const handleCarrierChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setCarrier(e.target.value);
@@ -122,7 +148,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                     onUpdateOrder();
                 }
             } else if (order) {
-                const body: UpdateOrderBody = { status: orderStatus, carrier, trackingId };
+                const body: UpdateOrderBody = { status: orderStatus, carrier, trackingId, meenOrderId };
                 if (priceEdited) {
                     body.totalCost = price;
                     body.costVerified = true;
@@ -420,6 +446,15 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                     </select>
                                 </div>
                                 <div className={styles.inputGroup}>
+                                    <label>MEEN Order ID:</label>
+                                    <input
+                                        type="text"
+                                        value={meenOrderId}
+                                        onChange={(e) => setMeenOrderId(e.target.value)}
+                                        className={styles.textInput}
+                                    />
+                                </div>
+                                <div className={styles.inputGroup}>
                                     <label>Price:</label>
                                     <input
                                         type="number"
@@ -452,19 +487,23 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                     </div>
                 </div>
 
-                {isAdmin && (
+                {(isAdmin || canDeleteOrder) && (
                     <div className={styles.receiptButton}>
-                        <button onClick={handleAddReceipt} className={`${styles.saveButton} ${styles.button}`}>
-                            Add Receipt
-                        </button>
-                        <input
-                            type="file"
-                            multiple
-                            accept="application/pdf"
-                            ref={fileInputRef}
-                            style={{ display: 'none' }}
-                            onChange={handleFileUpload}
-                        />
+                        {isAdmin && (
+                            <>
+                                <button onClick={handleAddReceipt} className={`${styles.saveButton} ${styles.button}`}>
+                                    Add Receipt
+                                </button>
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="application/pdf"
+                                    ref={fileInputRef}
+                                    style={{ display: 'none' }}
+                                    onChange={handleFileUpload}
+                                />
+                            </>
+                        )}
 
                         {order && (
                             <button
