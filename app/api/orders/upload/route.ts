@@ -5,10 +5,13 @@ import { ItemStatus, OrderStatus } from '@prisma/client';
 
 interface Record {
     Item: string;
+    'Part Number'?: string;
+    Notes?: string;
     'QTY to Buy': string;
     Cost: string;
     Vendor: string;
-    [key: string]: any;
+    Link?: string;
+    [key: string]: string | undefined;
 }
 
 export async function POST(request: NextRequest) {
@@ -52,9 +55,9 @@ export async function POST(request: NextRequest) {
 
     const content = await file.text();
 
-    let records;
+    let records: Record[];
     try {
-        const parsedData = parse(content, {
+        const parsedData: string[][] = parse(content, {
             columns: false,
             skip_empty_lines: true,
             relax_column_count: true, // Allows rows with fewer columns
@@ -78,8 +81,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Convert the rest of the data into records with headers
-        records = parsedData.map((row: any[]) => {
-            const record: any = {};
+        records = parsedData.map((row: string[]) => {
+            const record = {} as Record;
             headers.forEach((header: string, index: number) => {
                 record[header] = row[index];
             });
