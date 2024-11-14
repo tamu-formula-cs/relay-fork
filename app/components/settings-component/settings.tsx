@@ -85,7 +85,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
             const currentTime = new Date();
     
             // Define the time interval in milliseconds (e.g., 12 hours)
-            const timeInterval = 1 * 60 * 60 * 1000; // 1 hours in milliseconds
+            const timeInterval = 1 * 60 * 60 * 1000; // 1 hour in milliseconds
             // For 5 seconds, you can set: const timeInterval = 5 * 1000;
     
             const timeDifference = currentTime.getTime() - orderCreatedAt.getTime();
