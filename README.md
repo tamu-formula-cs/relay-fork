@@ -134,4 +134,4 @@ formula electric order management system
     }
     ```
 
-6. should be all good to go :)
+6. should be all good to go
