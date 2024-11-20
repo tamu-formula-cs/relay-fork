@@ -46,7 +46,7 @@ const subteamMapping: { [key: string]: string } = {
     ECE: 'Electronics',
     PT: 'Powertrain',
     DBMS: 'Distributed BMS',
-    SW: 'Software'
+    OPS: 'Operations'
 };
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -67,7 +67,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
         ECE: 0,
         PT: 0,
         DBMS: 0,
-        SW: 0,
+        OPS: 0,
         ...(order?.costBreakdown || {}),
     };
 
