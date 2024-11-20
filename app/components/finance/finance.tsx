@@ -93,18 +93,18 @@ const FinanceDashboard: React.FC = () => {
   const { data, error } = useSWR<FinanceData>('/api/finance', fetcher);
 
   const subteamBudgets: Record<string, number> = {
-    AERO: 10000,
-    CHS: 8000,
-    SUS: 12000,
-    BAT: 15000,
-    ECE: 9000,
-    PT: 11000,
-    SW: 10000,
-    DBMS: 10000,
-    OPS: 5000,
+    AERO: 6000,
+    CHS: 3000,
+    SUS: 12500,
+    BAT: 18000,
+    ECE: 3500,
+    PT: 19000,
+    SW: 0,
+    DBMS: 15000,
+    OPS: 13500,
   };
 
-  const overallBudget = 105000;
+  const overallBudget = 77000;
 
   if (error) {
     return <div>Error loading finance data.</div>;
