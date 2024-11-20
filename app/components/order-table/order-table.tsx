@@ -196,7 +196,7 @@ const OrderTable: React.FC = () => {
         } else if (order.carrier === "UPS" && order.trackingId) {
             window.open(`https://www.ups.com/track?loc=en_US&tracknum=${order.trackingId}&requester=WT/trackdetails`, '_blank');
         }
-    };    
+    };
 
     return (
         <div className={styles.tableMainContainer}>

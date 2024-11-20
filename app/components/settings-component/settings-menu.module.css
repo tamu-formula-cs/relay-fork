@@ -261,7 +261,6 @@ li.breakdownItem {
 .receiptButton {
     display: flex;
     justify-content: flex-end;
-    margin-top: 2rem;
     gap: 1rem;
 }
 
@@ -304,7 +303,7 @@ li.breakdownItem {
 }
 
 .textarea {
-    width: 80%;
+    width: 70%;
     padding: 1rem;
     border: 1px solid #D4D4D4;
     border-radius: 10px;
@@ -323,4 +322,81 @@ li.breakdownItem {
 .textarea:focus {
     border-color: #7044F2;
     outline: none;
+}
+
+.priceContainer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.checkboxLabel {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #333;
+    cursor: pointer;
+}
+
+.checkboxInput {
+    margin-left: 0.5rem;
+    cursor: pointer;
+}
+
+.numberInput {
+    flex-grow: 1;
+    padding: 1rem;
+    border: 1px solid #D4D4D4;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: #333;
+    background-color: #fff;
+    transition: border-color 0.3s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.numberInput:focus {
+    border-color: #7044F2;
+    outline: none;
+}
+
+.costBreakdownList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.9rem;
+}
+
+.breakdownItem {
+    display: flex;
+    align-items: center;
+    width: calc(50% - 1rem);
+}
+
+.breakdownLabel {
+    width: 100px;
+    font-weight: normal;
+    color: #333;
+}
+
+.breakdownInput {
+    width: 50px;
+    padding: 0.25rem;
+    margin-left: 0.5rem;
+    border: 1px solid #D4D4D4;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    color: #333;
+    background-color: #fff;
+    transition: border-color 0.3s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.breakdownInput:focus {
+    border-color: #7044F2;
+    outline: none;
+}
+
+h4.orderName{
+    margin-top: 0;
 }

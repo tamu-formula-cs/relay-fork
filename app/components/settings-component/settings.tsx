@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import styles from './settings-menu.module.css';
-import { OrderStatus, ItemStatus, Item } from '@prisma/client';
+import { OrderStatus, ItemStatus, Item, Order } from '@prisma/client';
 import { useToast } from '../toast/use-toast';
 import CloseIcon from "../../../assets/close.svg";
 import Image from 'next/image';
@@ -31,6 +31,7 @@ interface UpdateOrderBody {
     trackingId?: string;
     meenOrderId?: string;
     comments?: string;
+    costBreakdown?: { [key: string]: number };
 }
 
 interface UpdateItemBody {
@@ -58,6 +59,20 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
     const isAdmin = email ? admins.includes(email) : false;
     const isLead = email ? leads.includes(email) : false;
 
+    const initialCostBreakdown = {
+        AERO: 0,
+        CHS: 0,
+        SUS: 0,
+        BAT: 0,
+        ECE: 0,
+        PT: 0,
+        DBMS: 0,
+        SW: 0,
+        ...(order?.costBreakdown || {}),
+    };
+
+    const [costBreakdown, setCostBreakdown] = useState<{ [key: string]: number }>(initialCostBreakdown);
+
     const [orderStatus, setOrderStatus] = useState<OrderStatus>(
         order ? order.status : OrderStatus.TO_ORDER
     );
@@ -75,12 +90,10 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
     const [carrier, setCarrier] = useState<string>(order?.carrier || '');
     const [trackingId, setTrackingId] = useState<string>(order?.trackingId || '');
     const [meenOrderId, setMeenOrderId] = useState<string>(order?.meenOrderId || '');
-
+    const [isPriceVerified, setIsPriceVerified] = useState(order ? order.costVerified : false);
+    
     const userSubteam = session?.user.subteam;
     const [canDeleteOrder, setCanDeleteOrder] = useState(false);
-    console.log(session?.user.subteam)
-    console.log(order?.subteam)
-    console.log(canDeleteOrder)
     useEffect(() => {
         
         if (order && isLead && userSubteam === order.subteam) {
@@ -98,6 +111,24 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
         }
     }, [order, isLead, userSubteam]);    
 
+    useEffect(() => {
+        if (order) {
+            const updatedCostBreakdown = {
+                AERO: 0,
+                CHS: 0,
+                SUS: 0,
+                BAT: 0,
+                ECE: 0,
+                PT: 0,
+                DBMS: 0,
+                SW: 0,
+                ...(order.costBreakdown || {}),
+            };
+            setCostBreakdown(updatedCostBreakdown);
+        }
+    }, [order]);
+
+    
     const handleCarrierChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setCarrier(e.target.value);
     };
@@ -151,11 +182,27 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                     onUpdateOrder();
                 }
             } else if (order) {
+                if (isAdmin) {
+                    const totalPercentage = Object.values(costBreakdown).reduce((a, b) => a + b, 0);
+                    if (totalPercentage !== 100) {
+                        toast({
+                            title: "Invalid Cost Breakdown",
+                            description: "Cost breakdown percentages must add up to 100%",
+                            variant: "destructive",
+                        });
+                        return;
+                    }
+                }
                 const body: UpdateOrderBody = { status: orderStatus, carrier, trackingId, meenOrderId, comments, };
                 if (priceEdited) {
                     body.totalCost = price;
-                    body.costVerified = true;
                 }
+                body.costVerified = isPriceVerified;
+
+                if (isAdmin) {
+                    body.costBreakdown = costBreakdown;
+                }
+
                 const response = await fetch(`/api/orders/update/${order.id}`, {
                     method: 'PUT',
                     headers: {
@@ -350,34 +397,43 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                     {/* Display additional information for the order */}
                     {!item && order && (
                         <div className={styles.infoSection}>
-                            <h4 className={styles.infoLabel}>Order Name:</h4>
+                            <h4 className={`${styles.infoLabel} ${styles.orderName}`}>Order Name:</h4>
                             <p className={styles.infoText}>{order.name}</p>
 
                             <h4 className={styles.infoLabel}>Placed By:</h4>
                             <p className={styles.infoText}>{order.user.name}</p>
 
-                            {order.comments && (
-                                <>
-                                    <h4 className={styles.infoLabel}>Comments:</h4>
-                                    <p className={styles.infoText}>{order.comments}</p>
-                                </>
-                            )}
-
                             {/* Cost Breakdown Section */}
+                            {isAdmin &&
+                            <>
                             <h4 className={styles.infoLabel}>Cost Breakdown:</h4>
-                            {order.costBreakdown ? (
-                                <ul className={styles.costBreakdownList}>
-                                    {Object.entries(order.costBreakdown)
-                                        .filter(([, percentage]) => percentage > 0)
-                                        .map(([subteam, percentage]) => (
-                                            <li key={subteam} className={styles.breakdownItem}>
-                                                {subteamMapping[subteam] || subteam}: {percentage}%
-                                            </li>
-                                        ))}
-                                </ul>
-                            ) : (
-                                <p className={styles.infoText}>N/A</p>
-                            )}
+                            <div className={styles.costBreakdownList}>
+                                {Object.keys(subteamMapping).map((subteam) => (
+                                    <div key={subteam} className={styles.breakdownItem}>
+                                        <label className={styles.breakdownLabel}>
+                                            {subteamMapping[subteam] || subteam}:
+                                        </label>
+                                        {isAdmin ? (
+                                            <input
+                                                type="number"
+                                                className={styles.breakdownInput}
+                                                value={costBreakdown[subteam]}
+                                                onChange={(e) => {
+                                                    const value = parseFloat(e.target.value) || 0;
+                                                    setCostBreakdown((prev) => ({
+                                                        ...prev,
+                                                        [subteam]: value,
+                                                    }));
+                                                }}
+                                            />
+                                        ) : (
+                                            <span>{costBreakdown[subteam]}%</span>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            </>
+                            }
 
                             {supportingDocs && supportingDocs.length > 0 && (
                                 <div className={styles.docSection}>
@@ -521,14 +577,26 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                         className={styles.textInput}
                                     />
                                 </div>
+
                                 <div className={styles.inputGroup}>
                                     <label>Price:</label>
-                                    <input
-                                        type="number"
-                                        value={price}
-                                        onChange={handlePriceChange}
-                                        className={styles.numberInput}
-                                    />
+                                    <div className={styles.priceContainer}>
+                                        <input
+                                            type="number"
+                                            value={price}
+                                            onChange={handlePriceChange}
+                                            className={styles.numberInput}
+                                        />
+                                        <label className={styles.checkboxLabel}>
+                                            Verify Price
+                                            <input
+                                                type="checkbox"
+                                                checked={isPriceVerified}
+                                                onChange={(e) => setIsPriceVerified(e.target.checked)}
+                                                className={styles.checkboxInput}
+                                            />
+                                        </label>
+                                    </div>
                                 </div>
 
                                 <div className={styles.inputGroup}>
