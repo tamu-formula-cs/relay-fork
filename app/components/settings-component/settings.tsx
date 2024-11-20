@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import styles from './settings-menu.module.css';
-import { OrderStatus, ItemStatus, Item, Order } from '@prisma/client';
+import { OrderStatus, ItemStatus, Item } from '@prisma/client';
 import { useToast } from '../toast/use-toast';
 import CloseIcon from "../../../assets/close.svg";
 import Image from 'next/image';
