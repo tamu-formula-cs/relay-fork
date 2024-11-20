@@ -275,3 +275,52 @@ li.breakdownItem {
 .infoSection ul {
     margin-bottom: 1rem;
 }
+
+.settingsButtonGroup{
+    display: flex;
+}
+
+.downloadButton {
+    margin: 0;
+    margin-right: 0.5rem;
+    border: 1px solid #5D5D5D;
+    padding: 0.5rem 0.5rem;
+    background-color: transparent;
+    border-radius: 5px;
+    color: #5D5D5D;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.downloadButton:hover {
+    cursor: pointer;
+    opacity: 0.75;
+}
+
+.commentSection {
+    margin-top: 1rem;
+}
+
+.textarea {
+    width: 80%;
+    padding: 1rem;
+    border: 1px solid #D4D4D4;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: #333;
+    background-color: #fff;
+    transition: border-color 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    resize: none;
+}
+
+.textarea::placeholder {
+    color: #7C7C7C;
+}
+
+.textarea:focus {
+    border-color: #7044F2;
+    outline: none;
+}

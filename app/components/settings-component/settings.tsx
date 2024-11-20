@@ -7,6 +7,7 @@ import Image from 'next/image';
 import useSWR from 'swr';
 import { SerializedOrderWithRelations } from '../order-table/order-table';
 import { useSession } from 'next-auth/react';
+import DownloadIcon from "../../../assets/file_download.svg"
 
 interface SettingsMenuProps {
     order: SerializedOrderWithRelations | null;
@@ -29,6 +30,7 @@ interface UpdateOrderBody {
     carrier?: string;
     trackingId?: string;
     meenOrderId?: string;
+    comments?: string;
 }
 
 interface UpdateItemBody {
@@ -68,6 +70,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
     const [receipts, setReceipts] = useState<Document[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
+    const [comments, setComments] = useState(order?.comments || '');
 
     const [carrier, setCarrier] = useState<string>(order?.carrier || '');
     const [trackingId, setTrackingId] = useState<string>(order?.trackingId || '');
@@ -148,7 +151,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                     onUpdateOrder();
                 }
             } else if (order) {
-                const body: UpdateOrderBody = { status: orderStatus, carrier, trackingId, meenOrderId };
+                const body: UpdateOrderBody = { status: orderStatus, carrier, trackingId, meenOrderId, comments, };
                 if (priceEdited) {
                     body.totalCost = price;
                     body.costVerified = true;
@@ -287,14 +290,60 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
         }
     };
 
+    const handleDownloadCSV = () => {
+        if (order && order.items && order.items.length > 0) {
+            // Reconstruct CSV data
+            const headers = ['Item', 'Part Number', 'Notes', 'QTY to Buy', 'Cost', 'Vendor', 'Link'];
+
+            const escapeCSVField = (field: string) => {
+                if (field == null) {
+                    return '';
+                }
+                if (field.includes(',') || field.includes('"') || field.includes('\n')) {
+                    return `"${field.replace(/"/g, '""')}"`;
+                }
+                return field;
+            };
+
+            const rows = order.items.map((item) => [
+                escapeCSVField(item.name || ''),
+                escapeCSVField(item.partNumber || ''),
+                escapeCSVField(item.notes || ''),
+                escapeCSVField(item.quantity.toString()),
+                escapeCSVField(item.price.toString()),
+                escapeCSVField(item.vendor || ''),
+                escapeCSVField(item.link || ''),
+            ]);
+
+            const csvContent = [headers, ...rows].map((row) => row.join(',')).join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.setAttribute('download', `${order.name}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    };
+
     return (
         <div className={styles.overlay}>
             <div className={styles.settingsMenu}>
                 <div className={styles.formHeader}>
                     <h3 className={styles.formTitle}>Settings</h3>
-                    <button className={styles.closeButton} onClick={onClose}>
-                        <Image src={CloseIcon.src} height={10} width={10} alt='close' />
-                    </button>
+                    <div className={styles.settingsButtonGroup}>
+                        {order && !order.url && order.items && order.items.length > 0 && (
+                            <button className={styles.downloadButton} onClick={handleDownloadCSV}>
+                                <Image src={DownloadIcon.src} height={10} width={10} alt='download' />
+                            </button>
+                        )}
+                        <button className={styles.closeButton} onClick={onClose}>
+                            <Image src={CloseIcon.src} height={10} width={10} alt='close' />
+                        </button>
+                    </div>
                 </div>
 
                 <div className={styles.contentContainer}>
@@ -383,6 +432,19 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                     <p className={styles.infoText}>No receipts added yet.</p>
                                 </div>
                             )}
+
+                            {order && (isAdmin || (session?.user.subteam === order.subteam)) && (
+                                <div className={styles.commentSection}>
+                                    <h4 className={styles.infoLabel}>Comments:</h4>
+                                    <textarea
+                                        value={comments}
+                                        onChange={(e) => setComments(e.target.value)}
+                                        className={styles.textarea}
+                                        rows={4}
+                                    />
+                                </div>
+                            )}
+
                         </div>
                     )}
 
@@ -417,6 +479,11 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                     <label>Quantity:</label>
                                     <p className={styles.infoText}>{item.quantity || 'N/A'}</p>
                                 </div>
+                                {item.notes && 
+                                <div className={styles.inputGroup}>
+                                    <label>Notes:</label>
+                                    <p className={styles.infoText}>{item.notes}</p>
+                                </div>}
                                 {isAdmin && (
                                     <div className={styles.inputGroup}>
                                         <label>Status:</label>

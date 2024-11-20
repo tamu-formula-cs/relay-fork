@@ -160,7 +160,7 @@ const ArchiveTable: React.FC = () => {
                                     className={styles.order}
                                 >
                                     <td className={`${styles.tdText} ${styles.idColumn}`}>
-                                        #{order.id}
+                                        #{order.meenOrderId}
                                     </td>
                                     <td className={`${styles.tdText} ${styles.textColumn}`}>
                                         {new Date(order.createdAt).toLocaleDateString()}
