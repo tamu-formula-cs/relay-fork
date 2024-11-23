@@ -90,7 +90,7 @@ export async function POST(req: Request) {
                 from: process.env.EMAIL_USER, // sender email
                 to: `${orderPlacer?.phone}${carrier_domain[orderPlacer?.carrier]}`, // recipient email-to-sms
                 subject: `You have a delivery!`,
-                text: `You have order(s) to be picked up. - FSAE EV`,
+                text: `You have an order(s) to be picked up. View your orders: https://relay.tamuformulaelectric.com/backlog. - FSAE EV`,
             };
 
             try {
