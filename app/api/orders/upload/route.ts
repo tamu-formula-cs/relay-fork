@@ -96,7 +96,17 @@ export async function POST(request: NextRequest) {
     // Filter out empty or invalid records
     records = records.filter((record: Record) => {
         const { Item, 'QTY to Buy': qtyToBuy, Cost, Vendor } = record;
-        return Item && qtyToBuy && Cost && Vendor;
+    
+        // Attempt to parse quantity and cost
+        const quantity = parseInt(qtyToBuy, 10);
+        const sanitizedCost = Cost ? Cost.replace(/[^0-9.-]+/g, '') : '';
+        const price = parseFloat(sanitizedCost);
+    
+        // Filter out records with missing fields or invalid numbers
+        return (
+            Item && qtyToBuy && Cost && Vendor && 
+            !isNaN(quantity) && !isNaN(price)
+        );
     });
 
     const itemsData = [];
