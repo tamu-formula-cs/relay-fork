@@ -11,6 +11,7 @@ import Image from 'next/image';
 import { SerializedOrderWithRelations } from '../order-table/order-table';
 import useSWR, { mutate } from 'swr';
 
+
 const fetcher = async (url: string) => {
     const res = await fetch(url);
     const data = await res.json();
@@ -34,6 +35,17 @@ const fetcher = async (url: string) => {
   
     return { orders };
   };
+
+  const subteamMapping: { [key: string]: string } = {
+    AERO: 'Aerodynamics',
+    CHS: 'Chassis',
+    SUS: 'Suspension',
+    BAT: 'Battery',
+    ECE: 'Electronics',
+    PT: 'Powertrain',
+    DBMS: 'Distributed BMS',
+    OPS: 'Operations',
+};
   
 
 const ArchiveTable: React.FC = () => {
@@ -53,12 +65,30 @@ const ArchiveTable: React.FC = () => {
         } else {
             const query = searchQuery.toLowerCase();
             return orders.filter((order) => {
+                // Get subteams involved in the cost breakdown
+                const involvedSubteams = Object.keys(order.costBreakdown || {}).filter(
+                    (subteam) => (order.costBreakdown![subteam] || 0) > 0
+                );
+    
+                // Map subteam acronyms to full names
+                const subteamNames = involvedSubteams.map((acronym) => ({
+                    acronym: acronym.toLowerCase(),
+                    fullName: (subteamMapping[acronym] || '').toLowerCase(),
+                }));
+    
+                // Check if the query matches any subteam acronym or full name
+                const matchesCostBreakdown = subteamNames.some(
+                    ({ acronym, fullName }) =>
+                        acronym.includes(query) || fullName.includes(query)
+                );
+    
                 return (
                     order.name.toLowerCase().includes(query) ||
                     order.vendor.toLowerCase().includes(query) ||
                     order.status.toLowerCase().includes(query) ||
                     order.user.subteam.toLowerCase().includes(query) ||
                     (order.comments && order.comments.toLowerCase().includes(query)) ||
+                    matchesCostBreakdown ||
                     order.items.some((item) =>
                         item.name.toLowerCase().includes(query) ||
                         item.vendor.toLowerCase().includes(query) ||
