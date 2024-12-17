@@ -105,3 +105,33 @@ formula electric order management system
 
 6. now login should work :)
 
+## setup email notifications
+
+1. put the sender account email in the .env
+    - EMAIL_USER="..."
+
+2. login to google account settings (https://myaccount.google.com/)
+
+3. search for "app passwords" and then create new app password
+    - enter info blah blah, it will give you a 16 character password. put this in .env w/ the spaces
+    - EMAIL_PASS="..."
+
+4. put the website base url in the .env
+    - ex. "http://localhost:3000" for local testing
+    - NEXT_PUBLIC_BASE_URL="..."
+
+5. to automate the hourly texts, add cron job in vercel.json
+    - locate/create vercel.json (in root directory)
+    - add the following:
+    ``` 
+    {
+        "cron": [
+            {
+                "path": "/api/orders/sendText",
+                "schedule": "0 * * * *"
+            }
+        ]
+    }
+    ```
+
+6. should be all good to go
