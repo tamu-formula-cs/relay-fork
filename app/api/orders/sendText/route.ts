@@ -54,6 +54,10 @@ export async function POST() {
             },
         });
 
+        deliveredOrders.forEach(order => {
+            console.log(`Order ID: ${order.id}, Name: ${order.name}, Notified: ${order.notified}, UserID: ${order.userId}`);
+        });
+
         const transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 587, // assumes unsecure connection  
@@ -74,51 +78,53 @@ export async function POST() {
 
         // for each unique id, send the text
 
-        uniqueIds.forEach(async (userId) => {
+        for (const userId of uniqueIds) {
             const orderPlacer = await prisma.user.findUnique({
-                where: {
-                    id: userId,
-                },
+              where: {
+                id: userId,
+              },
             });
-        
-            // Ensure orderPlacer exists and required fields are not null
+          
             if (!orderPlacer || !orderPlacer.phone || !orderPlacer.carrier) {
-                console.warn(`User with ID ${userId} has missing phone or carrier information.`);
-                return; // Skip sending email-to-sms if critical information is missing
+              console.warn(`User with ID ${userId} has missing phone or carrier information.`);
+              continue; 
             }
-        
+            
+            console.log(`Sending notification to User: ${orderPlacer.name} (ID: ${userId}), Phone: ${orderPlacer.phone}, Carrier: ${orderPlacer.carrier}`);
+
             const carrierEmailDomain = carrier_domain[orderPlacer.carrier as keyof typeof carrier_domain];
             if (!carrierEmailDomain) {
-                console.warn(`Carrier "${orderPlacer.carrier}" is not supported.`);
-                return; // Skip if the carrier is not supported
+              console.warn(`Carrier "${orderPlacer.carrier}" is not supported.`);
+              continue;
             }
-
-            const cleanedPhone = orderPlacer.phone.replace(/\D/g, ''); // Remove non-numeric characters
+          
+            const cleanedPhone = orderPlacer.phone.replace(/\D/g, ''); 
             const recipientEmail = `${cleanedPhone}${carrierEmailDomain}`;
-            
+          
             const mailOptions = {
-                from: process.env.EMAIL_USER, // sender email
-                to: recipientEmail, // recipient email-to-sms
-                subject: `You have a delivery!`,
-                text: `Your order is ready to be picked up. View details: https://relay.tamuformulaelectric.com/backlog. - FSAE EV`,
+              from: process.env.EMAIL_USER, 
+              to: recipientEmail, 
+              subject: `You have a delivery!`,
+              text: `Your order is ready to be picked up. View details: https://relay.tamuformulaelectric.com/backlog. - FSAE EV`,
             };
-        
+          
             try {
-                await transporter.sendMail(mailOptions);
-
-                await prisma.order.updateMany({
-                    where: {
-                        userId: userId,
-                        status: OrderStatus.DELIVERED,
-                        notified: false,
-                    },
-                    data: { notified: true },
-                });
-
+              await transporter.sendMail(mailOptions);
+              console.log(`Notification sent to User ID: ${userId}, Email-to-SMS: ${recipientEmail}`);
+              await prisma.order.updateMany({
+                where: {
+                  userId: userId,
+                  status: OrderStatus.DELIVERED,
+                  notified: false,
+                },
+                data: { notified: true },
+              });
+              console.log(`Orders for User ID: ${userId} have been marked as notified.`);
             } catch (error) {
-                console.error('Error sending email:', error);
+              console.error('Error sending email:', error);
             }
-        });
+          }
+          
     } catch (error) {
         console.error(error);
     }
