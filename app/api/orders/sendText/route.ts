@@ -42,7 +42,7 @@ const carrier_domain = {
   "TracFone" : "@txt.att.net"
 };
 
-export async function POST(req: Request) {
+export async function POST() {
 
     // get all the orders that are now delivered and updated in the last hour
 
@@ -128,6 +128,6 @@ export async function POST(req: Request) {
     } catch (error) {
         console.error(error);
     }
-    
+
     return new Response(JSON.stringify({ message: "Email sent successfully" }), { status: 200 });
 }
