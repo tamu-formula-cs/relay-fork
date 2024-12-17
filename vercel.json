@@ -1,8 +1,0 @@
-{
-    "crons": [
-        {
-            "path": "/api/orders/sendText",
-            "schedule": "29 19 * * *"
-        }
-    ]
-}
