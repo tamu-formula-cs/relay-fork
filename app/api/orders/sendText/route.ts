@@ -56,6 +56,7 @@ export async function POST(req: Request) {
                 updatedAt: {
                     gte: timeOffset,
                 },
+                notified: false
             },
         });
 
@@ -85,19 +86,43 @@ export async function POST(req: Request) {
                     id: userId,
                 },
             });
+        
+            // Ensure orderPlacer exists and required fields are not null
+            if (!orderPlacer || !orderPlacer.phone || !orderPlacer.carrier) {
+                console.warn(`User with ID ${userId} has missing phone or carrier information.`);
+                return; // Skip sending email-to-sms if critical information is missing
+            }
+        
+            const carrierEmailDomain = carrier_domain[orderPlacer.carrier as keyof typeof carrier_domain];
+            if (!carrierEmailDomain) {
+                console.warn(`Carrier "${orderPlacer.carrier}" is not supported.`);
+                return; // Skip if the carrier is not supported
+            }
 
+            const cleanedPhone = orderPlacer.phone.replace(/\D/g, ''); // Remove non-numeric characters
+            const recipientEmail = `${cleanedPhone}${carrierEmailDomain}`;
+            
             const mailOptions = {
                 from: process.env.EMAIL_USER, // sender email
-                to: `${orderPlacer?.phone}${carrier_domain[orderPlacer?.carrier]}`, // recipient email-to-sms
+                to: recipientEmail, // recipient email-to-sms
                 subject: `You have a delivery!`,
-                text: `You have an order(s) to be picked up. View your orders: https://relay.tamuformulaelectric.com/backlog. - FSAE EV`,
+                text: `Your order is ready to be picked up. View details: https://relay.tamuformulaelectric.com/backlog. - FSAE EV`,
             };
-
+        
             try {
                 await transporter.sendMail(mailOptions);
+
+                await prisma.order.updateMany({
+                    where: {
+                        userId: userId,
+                        status: OrderStatus.DELIVERED,
+                        notified: false,
+                    },
+                    data: { notified: true },
+                });
+
             } catch (error) {
                 console.error('Error sending email:', error);
-                return new Response(JSON.stringify({ error: 'Failed to send email' }), { status: 500 });
             }
         });
 

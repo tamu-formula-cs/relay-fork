@@ -51,6 +51,7 @@ model Order {
   items            Item[]    @relation("OrderItems")
   supportingDocs   Document[] @relation("SupportingDocs")
   receipts         Document[] @relation("Receipts")
+  notified         Boolean   @default(false)
 }
 
 enum OrderStatus {
