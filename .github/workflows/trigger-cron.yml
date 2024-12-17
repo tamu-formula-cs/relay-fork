@@ -2,7 +2,7 @@ name: Trigger SendText Endpoint
 
 on:
   schedule:
-    - cron: "50 19 * * *" # Runs at 1:50 PM CST (7:50 PM UTC)
+    - cron: "9 20 * * *" # Runs at 2:09 PM CST
 
 jobs:
   trigger-endpoint:
