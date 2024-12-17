@@ -46,16 +46,10 @@ export async function POST() {
 
     // get all the orders that are now delivered and updated in the last hour
 
-    const timeOffset = new Date();
-    timeOffset.setHours(timeOffset.getHours() - 1);
-
     try {
         const deliveredOrders = await prisma.order.findMany({
             where: {
                 status: OrderStatus.DELIVERED,
-                updatedAt: {
-                    gte: timeOffset,
-                },
                 notified: false
             },
         });
