@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { gmail_v1, google } from 'googleapis';
 import { NextRequest, NextResponse } from 'next/server';
 import { OAuth2Client } from 'google-auth-library';
