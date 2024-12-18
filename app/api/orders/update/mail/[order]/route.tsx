@@ -67,10 +67,10 @@ export async function PUT(
       where: { id: orderId },
       data: {
         status: newOrderStatus,
-        totalCost: totalCost !== undefined ? totalCost : undefined,
-        costVerified: costVerified !== undefined ? costVerified : undefined,
-        carrier: carrier !== undefined ? carrier.toUpperCase() : undefined,
-        trackingId: trackingId !== undefined ? trackingId : undefined,
+        totalCost: totalCost !== null ? totalCost : undefined,
+        costVerified: costVerified !== null ? costVerified : undefined,
+        carrier: carrier !== null ? carrier.toUpperCase() : undefined,
+        trackingId: trackingId !== null ? trackingId : undefined,
       },
     });
 
