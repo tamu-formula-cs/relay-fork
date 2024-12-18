@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import prisma from './prisma';
-import { upload } from '@vercel/blob/client';
+import { put } from '@vercel/blob';
 
 const CREDENTIALS_URL = process.env.CREDENTIALS_BLOB_URL;
 
@@ -14,20 +14,19 @@ export async function getTokenUrlFromDB(): Promise<string | null> {
 async function saveTokenToBlob(token: object) {
     try {
         // Convert token object to a string for upload
-        const { url } = await upload("token", JSON.stringify(token), {
+        const blob = await put("token", JSON.stringify(token), {
             access: 'public',
-            handleUploadUrl: 'api/auth/refreshToken'
         });
 
-        if (!url) {
+        if (!blob.url) {
             throw new Error(`Failed to save token.`);
         }
         console.log('Token updated in blob storage');
         
         await prisma.token.upsert({
-            where: { id: 1},
-            create: { url },
-            update: { url }
+            where: { id: 1 },
+            create: { url: blob.url },
+            update: { url: blob.url }
         });
     } catch (error) {
         console.error('Error saving token to blob:', error);
