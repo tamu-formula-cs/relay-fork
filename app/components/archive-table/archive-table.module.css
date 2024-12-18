@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 .tableMainContainer {
     background-color: white;
@@ -27,18 +27,17 @@ h1.purchaseHeader{
     overflow-x: auto;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    -webkit-overflow-scrolling: touch;
+    justify-content: center;
 }
 
 .tableBody {
-    /* Removed fixed layout and allow large min-width */
-    min-width: 1500px;
+    width: 95%;
     border-collapse: separate;
     background-color: white;
     border: 1px solid #F2F2F2;
     border-radius: 10px;
-    /* Removed table-layout: fixed; to prevent truncation */
+    table-layout: fixed;
+    overflow: hidden;
 }
 
 .tableHeader th:first-child {
@@ -54,6 +53,7 @@ h1.purchaseHeader{
     background-color: #F3F4F6;
     height: 4rem;
 }
+
 
 .searchBar {
     border: 1px solid #D4D4D4;
@@ -92,17 +92,20 @@ button.orderButton:hover{
     text-align: center;
     vertical-align: middle;
     padding: 10px;
-    /* Remove ellipsis and allow scrolling */
     white-space: nowrap;
-    overflow: visible;
-    font-size: .9rem;
-    color: #5D5D5D;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
 }
 
 .thText{
     color: #4C4C4C;
     font-weight: normal;
     font-size: .9rem;
+}
+
+.tableBody .column {
+    width: 11.11%;
 }
 
 .tableBody .commentsColumn, .commentsColumnHeader {
@@ -190,6 +193,7 @@ button.orderButton:hover{
     border-radius: 5px;
 }
 
+/* Item Status */
 .itemStatusDelivered {
     font-size: .9rem;
     padding: 1rem;
@@ -237,7 +241,6 @@ button.orderButton:hover{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    white-space: normal; /* Allow wrapping inside expanded items */
 }
 
 .expandedOrderContent h4{
@@ -249,7 +252,6 @@ button.orderButton:hover{
 
 .expandedOrderContent p{
     font-size: .9rem;
-    color: #5D5D5D;
 }
 
 .itemRightCol{
@@ -269,6 +271,7 @@ button.orderButton:hover{
     width: 40px;
 }
 
+/* Settings Cell in Table Body */
 .settingsCell {
     text-align: center;
 }
@@ -284,10 +287,12 @@ button.orderButton:hover{
     opacity: 0.7;
 }
 
+/* Adjusting Item Status Font Size */
 .itemStatusText {
     font-size: 0.7rem;
 }
 
+/* Positioning Settings Button in Item */
 .itemRightCol {
     display: flex;
     align-items: center;

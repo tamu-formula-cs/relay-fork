@@ -26,18 +26,17 @@ h1.purchaseHeader {
     overflow-x: auto;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    -webkit-overflow-scrolling: touch;
+    justify-content: center;
 }
 
-/* Make the table much wider to force horizontal scroll */
 .tableBody {
-    min-width: 1500px; /* Increase this value if you need even more horizontal space */
+    width: 100%;
     border-collapse: separate;
     background-color: white;
     border: 1px solid #F2F2F2;
     border-radius: 10px;
-    /* Removed table-layout: fixed; so columns can adjust their width */
+    table-layout: fixed;
+    overflow: hidden;
 }
 
 .tableHeader th:first-child {
@@ -57,17 +56,21 @@ h1.purchaseHeader {
     text-align: center;
     vertical-align: middle;
     padding: 10px;
-    /* Remove truncation and ellipsis */
     white-space: nowrap;
-    overflow: visible;
-    color: #5D5D5D;
-    font-size: .9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
 }
 
 .thText {
     color: #4C4C4C;
     font-weight: normal;
     font-size: .9rem;
+}
+
+.tdText {
+    font-size: .9rem;
+    color: #5D5D5D;
 }
 
 .nameColumn {
@@ -105,7 +108,6 @@ h1.purchaseHeader {
     border-radius: 5px;
     padding: 0.5rem 1rem;
     cursor: pointer;
-    font-size: 0.9rem;
 }
 
 .markOrderButton:hover, .markItemButton:hover {
@@ -127,18 +129,18 @@ h1.purchaseHeader {
     justify-content: space-between;
     align-items: center;
     font-size: .9rem;
-    white-space: normal; /* Items can wrap within expanded view */
 }
 
-a.itemNameLink {
+a.itemNameLink{
     color: #7044F2;
 }
 
-a.itemNameLink:hover {
+a.itemNameLink:hover{
     color: #5936C5;
 }
 
 .expandedOrderContent h4 {
+    text-overflow: ellipsis;
     font-weight: normal;
     text-decoration: underline;
     font-size: .9rem;
@@ -156,14 +158,14 @@ a.itemNameLink:hover {
     align-items: center;
 }
 
-.placedItemRightCol {
+.placedItemRightCol{
     display: flex;
     flex-direction: column;
     height: 100%;
     justify-content: flex-end;
 }
 
-.placedItemRightCol p {
+.placedItemRightCol p{
     margin: 0.2rem 0;
     color: #5D5D5D;
 }
@@ -172,7 +174,6 @@ a.itemNameLink:hover {
     font-size: 0.7rem;
 }
 
-/* Status Styles */
 .itemStatusDelivered {
     color: #44CF6C;
     border: 1px solid #44CF6C;
@@ -209,18 +210,30 @@ a.itemNameLink:hover {
     margin-right: 1rem;
 }
 
-/* Remove fixed widths so columns can size themselves */
-.datePlacedColumn,
-.vendorColumn,
-.linkColumn,
-.priceColumn,
-.subteamColumn,
-.statusColumn,
-.documentsColumn {
-    width: auto;
+.datePlacedColumn {
+    width: 12.5%;
 }
 
-/* Remove overflow hidden so no ellipsis occurs */
+.vendorColumn {
+    width: 10%;
+}
+
+.linkColumn {
+    width: 5%;
+}
+
+.priceColumn {
+    width: 10%;
+}
+
+.subteamColumn {
+    width: 10%;
+}
+
+.statusColumn {
+    width: 10px;
+}
+
 .costBreakdownColumn {
     text-align: center;
 }
@@ -237,7 +250,6 @@ a.itemNameLink:hover {
     color: #5D5D5D;
 }
 
-/* Order Status Styles */
 .orderStatusToOrder {
     font-size: .9rem;
     padding: 0.5rem;
@@ -274,22 +286,20 @@ a.itemNameLink:hover {
     border-radius: 5px;
 }
 
-.orderStatusPartial {
+.orderStatusPartial{
     color: #A790A5;
     border: 1px solid #A790A5;
     background-color: rgba(167, 144, 165, 0.05);
     border-radius: 5px;
     padding: 0.5rem;
-    font-size: .9rem;
 }
 
-.orderStatusDelivered {
+.orderStatusDelivered{
     color: #44CF6C;
     border: 1px solid #44CF6C;
     background-color: rgba(68, 207, 108, 0.05);
     border-radius: 5px;
     padding: 0.5rem;
-    font-size: .9rem;
 }
 
 .emptyState {
@@ -312,23 +322,32 @@ a.itemNameLink:hover {
     margin-bottom: 1rem;
 }
 
+
+/* Add styles for the documents column */
+.documentsColumn {
+    width: 12.5%; /* Adjust the width to fit your layout */
+    text-align: center;
+}
+
+/* Style for the documents container */
 .docsContainer {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
+/* Style for each document link */
 .docLink {
     display: flex;
     align-items: center;
     margin: 0.2rem 0;
     text-decoration: none;
-    color: #7044F2;
-    font-size: 0.9rem;
+    color: #7044F2; /* Match your link color */
+    font-size: 0.9rem; /* Match existing font size */
 }
 
 .docLink:hover {
-    color: #5936C5;
+    color: #5936C5; /* Hover effect */
 }
 
 .docIcon {
@@ -339,7 +358,7 @@ a.itemNameLink:hover {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100px;
+    max-width: 100px; /* Adjust as needed */
 }
 
 /* Overlay styles */
@@ -368,6 +387,7 @@ a.itemNameLink:hover {
     margin-bottom: 1rem;
 }
 
+/* Header */
 .formHeader {
     display: flex;
     justify-content: space-between;
