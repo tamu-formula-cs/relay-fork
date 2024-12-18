@@ -45,8 +45,8 @@ export async function POST(req: NextRequest) {
         console.log('data:', data);
         console.log('notification:', notification);
 
-        const processResponse = await fetch(`/api/notifications/process`, {
-            method: 'POST',
+        const processResponse = await fetch(`https://relay.tamuformulaelectric.com/api/notifications/process`, {
+            method: 'POST', 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ historyId: notification.historyId }),
         });
