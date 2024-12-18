@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import styles from './order-table.module.css';
 import OrderForm from '../order-form/order-form';
 import { Item, ItemStatus, OrderStatus } from '@prisma/client';
@@ -78,6 +78,15 @@ export interface SerializedOrderWithRelations {
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const OrderTable: React.FC = () => {
+
+    useEffect(() => {
+        const eventSource = new EventSource('/api/notifications');
+        eventSource.onmessage = (event) => {
+            const updatedOrder = JSON.parse(event.data);
+            console.log('Order updated:', updatedOrder);
+        };
+    })
+    
     const [expandedOrderIds, setExpandedOrderIds] = useState<number[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [showOrderForm, setShowOrderForm] = useState(false);
