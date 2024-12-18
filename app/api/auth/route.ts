@@ -1,20 +1,18 @@
-import fs from 'fs';
-import path from 'path';
 import { google } from 'googleapis';
 import { NextResponse } from 'next/server';
+import { loadCredentials } from '../../lib/google-auth';
 
 const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/pubsub'];
-const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
 
-async function loadCredentials() {
-  try {
-    const content = fs.readFileSync(CREDENTIALS_PATH, 'utf-8');
-    return JSON.parse(content);
-  } catch (error) {
-    console.error('Error loading credentials:', error);
-    throw new Error('Failed to load credentials');
-  }
-}
+// async function loadCredentials() {
+//   try {
+//     const content = fs.readFileSync(CREDENTIALS_PATH, 'utf-8');
+//     return JSON.parse(content);
+//   } catch (error) {
+//     console.error('Error loading credentials:', error);
+//     throw new Error('Failed to load credentials');
+//   }
+// }
 
 async function authorize() {
   const credentials = await loadCredentials();
