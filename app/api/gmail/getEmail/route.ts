@@ -74,7 +74,7 @@ async function extractEmailData(
   return { body, attachments };
 }
 
-export async function fetchEmails(
+async function fetchEmails(
   auth: OAuth2Client,
   historyId: string
 ): Promise<CompleteEmailData[]> {
