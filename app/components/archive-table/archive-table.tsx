@@ -14,27 +14,34 @@ import useSWR, { mutate } from 'swr';
 const fetcher = async (url: string) => {
     const res = await fetch(url);
     const data = await res.json();
-  
-    // Process data.orders to convert date strings to Date objects
     const orders = data.orders.map((order: SerializedOrderWithRelations) => ({
-      ...order,
-      createdAt: new Date(order.createdAt),
-      updatedAt: new Date(order.updatedAt),
-      items: order.items.map((item) => ({
-        ...item,
-        createdAt: new Date(item.createdAt),
-        updatedAt: new Date(item.updatedAt),
-      })),
-      user: {
-        ...order.user,
-        createdAt: new Date(order.user.createdAt),
-        updatedAt: new Date(order.user.updatedAt),
-      },
+        ...order,
+        createdAt: new Date(order.createdAt),
+        updatedAt: new Date(order.updatedAt),
+        items: order.items.map((item) => ({
+            ...item,
+            createdAt: new Date(item.createdAt),
+            updatedAt: new Date(item.updatedAt),
+        })),
+        user: {
+            ...order.user,
+            createdAt: new Date(order.user.createdAt),
+            updatedAt: new Date(order.user.updatedAt),
+        },
     }));
-  
     return { orders };
-  };
-  
+};
+
+const subteamMapping: { [key: string]: string } = {
+    AERO: 'Aerodynamics',
+    CHS: 'Chassis',
+    SUS: 'Suspension',
+    BAT: 'Battery',
+    ECE: 'Electronics',
+    PT: 'Powertrain',
+    DBMS: 'Distributed BMS',
+    OPS: 'Operations',
+};
 
 const ArchiveTable: React.FC = () => {
     const [expandedOrderIds, setExpandedOrderIds] = useState<number[]>([]);
@@ -45,7 +52,7 @@ const ArchiveTable: React.FC = () => {
 
     const { data, error } = useSWR('/api/orders/archived', fetcher, { refreshInterval: 60000 });
 
-    const orders = useMemo(() => data?.orders as SerializedOrderWithRelations[] || [], [data]);  
+    const orders = useMemo(() => data?.orders as SerializedOrderWithRelations[] || [], [data]);
 
     const filteredOrders = useMemo(() => {
         if (searchQuery === '') {
@@ -53,12 +60,27 @@ const ArchiveTable: React.FC = () => {
         } else {
             const query = searchQuery.toLowerCase();
             return orders.filter((order) => {
+                const involvedSubteams = Object.keys(order.costBreakdown || {}).filter(
+                    (subteam) => (order.costBreakdown![subteam] || 0) > 0
+                );
+
+                const subteamNames = involvedSubteams.map((acronym) => ({
+                    acronym: acronym.toLowerCase(),
+                    fullName: (subteamMapping[acronym] || '').toLowerCase(),
+                }));
+
+                const matchesCostBreakdown = subteamNames.some(
+                    ({ acronym, fullName }) =>
+                        acronym.includes(query) || fullName.includes(query)
+                );
+
                 return (
                     order.name.toLowerCase().includes(query) ||
                     order.vendor.toLowerCase().includes(query) ||
                     order.status.toLowerCase().includes(query) ||
                     order.user.subteam.toLowerCase().includes(query) ||
                     (order.comments && order.comments.toLowerCase().includes(query)) ||
+                    matchesCostBreakdown ||
                     order.items.some((item) =>
                         item.name.toLowerCase().includes(query) ||
                         item.vendor.toLowerCase().includes(query) ||
@@ -85,25 +107,19 @@ const ArchiveTable: React.FC = () => {
     };
 
     const updateOrderInState = () => {
-        // Re-fetch data after update
         mutate('/api/orders/archived');
     };
 
     const toggleExpand = (orderId: number, orderItems: SerializedOrderWithRelations['items'], orderUrl: string | null) => {
         if (orderItems.length === 0 && orderUrl) {
-            // Do nothing
+            return;
         } else if (orderItems.length > 0) {
-            // If there are items, toggle the expansion
             setExpandedOrderIds((prev) =>
                 prev.includes(orderId)
                     ? prev.filter((id) => id !== orderId)
                     : [...prev, orderId]
             );
         }
-    };
-
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(e.target.value);
     };
 
     if (error) {
@@ -113,7 +129,7 @@ const ArchiveTable: React.FC = () => {
     if (!data) {
         return <div>Loading archived orders...</div>;
     }
-    
+
     return (
         <div className={styles.tableMainContainer}>
             <div className={styles.tableTop}>
@@ -123,7 +139,7 @@ const ArchiveTable: React.FC = () => {
                         type="text"
                         placeholder="Search..."
                         value={searchQuery}
-                        onChange={handleSearch}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         className={styles.searchBar}
                     />
                 </div>
@@ -147,7 +163,7 @@ const ArchiveTable: React.FC = () => {
                             <th className={`${styles.thText} ${styles.linkColumn}`}>Link</th>
                             <th className={`${styles.thText} ${styles.priceColumn}`}>Price</th>
                             <th className={`${styles.thText} ${styles.statusColumn}`}>Status</th>
-                            <th className={`${styles.thText} ${styles.subteamColumn}`}>Subteam</th>
+                            <th className={`${styles.thText} ${styles.costBreakdownColumn}`}>Subteam</th>
                             <th className={`${styles.thText} ${styles.commentsColumnHeader} ${styles.commentsColumn}`}>Comments</th>
                             <th className={`${styles.settingsCellHeader} ${styles.settingsColumn}`}></th>
                         </tr>
@@ -160,7 +176,7 @@ const ArchiveTable: React.FC = () => {
                                     className={styles.order}
                                 >
                                     <td className={`${styles.tdText} ${styles.idColumn}`}>
-                                        #{order.id}
+                                        #{order.meenOrderId}
                                     </td>
                                     <td className={`${styles.tdText} ${styles.textColumn}`}>
                                         {new Date(order.createdAt).toLocaleDateString()}
@@ -206,8 +222,20 @@ const ArchiveTable: React.FC = () => {
                                     >
                                         {order.status.toUpperCase()}
                                     </td>
-                                    <td className={`${styles.tdText} ${styles.textColumn}`}>
-                                        {order.user.subteam}
+                                    <td className={`${styles.tdText} ${styles.costBreakdownColumn}`}>
+                                        {order.costBreakdown ? (
+                                            <div className={styles.costBreakdownText}>
+                                                {Object.entries(order.costBreakdown)
+                                                    .filter(([, percentage]) => percentage > 0)
+                                                    .map(([subteam, percentage]) => (
+                                                        <div key={subteam} className={styles.breakdownItem}>
+                                                            {subteam}: {percentage}%
+                                                        </div>
+                                                    ))}
+                                            </div>
+                                        ) : (
+                                            'N/A'
+                                        )}
                                     </td>
                                     <td className={`${styles.tdText} ${styles.commentsColumn}`}>
                                         {order.comments || 'N/A'}
@@ -288,3 +316,5 @@ const ArchiveTable: React.FC = () => {
 };
 
 export default ArchiveTable;
+
+// "schedule": "0 15 * * *"

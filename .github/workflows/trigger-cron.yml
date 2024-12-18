@@ -1,0 +1,13 @@
+name: Trigger SendText Endpoint
+
+on:
+  schedule:
+    - cron: "0 * * * *" # Runs every hour
+
+jobs:
+  trigger-endpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send HTTP POST request to endpoint
+        run: |
+          curl -X POST https://relay.tamuformulaelectric.com/api/orders/sendText

@@ -43,7 +43,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   const orderId = Number(params.id);
-  const { status: statusString, totalCost, costVerified, carrier, trackingId } = await request.json();
+  const { status: statusString, totalCost, costVerified, carrier, trackingId, meenOrderId, comments, costBreakdown, } = await request.json();
   const newOrderStatus = statusString as OrderStatus;
 
   try {
@@ -70,6 +70,9 @@ export async function PUT(
         costVerified: costVerified !== undefined ? costVerified : undefined,
         carrier: carrier !== undefined ? carrier : undefined,
         trackingId: trackingId !== undefined ? trackingId : undefined,
+        meenOrderId: meenOrderId !== undefined ? meenOrderId : undefined,
+        comments: comments !== undefined ? comments : undefined,
+        costBreakdown: costBreakdown !== undefined ? costBreakdown : undefined,
       },
     });
 

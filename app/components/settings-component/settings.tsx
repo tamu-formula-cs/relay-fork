@@ -7,6 +7,7 @@ import Image from 'next/image';
 import useSWR from 'swr';
 import { SerializedOrderWithRelations } from '../order-table/order-table';
 import { useSession } from 'next-auth/react';
+import DownloadIcon from "../../../assets/file_download.svg"
 
 interface SettingsMenuProps {
     order: SerializedOrderWithRelations | null;
@@ -28,6 +29,9 @@ interface UpdateOrderBody {
     costVerified?: boolean;
     carrier?: string;
     trackingId?: string;
+    meenOrderId?: string;
+    comments?: string;
+    costBreakdown?: { [key: string]: number };
 }
 
 interface UpdateItemBody {
@@ -42,7 +46,7 @@ const subteamMapping: { [key: string]: string } = {
     ECE: 'Electronics',
     PT: 'Powertrain',
     DBMS: 'Distributed BMS',
-    SW: 'Software'
+    OPS: 'Operations'
 };
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -51,7 +55,23 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
     const { data: session } = useSession();
     const email = session?.user.email;
     const admins = process.env.NEXT_PUBLIC_ADMINS?.split(",") || [];
+    const leads = process.env.NEXT_PUBLIC_LEADS?.split(",") || [];
     const isAdmin = email ? admins.includes(email) : false;
+    const isLead = email ? leads.includes(email) : false;
+
+    const initialCostBreakdown = {
+        AERO: 0,
+        CHS: 0,
+        SUS: 0,
+        BAT: 0,
+        ECE: 0,
+        PT: 0,
+        DBMS: 0,
+        OPS: 0,
+        ...(order?.costBreakdown || {}),
+    };
+
+    const [costBreakdown, setCostBreakdown] = useState<{ [key: string]: number }>(initialCostBreakdown);
 
     const [orderStatus, setOrderStatus] = useState<OrderStatus>(
         order ? order.status : OrderStatus.TO_ORDER
@@ -65,10 +85,50 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
     const [receipts, setReceipts] = useState<Document[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
+    const [comments, setComments] = useState(order?.comments || '');
 
     const [carrier, setCarrier] = useState<string>(order?.carrier || '');
     const [trackingId, setTrackingId] = useState<string>(order?.trackingId || '');
+    const [meenOrderId, setMeenOrderId] = useState<string>(order?.meenOrderId || '');
+    const [isPriceVerified, setIsPriceVerified] = useState(order ? order.costVerified : false);
+    
+    const userSubteam = session?.user.subteam;
+    const [canDeleteOrder, setCanDeleteOrder] = useState(false);
+    useEffect(() => {
+        
+        if (order && isLead && userSubteam === order.subteam) {
+            const orderCreatedAt = new Date(order.createdAt);
+            const currentTime = new Date();
+    
+            // Define the time interval in milliseconds (e.g., 12 hours)
+            const timeInterval = 1 * 60 * 60 * 1000; // 1 hour in milliseconds
+            // For 5 seconds, you can set: const timeInterval = 5 * 1000;
+    
+            const timeDifference = currentTime.getTime() - orderCreatedAt.getTime();
+            if (timeDifference <= timeInterval) {
+                setCanDeleteOrder(true);
+            }
+        }
+    }, [order, isLead, userSubteam]);    
 
+    useEffect(() => {
+        if (order) {
+            const updatedCostBreakdown = {
+                AERO: 0,
+                CHS: 0,
+                SUS: 0,
+                BAT: 0,
+                ECE: 0,
+                PT: 0,
+                DBMS: 0,
+                SW: 0,
+                ...(order.costBreakdown || {}),
+            };
+            setCostBreakdown(updatedCostBreakdown);
+        }
+    }, [order]);
+
+    
     const handleCarrierChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setCarrier(e.target.value);
     };
@@ -122,11 +182,27 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                     onUpdateOrder();
                 }
             } else if (order) {
-                const body: UpdateOrderBody = { status: orderStatus, carrier, trackingId };
+                if (isAdmin) {
+                    const totalPercentage = Object.values(costBreakdown).reduce((a, b) => a + b, 0);
+                    if (totalPercentage !== 100) {
+                        toast({
+                            title: "Invalid Cost Breakdown",
+                            description: "Cost breakdown percentages must add up to 100%",
+                            variant: "destructive",
+                        });
+                        return;
+                    }
+                }
+                const body: UpdateOrderBody = { status: orderStatus, carrier, trackingId, meenOrderId, comments, };
                 if (priceEdited) {
                     body.totalCost = price;
-                    body.costVerified = true;
                 }
+                body.costVerified = isPriceVerified;
+
+                if (isAdmin) {
+                    body.costBreakdown = costBreakdown;
+                }
+
                 const response = await fetch(`/api/orders/update/${order.id}`, {
                     method: 'PUT',
                     headers: {
@@ -261,48 +337,103 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
         }
     };
 
+    const handleDownloadCSV = () => {
+        if (order && order.items && order.items.length > 0) {
+            // Reconstruct CSV data
+            const headers = ['Item', 'Part Number', 'Notes', 'QTY to Buy', 'Cost', 'Vendor', 'Link'];
+
+            const escapeCSVField = (field: string) => {
+                if (field == null) {
+                    return '';
+                }
+                if (field.includes(',') || field.includes('"') || field.includes('\n')) {
+                    return `"${field.replace(/"/g, '""')}"`;
+                }
+                return field;
+            };
+
+            const rows = order.items.map((item) => [
+                escapeCSVField(item.name || ''),
+                escapeCSVField(item.partNumber || ''),
+                escapeCSVField(item.notes || ''),
+                escapeCSVField(item.quantity.toString()),
+                escapeCSVField(item.price.toString()),
+                escapeCSVField(item.vendor || ''),
+                escapeCSVField(item.link || ''),
+            ]);
+
+            const csvContent = [headers, ...rows].map((row) => row.join(',')).join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.setAttribute('download', `${order.name}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    };
+
     return (
         <div className={styles.overlay}>
             <div className={styles.settingsMenu}>
                 <div className={styles.formHeader}>
                     <h3 className={styles.formTitle}>Settings</h3>
-                    <button className={styles.closeButton} onClick={onClose}>
-                        <Image src={CloseIcon.src} height={10} width={10} alt='close' />
-                    </button>
+                    <div className={styles.settingsButtonGroup}>
+                        {order && !order.url && order.items && order.items.length > 0 && (
+                            <button className={styles.downloadButton} onClick={handleDownloadCSV}>
+                                <Image src={DownloadIcon.src} height={10} width={10} alt='download' />
+                            </button>
+                        )}
+                        <button className={styles.closeButton} onClick={onClose}>
+                            <Image src={CloseIcon.src} height={10} width={10} alt='close' />
+                        </button>
+                    </div>
                 </div>
 
                 <div className={styles.contentContainer}>
                     {/* Display additional information for the order */}
                     {!item && order && (
                         <div className={styles.infoSection}>
-                            <h4 className={styles.infoLabel}>Order Name:</h4>
+                            <h4 className={`${styles.infoLabel} ${styles.orderName}`}>Order Name:</h4>
                             <p className={styles.infoText}>{order.name}</p>
 
                             <h4 className={styles.infoLabel}>Placed By:</h4>
                             <p className={styles.infoText}>{order.user.name}</p>
 
-                            {order.comments && (
-                                <>
-                                    <h4 className={styles.infoLabel}>Comments:</h4>
-                                    <p className={styles.infoText}>{order.comments}</p>
-                                </>
-                            )}
-
                             {/* Cost Breakdown Section */}
+                            {isAdmin &&
+                            <>
                             <h4 className={styles.infoLabel}>Cost Breakdown:</h4>
-                            {order.costBreakdown ? (
-                                <ul className={styles.costBreakdownList}>
-                                    {Object.entries(order.costBreakdown)
-                                        .filter(([, percentage]) => percentage > 0)
-                                        .map(([subteam, percentage]) => (
-                                            <li key={subteam} className={styles.breakdownItem}>
-                                                {subteamMapping[subteam] || subteam}: {percentage}%
-                                            </li>
-                                        ))}
-                                </ul>
-                            ) : (
-                                <p className={styles.infoText}>N/A</p>
-                            )}
+                            <div className={styles.costBreakdownList}>
+                                {Object.keys(subteamMapping).map((subteam) => (
+                                    <div key={subteam} className={styles.breakdownItem}>
+                                        <label className={styles.breakdownLabel}>
+                                            {subteamMapping[subteam] || subteam}:
+                                        </label>
+                                        {isAdmin ? (
+                                            <input
+                                                type="number"
+                                                className={styles.breakdownInput}
+                                                value={costBreakdown[subteam]}
+                                                onChange={(e) => {
+                                                    const value = parseFloat(e.target.value) || 0;
+                                                    setCostBreakdown((prev) => ({
+                                                        ...prev,
+                                                        [subteam]: value,
+                                                    }));
+                                                }}
+                                            />
+                                        ) : (
+                                            <span>{costBreakdown[subteam]}%</span>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            </>
+                            }
 
                             {supportingDocs && supportingDocs.length > 0 && (
                                 <div className={styles.docSection}>
@@ -357,6 +488,19 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                     <p className={styles.infoText}>No receipts added yet.</p>
                                 </div>
                             )}
+
+                            {order && (isAdmin || (session?.user.subteam === order.subteam)) && (
+                                <div className={styles.commentSection}>
+                                    <h4 className={styles.infoLabel}>Comments:</h4>
+                                    <textarea
+                                        value={comments}
+                                        onChange={(e) => setComments(e.target.value)}
+                                        className={styles.textarea}
+                                        rows={4}
+                                    />
+                                </div>
+                            )}
+
                         </div>
                     )}
 
@@ -391,6 +535,11 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                     <label>Quantity:</label>
                                     <p className={styles.infoText}>{item.quantity || 'N/A'}</p>
                                 </div>
+                                {item.notes && 
+                                <div className={styles.inputGroup}>
+                                    <label>Notes:</label>
+                                    <p className={styles.infoText}>{item.notes}</p>
+                                </div>}
                                 {isAdmin && (
                                     <div className={styles.inputGroup}>
                                         <label>Status:</label>
@@ -420,13 +569,34 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                     </select>
                                 </div>
                                 <div className={styles.inputGroup}>
-                                    <label>Price:</label>
+                                    <label>MEEN Order ID:</label>
                                     <input
-                                        type="number"
-                                        value={price}
-                                        onChange={handlePriceChange}
-                                        className={styles.numberInput}
+                                        type="text"
+                                        value={meenOrderId}
+                                        onChange={(e) => setMeenOrderId(e.target.value)}
+                                        className={styles.textInput}
                                     />
+                                </div>
+
+                                <div className={styles.inputGroup}>
+                                    <label>Price:</label>
+                                    <div className={styles.priceContainer}>
+                                        <input
+                                            type="number"
+                                            value={price}
+                                            onChange={handlePriceChange}
+                                            className={styles.numberInput}
+                                        />
+                                        <label className={styles.checkboxLabel}>
+                                            Verify Price
+                                            <input
+                                                type="checkbox"
+                                                checked={isPriceVerified}
+                                                onChange={(e) => setIsPriceVerified(e.target.checked)}
+                                                className={styles.checkboxInput}
+                                            />
+                                        </label>
+                                    </div>
                                 </div>
 
                                 <div className={styles.inputGroup}>
@@ -452,19 +622,23 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                     </div>
                 </div>
 
-                {isAdmin && (
+                {(isAdmin || canDeleteOrder) && (
                     <div className={styles.receiptButton}>
-                        <button onClick={handleAddReceipt} className={`${styles.saveButton} ${styles.button}`}>
-                            Add Receipt
-                        </button>
-                        <input
-                            type="file"
-                            multiple
-                            accept="application/pdf"
-                            ref={fileInputRef}
-                            style={{ display: 'none' }}
-                            onChange={handleFileUpload}
-                        />
+                        {isAdmin && (
+                            <>
+                                <button onClick={handleAddReceipt} className={`${styles.saveButton} ${styles.button}`}>
+                                    Add Receipt
+                                </button>
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="application/pdf"
+                                    ref={fileInputRef}
+                                    style={{ display: 'none' }}
+                                    onChange={handleFileUpload}
+                                />
+                            </>
+                        )}
 
                         {order && (
                             <button

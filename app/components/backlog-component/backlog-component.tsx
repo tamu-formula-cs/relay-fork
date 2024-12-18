@@ -49,6 +49,8 @@ const BacklogComponent: React.FC = () => {
     const orders = useMemo(() => (data?.orders as SerializedOrderWithRelations[] || []), [data]);
     const [isMeenOrderIdModalOpen, setIsMeenOrderIdModalOpen] = useState(false);
     const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+    const [isMarkAsPickedUpModalOpen, setIsMarkAsPickedUpModalOpen] = useState(false);
+    const [markAsPickedUpTarget, setMarkAsPickedUpTarget] = useState<{type: 'order'|'item', id: number}|null>(null);
 
     // Orders to be Placed
     const ordersToBePlaced = useMemo(() => orders.filter(order => order.status === 'TO_ORDER'), [orders]);
@@ -92,68 +94,119 @@ const BacklogComponent: React.FC = () => {
         setIsMeenOrderIdModalOpen(true);
     };
 
-    const handleMarkOrderAsPickedUp = async (orderId: number) => {
-        try {
-            const response = await fetch(`/api/orders/${orderId}/markPickedUp`, {
-                method: 'POST',
-            });
-    
-            if (response.ok) {
-                // Update data
-                mutate('/api/orders');
-                toast({
-                    title: "Order Picked Up",
-                    description: "Order has been picked up.",
-                    variant: "affirmation",
-                });
-            } else {
-                toast({
-                    title: "Update Failed",
-                    description: "Failed to update order.",
-                    variant: "destructive",
-                });
-            }
-        } catch (error) {
-            console.error(error);
-            toast({
-                title: "Error",
-                description: "An error occurred.",
-                variant: "destructive",
-            });
-        }
+    const handleMarkOrderAsPickedUp = (orderId: number) => {
+        setMarkAsPickedUpTarget({type: 'order', id: orderId});
+        setIsMarkAsPickedUpModalOpen(true);
     };
     
-    const handleMarkItem = async (itemId: number) => {
-        try {
-            const response = await fetch(`/api/items/${itemId}/markPickedUp`, {
-                method: 'POST',
-            });
-    
-            if (response.ok) {
-                // Update data
-                mutate('/api/orders');
-                toast({
-                    title: "Item Picked Up",
-                    description: "Item has been picked up.",
-                    variant: "affirmation",
-                });
-            } else {
-                toast({
-                    title: "Update Failed",
-                    description: "Failed to update item.",
-                    variant: "destructive",
-                });
-            }
-        } catch (error) {
-            console.error(error);
-            toast({
-                title: "Error",
-                description: "An error occurred.",
-                variant: "destructive",
-            });
-        }
-    };    
+    const handleMarkItem = (itemId: number) => {
+        setMarkAsPickedUpTarget({type: 'item', id: itemId});
+        setIsMarkAsPickedUpModalOpen(true);
+    };
 
+    const submitMarkAsPickedUp = async (comment: string) => {
+        if (!markAsPickedUpTarget) return;
+      
+        // Find the order ID if target is item
+        let orderIdToUpdate: number | null = null;
+        if (markAsPickedUpTarget.type === 'order') {
+          orderIdToUpdate = markAsPickedUpTarget.id;
+        } else {
+          // If it's an item, find which order it belongs to
+          const allOrders = orders || [];
+          for (const o of allOrders) {
+            if (o.items.some(i => i.id === markAsPickedUpTarget.id)) {
+              orderIdToUpdate = o.id;
+              break;
+            }
+          }
+        }
+      
+        if (!orderIdToUpdate) {
+          toast({
+            title: "Update Failed",
+            description: "Could not find the order for the item.",
+            variant: "destructive",
+          });
+          setIsMarkAsPickedUpModalOpen(false);
+          setMarkAsPickedUpTarget(null);
+          return;
+        }
+      
+        // First update the order comments
+        try {
+          const updateResponse = await fetch(`/api/orders/update/${orderIdToUpdate}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ comments: comment }),
+          });
+      
+          if (!updateResponse.ok) {
+            toast({
+              title: "Update Failed",
+              description: "Failed to update comments before pickup.",
+              variant: "destructive",
+            });
+            setIsMarkAsPickedUpModalOpen(false);
+            setMarkAsPickedUpTarget(null);
+            return;
+          }
+        } catch (error) {
+          console.error(error);
+          toast({
+            title: "Error",
+            description: "An error occurred while updating comments.",
+            variant: "destructive",
+          });
+          setIsMarkAsPickedUpModalOpen(false);
+          setMarkAsPickedUpTarget(null);
+          return;
+        }
+      
+        // After successful comment update, call the markPickedUp endpoint
+        let endpoint = '';
+        if (markAsPickedUpTarget.type === 'order') {
+          endpoint = `/api/orders/${markAsPickedUpTarget.id}/markPickedUp`;
+        } else {
+          endpoint = `/api/items/${markAsPickedUpTarget.id}/markPickedUp`;
+        }
+      
+        try {
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ comments: comment }),
+          });
+      
+          if (response.ok) {
+            mutate('/api/orders');
+            toast({
+              title: markAsPickedUpTarget.type === 'order' ? "Order Picked Up" : "Item Picked Up",
+              description: markAsPickedUpTarget.type === 'order' ? "Order has been picked up." : "Item has been picked up.",
+              variant: "affirmation",
+            });
+          } else {
+            toast({
+              title: "Update Failed",
+              description: "Failed to finalize pickup.",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          console.error(error);
+          toast({
+            title: "Error",
+            description: "An error occurred.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsMarkAsPickedUpModalOpen(false);
+          setMarkAsPickedUpTarget(null);
+        }
+      };
+      
     if (error) {
         return <div>Error loading orders.</div>;
     }
@@ -216,6 +269,58 @@ const BacklogComponent: React.FC = () => {
             </div>
         );
     };    
+
+    const MarkAsPickedUpModal: React.FC<{
+        onClose: () => void;
+        onSubmit: (comment: string) => void;
+      }> = ({ onClose, onSubmit }) => {
+        const [comment, setComment] = useState('');
+        const { toast } = useToast();
+      
+        const handleSubmit = () => {
+          if (comment.trim() === '') {
+            toast({
+              title: "Missing Drop-off Location",
+              description: "Please enter where you dropped off the order/item.",
+              variant: "destructive",
+            });
+            return;
+          }
+          onSubmit(comment);
+        };
+      
+        return (
+          <div className={styles.overlay}>
+            <div className={styles.settingsMenu}>
+              <div className={styles.formHeader}>
+                <h3 className={styles.formTitle}>Mark as Picked Up</h3>
+                <button className={styles.closeButton} onClick={onClose}>
+                    <Image src={CloseIcon.src} height={10} width={10} alt='close'/>
+                </button>
+              </div>
+              <div className={styles.settingsGroup}>
+                <div className={styles.inputGroup}>
+                  <label>Drop-off Location:</label>
+                  <input
+                    type="text"
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="Enter location where the order/item was dropped off"
+                  />
+                </div>
+              </div>
+              <div className={styles.buttonGroup}>
+                <button onClick={onClose} className={`${styles.cancelButton} ${styles.button}`}>
+                    Cancel
+                </button>
+                <button onClick={handleSubmit} className={`${styles.saveButton} ${styles.button}`}>
+                    Submit
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+    };
 
 
     return (
@@ -579,6 +684,15 @@ const BacklogComponent: React.FC = () => {
                         }
                     }}
                 />
+            )}
+            {isMarkAsPickedUpModalOpen && (
+            <MarkAsPickedUpModal
+                onClose={() => {
+                setIsMarkAsPickedUpModalOpen(false);
+                setMarkAsPickedUpTarget(null);
+                }}
+                onSubmit={submitMarkAsPickedUp}
+            />
             )}
         </div>
     );

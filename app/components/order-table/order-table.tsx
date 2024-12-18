@@ -14,13 +14,9 @@ import useSWR, { mutate } from 'swr';
 import { useSession } from 'next-auth/react';
 
 interface CostBreakdown {
-    AERO: number;
-    CHS: number;
-    SUS: number;
-    BAT: number;
-    ECE: number;
-    PT: number;
+    [key: string]: number;
 }
+
 
 interface Document {
     id: number;
@@ -75,6 +71,17 @@ export interface SerializedOrderWithRelations {
     }[];
 }
 
+const subteamMapping: { [key: string]: string } = {
+    AERO: 'Aerodynamics',
+    CHS: 'Chassis',
+    SUS: 'Suspension',
+    BAT: 'Battery',
+    ECE: 'Electronics',
+    PT: 'Powertrain',
+    DBMS: 'Distributed BMS',
+    OPS: 'Operations',
+};
+
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const OrderTable: React.FC = () => {
@@ -120,12 +127,30 @@ const OrderTable: React.FC = () => {
         if (searchQuery !== '') {
             const query = searchQuery.toLowerCase();
             result = result.filter((order) => {
+                // Get subteams involved in the cost breakdown
+                const involvedSubteams = Object.keys(order.costBreakdown || {}).filter(
+                    (subteam) => (order.costBreakdown![subteam] || 0) > 0
+                );
+    
+                // Map subteam acronyms to full names
+                const subteamNames = involvedSubteams.map((acronym) => ({
+                    acronym: acronym.toLowerCase(),
+                    fullName: (subteamMapping[acronym] || '').toLowerCase(),
+                }));
+    
+                // Check if the query matches any subteam acronym or full name
+                const matchesCostBreakdown = subteamNames.some(
+                    ({ acronym, fullName }) =>
+                        acronym.includes(query) || fullName.includes(query)
+                );
+    
                 return (
                     order.name.toLowerCase().includes(query) ||
                     order.vendor.toLowerCase().includes(query) ||
                     order.status.toLowerCase().includes(query) ||
                     order.user.subteam.toLowerCase().includes(query) ||
                     (order.comments && order.comments.toLowerCase().includes(query)) ||
+                    matchesCostBreakdown ||
                     order.items.some((item) =>
                         item.name.toLowerCase().includes(query) ||
                         item.vendor.toLowerCase().includes(query) ||
@@ -205,7 +230,7 @@ const OrderTable: React.FC = () => {
         } else if (order.carrier === "UPS" && order.trackingId) {
             window.open(`https://www.ups.com/track?loc=en_US&tracknum=${order.trackingId}&requester=WT/trackdetails`, '_blank');
         }
-    };    
+    };
 
     return (
         <div className={styles.tableMainContainer}>

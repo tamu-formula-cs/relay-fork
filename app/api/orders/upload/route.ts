@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
 import { parse } from 'csv-parse/sync';
-import { Item, ItemStatus, OrderStatus } from '@prisma/client';
+import { ItemStatus, OrderStatus } from '@prisma/client';
+
+interface Record {
+    Item: string;
+    'Part Number'?: string;
+    Notes?: string;
+    'QTY to Buy': string;
+    Cost: string;
+    Vendor: string;
+    Link?: string;
+    [key: string]: string | undefined;
+}
 
 export async function POST(request: NextRequest) {
 
@@ -44,36 +55,87 @@ export async function POST(request: NextRequest) {
 
     const content = await file.text();
 
-    let records;
+    let records: Record[];
     try {
-        records = parse(content, {
-            columns: true,
+        const parsedData: string[][] = parse(content, {
+            columns: false,
             skip_empty_lines: true,
+            relax_column_count: true, // Allows rows with fewer columns
+        });
+
+        // Check if the first row contains the unwanted line
+        if (
+            parsedData.length > 0 &&
+            parsedData[0][0] &&
+            parsedData[0][0].startsWith('MAKE A COPY AND FILL OUT YOUR OWN FILE')
+        ) {
+            // Remove the first row
+            parsedData.shift();
+        }
+
+        // Now extract the headers
+        const headers = parsedData.shift();
+
+        if (!headers) {
+            throw new Error('CSV headers missing');
+        }
+
+        // Convert the rest of the data into records with headers
+        records = parsedData.map((row: string[]) => {
+            const record = {} as Record;
+            headers.forEach((header: string, index: number) => {
+                record[header] = row[index];
+            });
+            return record;
         });
     } catch (error) {
         console.error('Error parsing CSV:', error);
         return NextResponse.json({ error: 'Invalid CSV format' }, { status: 400 });
     }
 
-    const itemsData = records.map((record: { Item: string; "Part Number": string; Notes: string; "QTY to Buy": string; Cost: string; Vendor: string; Link: string; }) => {
+    // Filter out empty or invalid records
+    records = records.filter((record: Record) => {
+        const { Item, 'QTY to Buy': qtyToBuy, Cost, Vendor } = record;
+    
+        // Attempt to parse quantity and cost
+        const quantity = parseInt(qtyToBuy, 10);
+        const sanitizedCost = Cost ? Cost.replace(/[^0-9.-]+/g, '') : '';
+        const price = parseFloat(sanitizedCost);
+    
+        // Filter out records with missing fields or invalid numbers
+        return (
+            Item && qtyToBuy && Cost && Vendor && 
+            !isNaN(quantity) && !isNaN(price)
+        );
+    });
+
+    const itemsData = [];
+    for (const record of records) {
         const { Item, 'Part Number': partNumber, Notes, 'QTY to Buy': qtyToBuy, Cost, Vendor, Link } = record;
 
-        if (!Item || !qtyToBuy || !Cost || !Vendor) {
-            return NextResponse.json({ error: 'Missing required fields in CSV' }, { status: 400 });
+        // Remove any non-numeric characters from Cost
+        const sanitizedCost = Cost.replace(/[^0-9.-]+/g, '');
+
+        // Parse the quantity and cost
+        const quantity = parseInt(qtyToBuy, 10);
+        const price = parseFloat(sanitizedCost);
+
+        if (isNaN(quantity) || isNaN(price)) {
+            return NextResponse.json({ error: 'Invalid number format in CSV' }, { status: 400 });
         }
 
-        return {
+        itemsData.push({
             internalItemId: `ITEM-${Math.floor(Math.random() * 100000)}`,
             name: Item,
             partNumber: partNumber || '',
             notes: Notes || null,
-            quantity: parseInt(qtyToBuy, 10),
-            price: parseFloat(Cost),
+            quantity,
+            price,
             vendor: Vendor,
             link: Link || null,
             status: ItemStatus.TO_ORDER,
-        };
-    });
+        });
+    }
 
     const supportingDocs = [];
     for (let i = 0; formData.has(`supportingDocs[${i}][url]`); i++) {
@@ -108,7 +170,7 @@ export async function POST(request: NextRequest) {
 
         if (itemsData.length > 0) {
             await prisma.item.createMany({
-                data: itemsData.map((item: Item) => ({
+                data: itemsData.map((item) => ({
                     ...item,
                     orderId: order.id,
                 })),
