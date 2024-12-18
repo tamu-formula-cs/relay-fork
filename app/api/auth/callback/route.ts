@@ -1,10 +1,10 @@
 import { google } from 'googleapis';
 import { NextResponse } from 'next/server';
-import { loadCredentials } from '../../../lib/google-auth';
+import { loadCredentials, getTokenUrlFromDB } from '../../../lib/google-auth';
 
 // const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
 // const TOKEN_PATH = path.join(process.cwd(), 'token.json');
-const TOKEN_URL = process.env.TOKEN_BLOB_URL;
+// const TOKEN_URL = process.env.TOKEN_BLOB_URL;
 
 // async function loadCredentials() {
 //   try {
@@ -20,6 +20,7 @@ async function exchangeCodeForToken(code: string) {
   const credentials = await loadCredentials();
   const { client_secret, client_id, redirect_uris } = credentials.web;
   const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+  const TOKEN_URL = await getTokenUrlFromDB();
 
   const { tokens } = await oAuth2Client.getToken(code);
   oAuth2Client.setCredentials(tokens);

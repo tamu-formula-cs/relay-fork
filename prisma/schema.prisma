@@ -100,3 +100,8 @@ model Document {
   receiptOrderId    Int?
   uploadedAt DateTime @default(now())
 }
+
+model Token {
+  id         Int      @id @default(autoincrement())
+  url        String
+}

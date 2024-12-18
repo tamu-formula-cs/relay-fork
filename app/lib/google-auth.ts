@@ -1,7 +1,38 @@
 import { google } from 'googleapis';
+import prisma from './prisma';
+import { upload } from '@vercel/blob/client';
 
 const CREDENTIALS_URL = process.env.CREDENTIALS_BLOB_URL;
-const TOKEN_URL = process.env.TOKEN_BLOB_URL;
+
+export async function getTokenUrlFromDB(): Promise<string | null> {
+    const tokenRecord = await prisma.token.findFirst({
+        where: { id: 1 },
+    });
+    return tokenRecord?.url || null;
+}
+
+async function saveTokenToBlob(token: object) {
+    try {
+        // Convert token object to a string for upload
+        const { url } = await upload("token", JSON.stringify(token), {
+            access: 'public',
+            handleUploadUrl: 'api/auth/refreshToken'
+        });
+
+        if (!url) {
+            throw new Error(`Failed to save token.`);
+        }
+        console.log('Token updated in blob storage');
+        
+        await prisma.token.upsert({
+            where: { id: 1},
+            create: { url },
+            update: { url }
+        });
+    } catch (error) {
+        console.error('Error saving token to blob:', error);
+    }
+}
 
 export const loadCredentials = async () => {
     try {
@@ -11,8 +42,9 @@ export const loadCredentials = async () => {
 
         const response = await fetch(CREDENTIALS_URL);
         if (!response.ok) {
-            throw new Error(`Failed to felltch credentials: ${response.statusText}`);
+            throw new Error(`Failed to fetch credentials: ${response.statusText}`);
         }
+
         const credentials = await response.json();
         return credentials;
     } catch (error) {
@@ -26,20 +58,14 @@ export const loadOAuthClient = async () => {
     const { client_secret, client_id, redirect_uris } = credentials.web;
     const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
 
-    // Load existing token
-    // if (fs.existsSync(TOKEN_PATH)) {
-    //     const token = fs.readFileSync(TOKEN_PATH, 'utf-8');
-    //     oAuth2Client.setCredentials(JSON.parse(token));
-    // } else {
-    //     throw new Error('Token not found. Please authorize the application first.');
-    // }
+    const token_url = await getTokenUrlFromDB(); // Await the DB call
 
-    if (!TOKEN_URL) {
+    if (!token_url) {
         throw new Error('token is undefined.');
     }
 
     try {
-        const tokenResponse = await fetch(TOKEN_URL);
+        const tokenResponse = await fetch(token_url);
         if (!tokenResponse.ok) {
             throw new Error('Token not found. Please authorize the application first.');
         }
@@ -50,8 +76,8 @@ export const loadOAuthClient = async () => {
         throw error;
     }
 
-    // Refresh token
-    const now = (new Date()).getTime();
+    // Refresh token if about to expire
+    const now = Date.now();
     const expiryDate = oAuth2Client.credentials.expiry_date || 0;
 
     if (expiryDate <= now + 5 * 60 * 1000) {
@@ -61,25 +87,4 @@ export const loadOAuthClient = async () => {
     }
 
     return oAuth2Client;
-};
-
-export const saveTokenToBlob = async (token: object) => {
-    try {
-
-        if (!TOKEN_URL) {
-            throw new Error('token is undefined.');
-        }
-
-        const response = await fetch(TOKEN_URL!, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(token),
-        });
-        if (!response.ok) {
-            throw new Error(`Failed to save token: ${response.statusText}`);
-        }
-        console.log('Token updated in blob storage');
-    } catch (error) {
-        console.error('Error saving token to blob:', error);
-    }
 };
