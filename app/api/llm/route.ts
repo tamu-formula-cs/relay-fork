@@ -115,8 +115,10 @@ async function parseData(query: string): Promise<OrderDetails | null> {
 
 export async function GET(req: NextRequest) {
     try {
-        const { searchParams } = new URL(req.url);
-        const query = searchParams.get('query');
+        // const { searchParams } = new URL(req.url);
+        // const query = searchParams.get('query');
+
+        const query = req.nextUrl.searchParams.get('query');
 
         if (!query) {
             return NextResponse.json({ error: 'Missing query parameter' }, { status: 400 });

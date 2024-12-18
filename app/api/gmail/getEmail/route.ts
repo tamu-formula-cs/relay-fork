@@ -126,8 +126,10 @@ async function fetchEmails(
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const historyId = searchParams.get('historyId');
+    // const { searchParams } = new URL(req.url);
+    // const historyId = searchParams.get('historyId');
+
+    const historyId = req.nextUrl.searchParams.get('historyId');
 
     if (!historyId) {
       return NextResponse.json({ error: 'Missing historyId parameter' }, { status: 400 });
