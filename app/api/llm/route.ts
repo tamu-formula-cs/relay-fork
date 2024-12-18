@@ -15,7 +15,7 @@ interface OrderDetails {
     vendorName: string
 }
 
-export async function parseData(query: string): Promise<OrderDetails | null> {
+async function parseData(query: string): Promise<OrderDetails | null> {
 
     const schema = {
         meenId: { title: "MEEN Order Id", type: "string" },
