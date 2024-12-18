@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
         console.log('data:', data);
         console.log('notification:', notification);
 
-        const processResponse = await fetch(`${process.env.API_BASE_URL}/api/notifications/process`, {
+        const processResponse = await fetch(`/api/notifications/process`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ historyId: notification.historyId }),
