@@ -30,15 +30,39 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const email = session?.user.email;
   const admins = process.env.NEXT_PUBLIC_ADMINS?.split(",") || [];
   const isAdmin = email ? admins.includes(email) : false;
+  const [windowWidth, setWindowWidth] = useState(0);
 
   // Load sidebar state from local storage on component mount
   useEffect(() => {
+    // Set initial window width
+    setWindowWidth(window.innerWidth);
+    
+    // Handle window resize
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+  
+    window.addEventListener('resize', handleResize);
+  
+    // Load stored state or set default based on screen size
     const storedState = localStorage.getItem('sidebar-collapsed');
     if (storedState) {
       setIsCollapsed(JSON.parse(storedState));
+    } else {
+      // Default to collapsed if screen width is less than 768px (typical mobile breakpoint)
+      setIsCollapsed(window.innerWidth < 768);
     }
-    setIsLoadingSidebar(false); // Indicate loading is complete
+    setIsLoadingSidebar(false);
+  
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    if (windowWidth < 768) {
+      setIsCollapsed(true);
+    }
+  }, [windowWidth]);
 
   useEffect(() => {
     if (!session) {

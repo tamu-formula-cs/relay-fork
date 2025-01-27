@@ -8,6 +8,7 @@ import useSWR from 'swr';
 import { SerializedOrderWithRelations } from '../order-table/order-table';
 import { useSession } from 'next-auth/react';
 import DownloadIcon from "../../../assets/file_download.svg"
+import * as XLSX from 'xlsx';
 
 interface SettingsMenuProps {
     order: SerializedOrderWithRelations | null;
@@ -337,39 +338,38 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
         }
     };
 
-    const handleDownloadCSV = () => {
+    const handleDownloadExcel = () => {
         if (order && order.items && order.items.length > 0) {
-            // Reconstruct CSV data
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            
+            // Prepare headers and data
             const headers = ['Item', 'Part Number', 'Notes', 'QTY to Buy', 'Cost', 'Vendor', 'Link'];
-
-            const escapeCSVField = (field: string) => {
-                if (field == null) {
-                    return '';
-                }
-                if (field.includes(',') || field.includes('"') || field.includes('\n')) {
-                    return `"${field.replace(/"/g, '""')}"`;
-                }
-                return field;
-            };
-
-            const rows = order.items.map((item) => [
-                escapeCSVField(item.name || ''),
-                escapeCSVField(item.partNumber || ''),
-                escapeCSVField(item.notes || ''),
-                escapeCSVField(item.quantity.toString()),
-                escapeCSVField(item.price.toString()),
-                escapeCSVField(item.vendor || ''),
-                escapeCSVField(item.link || ''),
+            const rows = order.items.map(item => [
+                item.name || '',
+                item.partNumber || '',
+                item.notes || '',
+                item.quantity,
+                item.price,
+                item.vendor || '',
+                item.link || ''
             ]);
-
-            const csvContent = [headers, ...rows].map((row) => row.join(',')).join('\n');
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-
+    
+            // Create worksheet with headers and data
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+            
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, "Order Items");
+            
+            // Generate Excel file
+            const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            
+            // Create blob and download
+            const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.href = url;
-            link.setAttribute('download', `${order.name}.csv`);
+            link.setAttribute('download', `${order.name}.xlsx`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -383,7 +383,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                     <h3 className={styles.formTitle}>Settings</h3>
                     <div className={styles.settingsButtonGroup}>
                         {order && !order.url && order.items && order.items.length > 0 && (
-                            <button className={styles.downloadButton} onClick={handleDownloadCSV}>
+                            <button className={styles.downloadButton} onClick={handleDownloadExcel}>
                                 <Image src={DownloadIcon.src} height={10} width={10} alt='download' />
                             </button>
                         )}

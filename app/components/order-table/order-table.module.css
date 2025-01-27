@@ -423,3 +423,100 @@ button.orderButton:hover{
 .sortableHeader:hover {
     background-color: #F0F0F0;
 }
+
+/* Mobile Breakpoints */
+@media screen and (max-width: 768px) {
+    /* Table container adjustments */
+    .tableContainer {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    }
+
+    /* Fix minimum widths for columns to prevent squishing */
+    .tableBody {
+        min-width: 1200px; /* Ensures table doesn't get too squished */
+    }
+
+    /* Adjust top section layout */
+    .tableTop {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 0 1rem;
+    }
+
+    /* Search section adjustments */
+    .tableSearch {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .searchBar {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .myOrdersButton,
+    .orderButton {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        width: fit-content;
+    }
+
+    /* Maintain minimum widths for specific columns */
+    .idColumn {
+        min-width: 80px;
+    }
+
+    .nameColumn {
+        min-width: 150px;
+    }
+
+    .vendorColumn {
+        min-width: 120px;
+    }
+
+    .linkColumn {
+        min-width: 60px;
+    }
+
+    .priceColumn {
+        min-width: 120px;
+    }
+
+    .statusColumn {
+        min-width: 120px;
+    }
+
+    .commentsColumn {
+        min-width: 150px;
+    }
+
+    .settingsColumn {
+        min-width: 60px;
+    }
+
+    /* Expanded order content adjustments */
+    .expandedOrder {
+        grid-template-columns: 1fr;
+        padding: 0.5rem;
+    }
+
+    .expandedOrderContent {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Small mobile breakpoint for even tighter screens */
+@media screen and (max-width: 480px) {
+    .tableSearch {
+        justify-content: space-between;
+    }
+
+    .searchBar {
+        font-size: 0.85rem;
+    }
+}

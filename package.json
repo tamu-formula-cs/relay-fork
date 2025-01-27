@@ -33,7 +33,8 @@
     "react-dom": "^18",
     "readline": "^1.3.0",
     "sanitize-html": "^2.13.0",
-    "swr": "^2.2.5"
+    "swr": "^2.2.5",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

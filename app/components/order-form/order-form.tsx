@@ -372,7 +372,7 @@ function CostBreakdownScreen({ costBreakdown, onCostChange, onNext, onBack, onCl
                                 type="number"
                                 name={subteam}
                                 placeholder="0%"
-                                value={costBreakdown[subteam]}
+                                value={costBreakdown[subteam] == 0 ? undefined : costBreakdown[subteam]}
                                 onChange={onCostChange}
                             />
                         </div>
@@ -399,9 +399,13 @@ function Method({ handleSubmitCSV, onNextStep, onBack, onClose }: MethodProps) {
     const { toast } = useToast();
     
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file && file.name.endsWith('.csv')) {
-            await handleSubmitCSV(file);
+    const file = e.target.files?.[0];
+    if (file && file.name.endsWith('.csv')) {
+            try {
+                await handleSubmitCSV(file);
+            } catch (error) {
+                console.error('Error uploading CSV:', error);
+            }
         } else {
             toast({
                 title: "Invalid File",
