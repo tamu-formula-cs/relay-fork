@@ -98,6 +98,8 @@ async function parseData(query: string): Promise<OrderDetails | null> {
         return null;
     }
 
+    console.log("llm data: ", responseContent);
+
     // Trim content before and after the JSON object
     const jsonStartIndex = responseContent.indexOf("{");
     const jsonEndIndex = responseContent.lastIndexOf("}") + 1;
