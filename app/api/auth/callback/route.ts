@@ -20,24 +20,32 @@ async function exchangeCodeForToken(code: string) {
   const credentials = await loadCredentials();
   const { client_secret, client_id, redirect_uris } = credentials.web;
   const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
-  const TOKEN_URL = await getTokenUrlFromDB();
-
-  const { tokens } = await oAuth2Client.getToken(code);
-  oAuth2Client.setCredentials(tokens);
-
-  if (!TOKEN_URL) {
-    throw new Error('token is undefined.');
-  }
-
+  
   try {
-    const tokenResponse = await fetch(TOKEN_URL);
-    if (!tokenResponse.ok) {
-      throw new Error('Token not found. Please authorize the application first.');
+    const { tokens } = await oAuth2Client.getToken(code);
+    oAuth2Client.setCredentials(tokens);
+
+    const TOKEN_URL = await getTokenUrlFromDB();
+    if (!TOKEN_URL) {
+      throw new Error('Token URL is undefined.');
     }
-    const token = await tokenResponse.json();
-    oAuth2Client.setCredentials(token);
+
+    // Store the new tokens
+    const response = await fetch(TOKEN_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(tokens),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to store token');
+    }
+
+    return tokens;
   } catch (error) {
-    console.error('Error loading token:', error);
+    console.error('Error in token exchange:', error);
     throw error;
   }
 }

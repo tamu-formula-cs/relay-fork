@@ -91,8 +91,17 @@ const OrderTable: React.FC = () => {
         eventSource.onmessage = (event) => {
             const updatedOrder = JSON.parse(event.data);
             console.log('Order updated:', updatedOrder);
+            mutate('/api/orders');
         };
-    })
+        eventSource.onerror = (error) => {
+            console.error('EventSource error:', error);
+            eventSource.close();
+        };
+    
+        return () => {
+            eventSource.close();
+        };
+    }, [])
     
     const [expandedOrderIds, setExpandedOrderIds] = useState<number[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
