@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import styles from './order-table.module.css';
 import OrderForm from '../order-form/order-form';
-import { Item, ItemStatus, OrderStatus } from '@prisma/client';
+import { Item, ItemStatus, OrderStatus, StockLevel } from '@prisma/client';
 import SettingsMenu from '../settings-component/settings';
 import Settings from "../../../assets/settings.svg";
 import LinkIcon from "../../../assets/link.svg";
@@ -53,23 +53,45 @@ export interface SerializedOrderWithRelations {
         createdAt: string;
         updatedAt: Date;
     };
-    items: {
-        id: number;
-        internalItemId: string;
-        orderId: number;
-        name: string;
-        partNumber: string;
-        notes: string | null;
-        quantity: number;
-        price: number;
-        priceVerified: boolean;
-        vendor: string;
-        link: string | null;
-        status: ItemStatus;
-        createdAt: Date;
-        updatedAt: Date;
-    }[];
+    // items: {
+    //     id: number;
+    //     internalItemId: string;
+    //     orderId: number;
+    //     name: string;
+    //     partNumber: string;
+    //     notes: string | null;
+    //     quantity: number;
+    //     price: number;
+    //     priceVerified: boolean;
+    //     vendor: string;
+    //     link: string | null;
+    //     status: ItemStatus;
+    //     createdAt: Date;
+    //     updatedAt: Date;
+    // }[];
+    items: SerializedItemsWithRelations[];
 }
+
+export interface SerializedItemsWithRelations {
+    id: number;
+    internalItemId: string;
+    internalSKU: string | null;
+    orderId: number;
+    name: string;
+    partNumber: string;
+    notes: string | null;
+    quantity: number;
+    price: number;
+    priceVerified: boolean;
+    vendor: string;
+    vendorSKU: string | null;
+    link: string | null;
+    status: ItemStatus;
+    location: string | null;
+    level: StockLevel | null;
+    createdAt: Date;
+    updatedAt: Date;
+};
 
 const subteamMapping: { [key: string]: string } = {
     AERO: 'Aerodynamics',

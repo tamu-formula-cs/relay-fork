@@ -12,6 +12,7 @@ import SupportIcon from "../../../assets/support.svg";
 import FinanceIcon from "../../../assets/finance.svg";
 import DownloadIcon from "../../../assets/download.svg";
 import AccountIcon from "../../../assets/account.svg";
+import InventoryIcon from "../../../assets/checklists.png";
 import { Toaster } from '../toast/toaster';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -156,6 +157,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 className={pathname === '/archive' ? styles.activeIcon : ''}
               />
               <span>Archive</span>
+            </Link>
+          </li>
+          <li className={pathname === '/inventory' ? styles.active : ''}>
+            <Link href="/inventory">
+              <Image 
+                src={InventoryIcon} 
+                alt="Inventory" 
+                width={16} 
+                height={16}
+                className={pathname === '/inventory' ? styles.activeIcon : ''}
+              />
+              <span>Inventory</span>
             </Link>
           </li>
         </ul>

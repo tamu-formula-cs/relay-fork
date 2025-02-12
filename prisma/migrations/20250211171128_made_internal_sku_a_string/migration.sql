@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Item" ALTER COLUMN "internalSKU" SET DATA TYPE TEXT;

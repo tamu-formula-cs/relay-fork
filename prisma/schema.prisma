@@ -12,7 +12,7 @@ model User {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
-  phone     String? 
+  phone     String?
   carrier   String?
   role      Role
   password  String
@@ -30,28 +30,28 @@ enum Role {
 }
 
 model Order {
-  id               Int       @id @default(autoincrement())
-  internalOrderId  String    @unique
-  meenOrderId      String?   // Nullable until assigned
-  name             String
-  user             User      @relation("UserOrders", fields: [userId], references: [id])
-  userId           Int
-  subteam          String
-  status           OrderStatus
-  vendor           String
-  totalCost        Float     @default(0.0)
-  costVerified     Boolean   @default(false)
-  comments         String?
-  url              String?
+  id              Int         @id @default(autoincrement())
+  internalOrderId String      @unique
+  meenOrderId     String? // Nullable until assigned
+  name            String
+  user            User        @relation("UserOrders", fields: [userId], references: [id])
+  userId          Int
+  subteam         String
+  status          OrderStatus
+  vendor          String
+  totalCost       Float       @default(0.0)
+  costVerified    Boolean     @default(false)
+  comments        String?
+  url             String?
   carrier         String?
   trackingId      String?
-  costBreakdown    Json?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  items            Item[]    @relation("OrderItems")
-  supportingDocs   Document[] @relation("SupportingDocs")
-  receipts         Document[] @relation("Receipts")
-  notified         Boolean   @default(false)
+  costBreakdown   Json?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  items           Item[]      @relation("OrderItems")
+  supportingDocs  Document[]  @relation("SupportingDocs")
+  receipts        Document[]  @relation("Receipts")
+  notified        Boolean     @default(false)
 }
 
 enum OrderStatus {
@@ -65,21 +65,25 @@ enum OrderStatus {
 }
 
 model Item {
-  id              Int       @id @default(autoincrement())
-  internalItemId  String    @unique
-  order           Order     @relation("OrderItems", fields: [orderId], references: [id], onDelete: Cascade)
-  orderId         Int
-  name            String
-  partNumber      String
-  notes           String?
-  quantity        Int
-  price           Float     @default(0.0)
-  priceVerified   Boolean   @default(false)
-  vendor          String
-  link            String?
-  status          ItemStatus
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id             Int         @id @default(autoincrement())
+  internalItemId String      @unique
+  internalSKU    String?
+  order          Order?      @relation("OrderItems", fields: [orderId], references: [id], onDelete: Cascade)
+  orderId        Int?
+  name           String
+  partNumber     String?
+  notes          String?
+  quantity       Int?
+  price          Float?      @default(0.0)
+  priceVerified  Boolean?    @default(false)
+  vendor         String?
+  vendorSKU      String?
+  link           String?
+  status         ItemStatus
+  location       String?
+  level          StockLevel?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 }
 
 enum ItemStatus {
@@ -91,17 +95,23 @@ enum ItemStatus {
   PICKED_UP
 }
 
+enum StockLevel {
+  IN_STOCK
+  LOW_STOCK
+  OUT_OF_STOCK
+}
+
 model Document {
-  id         Int      @id @default(autoincrement())
-  url        String
-  supportingOrder   Order?    @relation("SupportingDocs", fields: [supportingOrderId], references: [id], onDelete: Cascade)
+  id                Int      @id @default(autoincrement())
+  url               String
+  supportingOrder   Order?   @relation("SupportingDocs", fields: [supportingOrderId], references: [id], onDelete: Cascade)
   supportingOrderId Int?
-  receiptOrder      Order?    @relation("Receipts", fields: [receiptOrderId], references: [id], onDelete: Cascade)
+  receiptOrder      Order?   @relation("Receipts", fields: [receiptOrderId], references: [id], onDelete: Cascade)
   receiptOrderId    Int?
-  uploadedAt DateTime @default(now())
+  uploadedAt        DateTime @default(now())
 }
 
 model Token {
-  id         Int      @id @default(autoincrement())
-  url        String
+  id  Int    @id @default(autoincrement())
+  url String
 }
