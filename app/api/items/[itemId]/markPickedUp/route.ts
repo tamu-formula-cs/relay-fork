@@ -26,10 +26,13 @@ export async function POST(
 
         // Step 3: If no items are left that are not PICKED_UP, archive the order
         if (allItemsPickedUp.length === 0) {
-            await prisma.order.update({
-                where: { id: updatedItem.orderId },
-                data: { status: OrderStatus.ARCHIVED },
-            });
+            const orderId = updatedItem.orderId;
+            if (orderId !== null) {
+                await prisma.order.update({
+                    where: { id: orderId },
+                    data: { status: OrderStatus.ARCHIVED },
+                });
+            }
         }
 
         return NextResponse.json({ message: 'Item and order status updated successfully' });
