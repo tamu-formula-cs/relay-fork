@@ -28,6 +28,7 @@ async function main() {
           phone: null,
           role: Role.ENGINEER,
           subteam: subteam,
+          password: "abcd"
         },
       })
     )
