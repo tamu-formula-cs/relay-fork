@@ -17,7 +17,6 @@ interface CostBreakdown {
     [key: string]: number;
 }
 
-
 interface Document {
     id: number;
     url: string;
@@ -104,7 +103,12 @@ const subteamMapping: { [key: string]: string } = {
     OPS: 'Operations',
 };
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = async (url: string) => {
+    const res = await fetch(url);
+    const data = await res.json();
+    console.log('Raw data from API:', data); // Add this
+    return data;
+};
 
 const OrderTable: React.FC = () => {
 
@@ -233,15 +237,28 @@ const OrderTable: React.FC = () => {
     };
 
     const toggleExpand = (orderId: number, orderItems: Item[], orderUrl: string | null) => {
+        console.log('Toggle expand called with:', {
+            orderId,
+            itemsLength: orderItems?.length,
+            items: orderItems,
+            url: orderUrl
+        });
+    
         if (orderItems.length === 0 && orderUrl) {
+            console.log('First condition met - doing nothing');
             // Do nothing
         } else if (orderItems.length > 0) {
+            console.log('Second condition met - toggling expansion');
             // If there are items, toggle the expansion
-            setExpandedOrderIds((prev) =>
-                prev.includes(orderId)
+            setExpandedOrderIds((prev) => {
+                const newIds = prev.includes(orderId)
                     ? prev.filter((id) => id !== orderId)
-                    : [...prev, orderId]
-            );
+                    : [...prev, orderId];
+                console.log('New expanded IDs:', newIds);
+                return newIds;
+            });
+        } else {
+            console.log('No conditions met');
         }
     };
 

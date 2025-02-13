@@ -3,6 +3,8 @@ import prisma from '../../../lib/prisma';
 import { parse } from 'csv-parse/sync';
 import { ItemStatus, OrderStatus } from '@prisma/client';
 
+const REQUIRED_HEADERS = ['Item', 'Part Number', 'Notes', 'QTY to Buy', 'Cost', 'Vendor', 'Link'];
+
 interface Record {
     Item: string;
     'Part Number'?: string;
@@ -78,6 +80,15 @@ export async function POST(request: NextRequest) {
 
         if (!headers) {
             throw new Error('CSV headers missing');
+        }
+
+        const headersMatch = REQUIRED_HEADERS.every((header, index) => headers[index] === header);
+        if (!headersMatch) {
+            return NextResponse.json({ 
+                error: 'Invalid CSV format. Headers must exactly match the template.',
+                expected: REQUIRED_HEADERS,
+                received: headers
+            }, { status: 400 });
         }
 
         // Convert the rest of the data into records with headers
