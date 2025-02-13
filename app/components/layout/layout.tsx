@@ -12,7 +12,7 @@ import SupportIcon from "../../../assets/support.svg";
 import FinanceIcon from "../../../assets/finance.svg";
 import DownloadIcon from "../../../assets/download.svg";
 import AccountIcon from "../../../assets/account.svg";
-import InventoryIcon from "../../../assets/checklists.png";
+import InventoryIcon from "../../../assets/checklists.svg";
 import { Toaster } from '../toast/toaster';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
