@@ -79,7 +79,7 @@ const InventoryTable: React.FC = () => {
 
         mutate("/api/items");
         setEditingItems((prev) => {
-            const { [id]: _, ...rest } = prev;
+            const { [id]: omitted, ...rest } = prev;
             return rest;
         });
     };
