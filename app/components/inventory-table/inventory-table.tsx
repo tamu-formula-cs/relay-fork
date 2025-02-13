@@ -79,8 +79,9 @@ const InventoryTable: React.FC = () => {
 
         mutate("/api/items");
         setEditingItems((prev) => {
-            const { [id]: omitted, ...rest } = prev;
-            return rest;
+            const newItems = { ...prev };
+            delete newItems[id];
+            return newItems;
         });
     };
 
