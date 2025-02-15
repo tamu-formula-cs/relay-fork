@@ -36,12 +36,13 @@ export async function PUT(
         vendorSKU,
         status: statusString,
     } = await request.json();
+
     const status = statusString ? (statusString as ItemStatus) : undefined;
     const level = levelString ? (levelString as StockLevel) : undefined;
-    console.log("string: ", quantityString);
-    const quantity = quantityString === '' ? null : Number(quantityString);
-
-    console.log("actual: ", quantity);
+    const quantity =
+        quantityString === '' || quantityString === null || quantityString === undefined
+            ? undefined
+            : Number(quantityString);
 
     try {
         // Step 1: Update the item

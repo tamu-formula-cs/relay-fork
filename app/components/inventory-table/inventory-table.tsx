@@ -29,6 +29,19 @@ const InventoryTable: React.FC = () => {
 
     const items = useMemo(() => data?.items as SerializedItemsWithRelations[] || [], [data]);
 
+    const getLevelColorClass = (level: StockLevel) => {
+        switch (level) {
+            case StockLevel.IN_STOCK:
+                return styles.inStock;
+            case StockLevel.LOW_STOCK:
+                return styles.lowStock;
+            case StockLevel.OUT_OF_STOCK:
+                return styles.outOfStock;
+            default:
+                return "";
+        }
+    };
+
     const filteredItems = useMemo(() => {
         if (!items) return [];
 
@@ -200,14 +213,14 @@ const InventoryTable: React.FC = () => {
                                             value={editingItems[item.id]?.level ?? item.level ?? StockLevel.IN_STOCK}
                                             onChange={(e) => {
                                                 const newLevel = e.target.value as StockLevel;
-                                                handleEdit(item.id, "level", newLevel)
+                                                handleEdit(item.id, "level", newLevel);
                                                 saveEdit(item.id, { level: newLevel });
                                             }}
-                                            className={styles.selectDropdown}
+                                            className={`${styles.selectDropdown} ${getLevelColorClass(editingItems[item.id]?.level ?? item.level ?? StockLevel.IN_STOCK)}`}
                                         >
                                             {Object.values(StockLevel).map((option) => (
                                                 <option key={option} value={option}>
-                                                    {option.toUpperCase()}
+                                                    {option.replaceAll('_', ' ')}
                                                 </option>
                                             ))}
                                         </select>
