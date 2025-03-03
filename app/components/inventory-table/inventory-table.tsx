@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import styles from './inventory-table.module.css';
-import EmptyIcon from "../../../assets/empty.svg"
-import DeleteIcon from "../../../assets/delete.svg"
+import EmptyIcon from "../../../assets/empty.svg";
+import DeleteIcon from "../../../assets/delete.svg";
+import FilterIcon from "../../../assets/filter.svg";
 import Image from 'next/image';
 import useSWR, { mutate } from 'swr';
 import { SerializedItemsWithRelations } from '../order-table/order-table';
@@ -24,6 +25,8 @@ const InventoryTable: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [editingItems, setEditingItems] = useState<Record<string, Partial<SerializedItemsWithRelations>>>({});
     const [newItem, setNewItem] = useState<Partial<SerializedItemsWithRelations> | null>(null);
+    const [levelFilter, setLevelFilter] = useState<StockLevel | 'ALL'>('ALL')
+    const dropdownRef = useRef<HTMLSelectElement>(null);
 
     const { data, error } = useSWR('/api/items', fetcher, { refreshInterval: 60000 });
 
@@ -45,27 +48,32 @@ const InventoryTable: React.FC = () => {
     const filteredItems = useMemo(() => {
         if (!items) return [];
 
-        const sortedItems = [...items].sort((a, b) => {
-            if (!a.internalSKU || !b.internalSKU) return 0;
+        const searchFilteredItems = items.filter((item) => {
+            if (!searchQuery) return true;
+
+            const query = searchQuery.toLowerCase();
+            return (
+                item.internalSKU?.toLowerCase().includes(query) ||
+                item.name.toLowerCase().includes(query) ||
+                item.level?.toLowerCase().includes(query) ||
+                item.location?.toLowerCase().includes(query) ||
+                item.vendor?.toLowerCase().includes(query) ||
+                item.vendorSKU?.toLowerCase().includes(query)
+            );
+        })
+
+        const levelFilteredItems = levelFilter === 'ALL'
+            ? searchFilteredItems
+            : searchFilteredItems.filter((item) => item.level === levelFilter);
+
+        return levelFilteredItems.sort((a, b) => {
+            if (!a.internalSKU && !b.internalSKU) return 0;
+            if (!a.internalSKU) return 1;
+            if (!b.internalSKU) return -1;
             return a.internalSKU.localeCompare(b.internalSKU);
         });
 
-        if (searchQuery === '') {
-            return sortedItems;
-        } else {
-            const query = searchQuery.toLowerCase();
-            return sortedItems.filter((item) => {
-                return (
-                    item.internalSKU?.toLowerCase().includes(query) ||
-                    item.name.toLowerCase().includes(query) ||
-                    item.level?.toLowerCase().includes(query) ||
-                    item.location?.toLowerCase().includes(query) ||
-                    item.vendor?.toLowerCase().includes(query) ||
-                    item.vendorSKU?.toLowerCase().includes(query)
-                );
-            });
-        }
-    }, [items, searchQuery]);
+    }, [items, searchQuery, levelFilter]);
 
     if (error) { return <div>Error loading inventory.</div>; }
     if (!data) { return <div>Loading inventory...</div>; }
@@ -84,18 +92,23 @@ const InventoryTable: React.FC = () => {
         const updatedItem = { ...editingItems[id], ...updatedFields };
         if (!updatedItem) return;
 
-        await fetch(`/api/items/update/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updatedItem),
-        });
+        try {
+            await fetch(`/api/items/update/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedItem),
+            });
 
-        mutate("/api/items");
-        setEditingItems((prev) => {
-            const newItems = { ...prev };
-            delete newItems[id];
-            return newItems;
-        });
+            mutate("/api/items");
+            setEditingItems((prev) => {
+                const newItems = { ...prev };
+                delete newItems[id];
+                return newItems;
+            });
+        } catch (error) {
+            console.error("Failed to update item:", error);
+            alert("Failed to update item. Please try again.");
+        }
     };
 
     const handleNewItemChange = (field: keyof SerializedItemsWithRelations, value: string) => {
@@ -139,13 +152,17 @@ const InventoryTable: React.FC = () => {
     const handleDelete = async (id: number) => {
         const isConfirmed = window.confirm("Are you sure you want to delete this item?");
         if (isConfirmed) {
+            try {
+                await fetch(`/api/items/delete/${id}`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                });
 
-            await fetch(`/api/items/delete/${id}`, {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-            });
-
-            mutate("api/items");
+                mutate("api/items");
+            } catch (error) {
+                console.error("Failed to delete item:", error);
+                alert("Failed to delete item. Please try again.");
+            }
         }
     };
 
@@ -153,6 +170,23 @@ const InventoryTable: React.FC = () => {
         <div className={styles.tableMainContainer}>
             <div className={styles.tableTop}>
                 <h1 className={styles.purchaseHeader}>Inventory</h1>
+                <div className={styles.addButtonContainer}>
+                    {newItem ? (
+                        <button
+                            onClick={() => {
+                                saveNewItem();
+                                setNewItem(null);
+                            }}
+                            className={styles.addButton}
+                        >
+                            Save
+                        </button>
+                    ) : (
+                        <button onClick={() => setNewItem({})} className={styles.addButton}>
+                            + Add Item
+                        </button>
+                    )}
+                </div>
                 <div className={styles.tableSearch}>
                     <input
                         type="text"
@@ -170,7 +204,36 @@ const InventoryTable: React.FC = () => {
                             <th className={`${styles.thText} ${styles.idColumnHeader}`}>Internal SKU</th>
                             <th className={`${styles.thText} ${styles.descriptionColumnHeader}`}>Description</th>
                             <th className={`${styles.thText} ${styles.quantityColumnHeader}`}>Quantity</th>
-                            <th className={`${styles.thText} ${styles.levelColumnHeader}`}>Level</th>
+                            <th className={`${styles.thText} ${styles.levelColumnHeader}`}>
+                                Level
+                                <div className={styles.filterContainer}>
+                                    <select
+                                        value={levelFilter}
+                                        onChange={(e) => setLevelFilter(e.target.value as StockLevel | 'ALL')}
+                                        className={styles.hiddenSelect}
+                                        ref={dropdownRef}
+                                    >
+                                        <option value="ALL">All</option>
+                                        {Object.values(StockLevel).map((level) => (
+                                            <option key={level} value={level}>
+                                                {level.replaceAll('_', ' ')}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        onClick={() => dropdownRef.current?.click()}
+                                        className={styles.filterButton}
+                                        aria-label="Filter by stock level"
+                                    >
+                                        <Image
+                                            src={FilterIcon}
+                                            alt="Filter icon"
+                                            width={20}
+                                            height={20}
+                                        />
+                                    </button>
+                                </div>
+                            </th>
                             <th className={`${styles.thText} ${styles.locationColumnHeader}`}>Location</th>
                             <th className={`${styles.thText} ${styles.vendorColumnHeader}`}>Vendor</th>
                             <th className={`${styles.thText} ${styles.vendorSKUColumnHeader}`}>Vendor SKU</th>
@@ -178,6 +241,37 @@ const InventoryTable: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
+                        {newItem && (
+                            <tr className={styles.order}>
+                                <td className={`${styles.tableCell} ${styles.tdText} ${styles.idColumn}`}>
+                                    <input type="text" onChange={(e) => handleNewItemChange("internalSKU", e.target.value)} className={styles.inputField} />
+                                </td>
+                                <td className={`${styles.tableCell} ${styles.tdText} ${styles.descriptionColumn}`}>
+                                    <input type="text" onChange={(e) => handleNewItemChange("name", e.target.value)} className={styles.inputField} />
+                                </td>
+                                <td className={`${styles.tableCell} ${styles.tdText}`}>
+                                    <input type="text" onChange={(e) => handleNewItemChange("quantity", e.target.value)} className={styles.inputField} />
+                                </td>
+                                <td className={`${styles.tableCell} ${styles.tdText} ${styles.levelColumn}`}>
+                                    <select onChange={(e) => handleNewItemChange("level", e.target.value as StockLevel)} className={styles.selectDropdown}>
+                                        {Object.values(StockLevel).map((option) => (
+                                            <option key={option} value={option}>
+                                                {option.toUpperCase()}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </td>
+                                <td className={`${styles.tableCell} ${styles.tdText} ${styles.locationColumn}`}>
+                                    <input type="text" onChange={(e) => handleNewItemChange("location", e.target.value)} className={styles.inputField} />
+                                </td>
+                                <td className={`${styles.tableCell} ${styles.tdText} ${styles.vendorColumn}`}>
+                                    <input type="text" onChange={(e) => handleNewItemChange("vendor", e.target.value)} className={styles.inputField} />
+                                </td>
+                                <td className={`${styles.tableCell} ${styles.tdText} ${styles.vendorSKUColumn}`}>
+                                    <input type="text" onChange={(e) => handleNewItemChange("vendorSKU", e.target.value)} className={styles.inputField} />
+                                </td>
+                            </tr>
+                        )}
                         {filteredItems.map((item) => (
                             <React.Fragment key={item.id}>
                                 <tr className={styles.order}>
@@ -265,62 +359,10 @@ const InventoryTable: React.FC = () => {
                                 </tr>
                             </React.Fragment>
                         ))}
-                        {newItem && (
-                            <tr className={styles.order}>
-                                <td className={`${styles.tableCell} ${styles.tdText} ${styles.idColumn}`}>
-                                    <input type="text" onChange={(e) => handleNewItemChange("internalSKU", e.target.value)} className={styles.inputField} />
-                                </td>
-                                <td className={`${styles.tableCell} ${styles.tdText} ${styles.descriptionColumn}`}>
-                                    <input type="text" onChange={(e) => handleNewItemChange("name", e.target.value)} className={styles.inputField} />
-                                </td>
-                                <td className={`${styles.tableCell} ${styles.tdText}`}>
-                                    <input type="text" onChange={(e) => handleNewItemChange("quantity", e.target.value)} className={styles.inputField} />
-                                </td>
-                                <td className={`${styles.tableCell} ${styles.tdText} ${styles.levelColumn}`}>
-                                    <select onChange={(e) => handleNewItemChange("level", e.target.value as StockLevel)} className={styles.selectDropdown}>
-                                        {Object.values(StockLevel).map((option) => (
-                                            <option key={option} value={option}>
-                                                {option.toUpperCase()}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </td>
-                                <td className={`${styles.tableCell} ${styles.tdText} ${styles.locationColumn}`}>
-                                    <input type="text" onChange={(e) => handleNewItemChange("location", e.target.value)} className={styles.inputField} />
-                                </td>
-                                <td className={`${styles.tableCell} ${styles.tdText} ${styles.vendorColumn}`}>
-                                    <input type="text" onChange={(e) => handleNewItemChange("vendor", e.target.value)} className={styles.inputField} />
-                                </td>
-                                <td className={`${styles.tableCell} ${styles.tdText} ${styles.vendorSKUColumn}`}>
-                                    <input type="text" onChange={(e) => handleNewItemChange("vendorSKU", e.target.value)} className={styles.inputField} />
-                                </td>
-                                {/* <td>
-                                    <button onClick={saveNewItem} className={styles.addButton}>Save</button>
-                                </td> */}
-                            </tr>
-                        )}
-
                     </tbody>
                 </table>
             </div>
 
-            <div className={styles.addButtonContainer}>
-                {newItem ? (
-                    <button
-                        onClick={() => {
-                            saveNewItem();
-                            setNewItem(null);
-                        }}
-                        className={styles.addButton}
-                    >
-                        Save
-                    </button>
-                ) : (
-                    <button onClick={() => setNewItem({})} className={styles.addButton}>
-                        + Add Item
-                    </button>
-                )}
-            </div>
             {filteredItems.length === 0 && (
                 <div className={styles.emptyState}>
                     <p>No inventory to show.</p>
