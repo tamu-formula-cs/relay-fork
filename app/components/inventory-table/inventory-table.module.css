@@ -148,6 +148,32 @@ button.orderButton {
 
 .levelColumnHeader {
     width: 12%;
+    position: relative;
+}
+
+.filterContainer {
+    position: absolute;
+    display: inline-block;
+    align-items: center;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+}
+
+.hiddenSelect {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.filterButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .locationColumnHeader {
@@ -253,7 +279,6 @@ button.orderButton {
 .addButtonContainer {
     display: flex;
     justify-content: center;
-    margin-top: 20px;
 }
 
 .addButton {
@@ -269,5 +294,4 @@ button.orderButton {
 
 .addButton:hover {
     background-color: #7044F2;
-    ;
 }

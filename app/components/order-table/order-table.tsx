@@ -180,6 +180,7 @@ const OrderTable: React.FC = () => {
                 );
     
                 return (
+                    order.meenOrderId?.toLowerCase().includes(query) ||
                     order.name.toLowerCase().includes(query) ||
                     order.vendor.toLowerCase().includes(query) ||
                     order.status.toLowerCase().includes(query) ||
