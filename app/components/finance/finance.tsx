@@ -104,7 +104,7 @@ const FinanceDashboard: React.FC = () => {
     OPS: 10500,
   };
 
-  const overallBudget = 77000;
+  const overallBudget = 72500;
 
   if (error) {
     return <div>Error loading finance data.</div>;
