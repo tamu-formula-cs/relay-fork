@@ -36,12 +36,13 @@ export async function PUT(
         vendorSKU,
         status: statusString,
     } = await request.json();
+
     const status = statusString ? (statusString as ItemStatus) : undefined;
     const level = levelString ? (levelString as StockLevel) : undefined;
-    console.log("string: ", quantityString);
-    const quantity = quantityString === '' ? null : Number(quantityString);
-
-    console.log("actual: ", quantity);
+    const quantity =
+        quantityString === '' || quantityString === null || quantityString === undefined
+            ? undefined
+            : Number(quantityString);
 
     try {
         // Step 1: Update the item
@@ -69,12 +70,49 @@ export async function PUT(
             })
             : null;
 
-        // if (!order) {
-        //     return NextResponse.json({ error: 'Order not found' }, { status: 404 });
-        // }
-
         if (!order || !orderId) {
             return NextResponse.json({ message: 'Item updated, but no associated order' });
+        }
+
+        // Step 2.5: Generate an Internal SKU if item status moved to picked up
+        const subteams = ['General', 'AERO', 'BAT', 'CHS', 'ECE', 'PT', 'SOFTWARE', 'SUS',]
+        const costBreakdown = order.costBreakdown;
+
+        if (!internalSKU && status === ItemStatus.PICKED_UP && costBreakdown) {
+            const subteam = Object.keys(costBreakdown).find(team => costBreakdown[team as keyof typeof costBreakdown] === 100);
+
+            if (!subteam || !(subteams.includes(subteam))) {
+            }
+
+            if (subteam && subteams.includes(subteam)) {
+                const internalSKUPrefix = subteams.indexOf(subteam)
+
+                // find the latest internalSKU for the subteam specific item
+                const latestItem = await prisma.item.findFirst({
+                    where: {
+                        internalSKU: { startsWith: `${internalSKUPrefix}-` }
+                    },
+                    orderBy: {
+                        internalSKU: 'desc'
+                    }
+                });
+
+                // calculate the next internalSKU to be generated
+                let nextNumber = 1;
+                if (latestItem && latestItem.internalSKU) {
+                    const lastNumber = parseInt(latestItem.internalSKU.split('-')[1], 10);
+                    nextNumber = lastNumber + 1;
+                }
+
+                const newInternalSKU = `${internalSKUPrefix}-${nextNumber.toString().padStart(4, '0')}`;
+
+                await prisma.item.update({
+                    where: { id: itemId },
+                    data: { internalSKU: newInternalSKU }
+                });
+            } else {
+                console.error("Unable to generate Internal SKU, this order was placed by multiple subteams.");
+            }
         }
 
         // Step 3: Check if all items have the same status as the updated item

@@ -10,13 +10,13 @@
     border-radius: 10px;
 }
 
-h1.purchaseHeader{
+h1.purchaseHeader {
     font-family: 'Poppins';
     font-weight: normal;
     font-size: 1.25rem;
 }
 
-.tableTop{
+.tableTop {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -54,13 +54,15 @@ h1.purchaseHeader{
     height: 4rem;
 }
 
-.tableBody th, .tableBody td {
-    border-right: 1px solid #E5E7EB; /* Light grey border */
-    border-bottom: 1px solid #E5E7EB; /* Optional: Horizontal lines */
+.tableBody th,
+.tableBody td {
+    border-right: 1px solid #E5E7EB;
+    border-bottom: 1px solid #E5E7EB;
 }
 
-.tableBody th:last-child, .tableBody td:last-child {
-    border-right: none; /* Remove the right border from the last column */
+.tableBody th:last-child,
+.tableBody td:last-child {
+    border-right: none;
 }
 
 .searchBar {
@@ -79,11 +81,11 @@ h1.purchaseHeader{
     outline: none;
 }
 
-.tableSearch input.searchBar:focus{
+.tableSearch input.searchBar:focus {
     border-color: #7044F2;
 }
 
-button.orderButton{
+button.orderButton {
     margin-left: 1rem;
     background-color: #7044F2;
     color: white;
@@ -92,7 +94,8 @@ button.orderButton{
     padding: 1rem 1.5rem;
 }
 
-.thText, .tdText {
+.thText,
+.tdText {
     text-align: center;
     vertical-align: middle;
     padding: 10px;
@@ -102,7 +105,7 @@ button.orderButton{
     position: relative;
 }
 
-.thText{
+.thText {
     color: #4C4C4C;
     font-weight: normal;
     font-size: .9rem;
@@ -112,7 +115,8 @@ button.orderButton{
     width: 11.11%;
 }
 
-.tableBody .commentsColumn, .commentsColumnHeader {
+.tableBody .commentsColumn,
+.commentsColumnHeader {
     width: 12%;
     font-size: .9rem;
 }
@@ -135,19 +139,45 @@ button.orderButton{
 }
 
 .idColumnHeader {
-    width: 5%;
+    width: 7%;
 }
 
 .quantityColumnHeader {
-    width: 4%;
+    width: 5%;
 }
 
 .levelColumnHeader {
-    width: 8%;
+    width: 12%;
+    position: relative;
+}
+
+.filterContainer {
+    position: absolute;
+    display: inline-block;
+    align-items: center;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+}
+
+.hiddenSelect {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.filterButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .locationColumnHeader {
-    width: 4%;
+    width: 5%;
 }
 
 .descriptionColumnHeader {
@@ -159,11 +189,11 @@ button.orderButton{
 }
 
 .vendorSKUColumnHeader {
-    width: 5%;
+    width: 15%;
 }
 
 .deleteColumnHeader {
-    width: 1%;
+    width: 2%;
 }
 
 .descriptionColumn {
@@ -191,28 +221,42 @@ button.orderButton{
 }
 
 .selectDropdown {
-    padding: 8px 12px;
-    background-color: #f8f8f8;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    background-color: white;
+    border: 1px solid #d1d5db;
+    padding: 4px 8px;
+    border-radius: 6px;
     font-size: 14px;
-    color: #333;
-    appearance: none;
+    color: #374151;
+    cursor: pointer;
     outline: none;
-    transition: border-color 0.3s, background-color 0.3s;
+    transition: border-color 0.2s ease;
+}
+
+.selectDropdown:hover {
+    border-color: #9ca3af;
 }
 
 .selectDropdown:focus {
-    border-color: #4caf50;
-    background-color: #eafaf1;
+    border-color: #7044F2;
 }
 
-.selectDropdown option {
-    padding: 8px;
+.inStock {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.lowStock {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.outOfStock {
+    background-color: #f8d7da;
+    color: #721c24;
 }
 
 .tableCell:focus-within {
-    border: 2px solid #7044F2;;
+    border: 2px solid #7044F2;
 }
 
 .inputField {
@@ -225,6 +269,7 @@ button.orderButton{
     padding: 0;
     text-align: center;
     outline: none;
+    text-overflow: ellipsis;
 }
 
 .descriptionColumn .inputField {
@@ -234,11 +279,11 @@ button.orderButton{
 .addButtonContainer {
     display: flex;
     justify-content: center;
-    margin-top: 20px;
 }
 
 .addButton {
-    background-color: #7044F2;;
+    background-color: #7044F2;
+    ;
     color: white;
     padding: 10px 15px;
     border: none;
@@ -248,5 +293,5 @@ button.orderButton{
 }
 
 .addButton:hover {
-    background-color: #7044F2;;
+    background-color: #7044F2;
 }
