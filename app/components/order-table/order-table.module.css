@@ -189,6 +189,15 @@ button.orderButton:hover{
     border-radius: 5px;
 }
 
+.openURLIcon {
+    position: absolute;
+    right: 0;
+    margin-right: 20%;
+    stroke: #EB8258;
+    width: 0.9rem;
+    height: 0.9rem;
+}
+
 /* Item Status */
 .itemStatusDelivered {
     font-size: .9rem;

@@ -9,6 +9,7 @@ import Settings from "../../../assets/settings.svg";
 import LinkIcon from "../../../assets/link.svg";
 import EmptyIcon from "../../../assets/empty.svg";
 import SortIcon from "../../../assets/sort.svg"
+import OpenURLIcon from "../../../assets/open_url.svg"
 import Image from 'next/image';
 import useSWR, { mutate } from 'swr';
 import { useSession } from 'next-auth/react';
@@ -420,6 +421,15 @@ const OrderTable: React.FC = () => {
                                         onClick={(event)=>handleStatusClick(event, order)}
                                     >
                                         {order.status.toUpperCase()}
+                                        {order.status === OrderStatus.SHIPPED && order.trackingId && order.carrier && 
+                                            <Image
+                                            src={OpenURLIcon.src}
+                                            height={14}
+                                            width={14}
+                                            alt="Open URL Icon"
+                                            className={`${styles.openURLIcon}`}
+                                            />
+                                        }
                                     </td>
                                     <td className={`${styles.tdText} ${styles.costBreakdownColumn}`}>
                                         {order.costBreakdown ? (
