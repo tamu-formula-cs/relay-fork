@@ -52,6 +52,7 @@ model Order {
   supportingDocs  Document[]  @relation("SupportingDocs")
   receipts        Document[]  @relation("Receipts")
   notified        Boolean     @default(false)
+  deliveryLocation String?
 }
 
 enum OrderStatus {

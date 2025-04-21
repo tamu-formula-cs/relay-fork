@@ -27,6 +27,7 @@ interface OrderData {
         OPS: number;
     };
     supportingDocs: { name: string; url: string }[];
+    deliveryLocation: string;
 }
 
 export default function OrderForm({ onClose }: OrderFormProps) {
@@ -50,12 +51,13 @@ export default function OrderForm({ onClose }: OrderFormProps) {
             OPS: 0
         },
         supportingDocs: [],
+        deliveryLocation: '',
     });
 
     const handleNext = () => setCurrentScreen(currentScreen + 1);
     const handleBack = () => setCurrentScreen(currentScreen - 1);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setOrderData({ ...orderData, [name]: value });
     };
@@ -87,6 +89,7 @@ export default function OrderForm({ onClose }: OrderFormProps) {
         formData.append('notes', orderData.notes);
         formData.append('estimatedCost', String(orderData.estimatedCost));
         formData.append('userEmail', email || '');
+        formData.append('deliveryLocation', orderData.deliveryLocation);
         for (const [key, value] of Object.entries(orderData.costBreakdown)) {
             formData.append(`costBreakdown[${key}]`, String(value));
         }
@@ -182,20 +185,35 @@ interface GeneralInfoScreenProps {
 }
 
 function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrderData }:  GeneralInfoScreenProps) {
-    const isNextDisabled = !orderData.orderName || !orderData.vendor || orderData.estimatedCost <= 0;
+    const [showCustomDelivery, setShowCustomDelivery] = useState(false);
+    const [customDelivery, setCustomDelivery] = useState('')
+    const isNextDisabled = !orderData.orderName || !orderData.vendor || orderData.estimatedCost <= 0 || (showCustomDelivery && customDelivery === '');
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploadedFiles, setUploadedFiles] = useState<{ name: string; url: string }[]>([]);
     const { toast } = useToast();
 
     const handleNextClick = () => {
         if (isNextDisabled) {
+            const text = showCustomDelivery ? "Please fill in the order name, vendor, estimated cost, and delivery location to continue." : "Please fill in the order name, vendor, and estimated cost to continue.";
             toast({
                 title: "Incomplete Information",
-                description: "Please fill in the order name, vendor, and estimated cost to continue.",
+                description: text,
                 variant: "destructive",
             });
         } else {
+            if (showCustomDelivery) {
+                orderData.deliveryLocation = customDelivery;
+            }
             onNext();
+        }
+    };
+
+    const handleCustomDelivery = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        if (value === 'Other') {
+            setShowCustomDelivery(true);
+        } else {
+            setShowCustomDelivery(false);
         }
     };
 
@@ -295,6 +313,39 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
                             className={styles.textarea}
                         />
                     </div>
+                </div>
+                <div className={styles.generalRowThree}>
+                    <div className={styles.inputGroup}>
+                        <label>Delivery Location</label>
+                        <select name="deliveryLocation"
+                            value={showCustomDelivery ? 'Other' : orderData.deliveryLocation}
+                            onChange={(e) => {
+                                handleCustomDelivery(e);
+                                if (e.target.value === 'Other') {
+                                    orderData.deliveryLocation = '';
+                                } else {
+                                    onInputChange(e);
+                                }
+                            }}
+                            >
+                            <option value=''>N/A</option>
+                            <option value='Instrumentation'>Instrumentation</option>
+                            <option value='FEDC'>FEDC</option>
+                            <option value='Other'>Other</option>
+                        </select>
+                    </div>
+                    {showCustomDelivery  &&
+                        <div className={styles.inputGroup}>
+                            <label>Enter Custom Delivery Location*</label>
+                            <input
+                                type="text"
+                                name="deliveryLocation"
+                                placeholder="Enter Delivery Location"
+                                value={customDelivery}
+                                onChange={(e) => setCustomDelivery(e.target.value)} 
+                            />
+                        </div>
+                    }  
                 </div>
                 <div className={styles.buttonGroup}>
                     <div className={styles.uploadedFilesContainer}>
@@ -477,6 +528,7 @@ function CartLinkOrder({ orderData, onBack, onClose }: CartLinkOrderProps) {
             costBreakdown: orderData.costBreakdown,
             supportingDocs: orderData.supportingDocs,
             userEmail: email,
+            deliveryLocation: orderData.deliveryLocation,
         };
 
         try {
@@ -578,7 +630,8 @@ function SingleItemOrder({ orderData, onBack, onClose }: SingleItemOrderProps) {
             comments: orderData.notes,
             costBreakdown: orderData.costBreakdown,
             supportingDocs: orderData.supportingDocs,
-            userEmail: email
+            userEmail: email,
+            deliveryLocation: orderData.deliveryLocation,
         };
 
         try {

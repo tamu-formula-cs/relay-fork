@@ -6,7 +6,7 @@ import { ItemStatus, OrderStatus } from '@prisma/client';
 export async function POST(request: NextRequest) {
 
     const body = await request.json();
-    const { orderName, cartUrl, items, vendor, totalCost, comments, costBreakdown, supportingDocs } = body;
+    const { orderName, cartUrl, items, vendor, totalCost, comments, costBreakdown, supportingDocs, deliveryLocation } = body;
 
     const userEmail = body.userEmail;
 
@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
                     comments: comments || '',
                     url: cartUrl || null,
                     costBreakdown,
+                    deliveryLocation,
                 },
             });
     
@@ -96,6 +97,7 @@ export async function POST(request: NextRequest) {
                             status: ItemStatus.TO_ORDER,
                         },
                     },
+                    deliveryLocation: deliveryLocation,
                 },
             });
 
