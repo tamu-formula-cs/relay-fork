@@ -403,6 +403,9 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                             <h4 className={styles.infoLabel}>Placed By:</h4>
                             <p className={styles.infoText}>{order.user.name}</p>
 
+                            <h4 className={styles.infoLabel}>Deliver to:</h4>
+                            <p className={styles.infoText}>{order.deliveryLocation}</p>
+
                             {/* Cost Breakdown Section */}
                             {isAdmin &&
                             <>

@@ -191,11 +191,11 @@ button.orderButton:hover{
 
 .openURLIcon {
     position: absolute;
-    right: 0;
-    margin-right: 20%;
+    right: 0rem;
+    margin-right: 12%;
     stroke: #EB8258;
-    width: 0.9rem;
-    height: 0.9rem;
+    width: 0.7rem;
+    height: 0.7rem;
 }
 
 /* Item Status */

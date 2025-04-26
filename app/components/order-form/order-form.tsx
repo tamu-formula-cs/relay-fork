@@ -178,7 +178,7 @@ export default function OrderForm({ onClose }: OrderFormProps) {
 
 interface GeneralInfoScreenProps {
     orderData: OrderData;
-    onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+    onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
     onNext: () => void;
     onClose: () => void;
     setOrderData: React.Dispatch<React.SetStateAction<OrderData>>;
@@ -208,14 +208,14 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
         }
     };
 
-    const handleCustomDelivery = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        if (value === 'Other') {
-            setShowCustomDelivery(true);
-        } else {
-            setShowCustomDelivery(false);
-        }
-    };
+    const handleCustomDelivery = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+            const { value } = e.target;
+            if (value === 'Other') {
+                setShowCustomDelivery(true);
+            } else {
+                setShowCustomDelivery(false);
+            }
+        };
 
     const handleFileUpload = async () => {
         const file = fileInputRef.current?.files?.[0];

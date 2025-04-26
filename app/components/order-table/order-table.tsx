@@ -70,6 +70,7 @@ export interface SerializedOrderWithRelations {
     //     updatedAt: Date;
     // }[];
     items: SerializedItemsWithRelations[];
+    deliveryLocation: string | null;
 }
 
 export interface SerializedItemsWithRelations {
