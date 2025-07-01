@@ -6,6 +6,11 @@ import prisma from '../../lib/prisma';
 export async function GET() {
   try {
     const orders = await prisma.order.findMany({
+      where: {
+        createdAt: {
+          gte: new Date('2025-07-01T00:00:00Z'),
+        },
+      },
       include: {
         user: true,
         items: true,
