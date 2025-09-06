@@ -298,7 +298,7 @@ const OrderTable: React.FC = () => {
             a.remove();
             window.URL.revokeObjectURL(url);
         } catch (err) {
-            alert('Error exporting orders.');
+            alert('Error exporting orders: ' + (err as Error).message);
         }
     };
 
