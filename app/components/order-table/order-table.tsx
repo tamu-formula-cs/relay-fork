@@ -283,32 +283,58 @@ const OrderTable: React.FC = () => {
         }
     };
 
+    // Export Orders handler
+    const handleExportOrders = async () => {
+        try {
+            const res = await fetch('/api/orders/export');
+            if (!res.ok) throw new Error('Failed to export orders');
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'orders.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            alert('Error exporting orders.');
+        }
+    };
+
     return (
         <div className={styles.tableMainContainer}>
             <div className={styles.tableTop}>
                 <h1 className={styles.purchaseHeader}>Purchase Orders</h1>
-                <div className={styles.tableSearch}>
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className={styles.searchBar}
-                    />
-                    
-                    <button
-                        className={styles.myOrdersButton}
-                        onClick={() => setSearchQuery(currentUserSubteam.toLowerCase())}
-                    >
-                        My Orders
-                    </button>
-                    
-                    <button
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div className={styles.tableSearch}>
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className={styles.searchBar}
+                        />
+                        <button
+                            className={styles.myOrdersButton}
+                            onClick={() => setSearchQuery(currentUserSubteam.toLowerCase())}
+                        >
+                            My Orders
+                        </button>
+                        <button
+                            className={styles.orderButton}
+                            onClick={() => setShowOrderForm(true)}
+                        >
+                            Place Order
+                        </button>
+                        <button
                         className={styles.orderButton}
-                        onClick={() => setShowOrderForm(true)}
+                        onClick={handleExportOrders}
+                        style={{ backgroundColor: '#000', color: 'white' }}
                     >
-                        Place Order
+                        Export Orders
                     </button>
+                    </div>
                 </div>
             </div>
             {showOrderForm && <OrderForm onClose={() => setShowOrderForm(false)} />}
