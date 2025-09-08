@@ -8,7 +8,7 @@ export async function GET() {
     const orders = await prisma.order.findMany({
       where: {
         createdAt: {
-          gte: new Date('2024-07-01T00:00:00Z'),
+          gte: new Date('2025-07-01T00:00:00Z'),
         },
       },
       include: {
