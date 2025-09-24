@@ -194,14 +194,18 @@ interface GeneralInfoScreenProps {
 function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrderData }: GeneralInfoScreenProps) {
     const [showCustomDelivery, setShowCustomDelivery] = useState(false);
     const [customDelivery, setCustomDelivery] = useState('')
-    const isNextDisabled = !orderData.orderName || !orderData.vendor || orderData.estimatedCost <= 0 || (showCustomDelivery && customDelivery === '');
+    const deliveryLocationValid = showCustomDelivery ? !!customDelivery : !!orderData.deliveryLocation;
+    const isNextDisabled = !orderData.orderName || 
+                        !orderData.vendor || 
+                        orderData.estimatedCost <= 0 || 
+                        !deliveryLocationValid;
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploadedFiles, setUploadedFiles] = useState<{ name: string; url: string }[]>([]);
     const { toast } = useToast();
 
     const handleNextClick = () => {
         if (isNextDisabled) {
-            const text = showCustomDelivery ? "Please fill in the order name, vendor, estimated cost, and delivery location to continue." : "Please fill in the order name, vendor, and estimated cost to continue.";
+            const text = "Please fill in the order name, vendor, estimated cost, and delivery location to continue.";
             toast({
                 title: "Incomplete Information",
                 description: text,

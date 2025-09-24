@@ -274,7 +274,7 @@ button.submitButton:hover {
 
 .tableHeader {
     background-color: #f9fafb;
-    font-weight: 600;
+    font-weight: normal;
     font-size: 0.9rem;
     color: #374151;
     border-bottom: 1px solid #e5e7eb;
@@ -327,5 +327,5 @@ button.submitButton:hover {
 
 .orderTotal {
     margin-right: 1rem;
-    font-weight: 500;
+    font-weight: normal;
 }
