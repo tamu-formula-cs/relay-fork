@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
-import { parse } from 'csv-parse/sync';
+// import { parse } from 'csv-parse/sync';
 import { ItemStatus, OrderStatus } from '@prisma/client';
 
-const REQUIRED_HEADERS = ['Item', 'Part Number', 'Notes', 'QTY to Buy', 'Cost', 'Vendor', 'Link'];
+// const REQUIRED_HEADERS = ['Item', 'Part Number', 'Notes', 'QTY to Buy', 'Cost', 'Vendor', 'Link'];
 
-interface Record {
-    Item: string;
-    'Part Number'?: string;
-    Notes?: string;
-    'QTY to Buy': string;
-    Cost: string;
-    Vendor: string;
-    Link?: string;
-    [key: string]: string | undefined;
-}
+// interface Record {
+//     Item: string;
+//     'Part Number'?: string;
+//     Notes?: string;
+//     'QTY to Buy': string;
+//     Cost: string;
+//     Vendor: string;
+//     Link?: string;
+//     [key: string]: string | undefined;
+// }
 
 interface SupportingDoc {
     name: string;
@@ -25,13 +25,13 @@ export async function POST(request: NextRequest) {
     try {
         // Parse the multipart/form-data
         const formData = await request.formData();
-        const file = formData.get('file') as File | null;
+        // const file = formData.get('file') as File | null;
         const userEmail = formData.get('userEmail') as string;
 
         // Input validation
-        if (!file) {
-            return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
-        }
+        // if (!file) {
+        //     return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+        // }
 
         const user = await prisma.user.findUnique({
             where: { email: userEmail },
@@ -61,77 +61,113 @@ export async function POST(request: NextRequest) {
         const costBreakdown = Object.fromEntries(costBreakdownEntries);
 
         // Parse CSV content
-        const content = await file.text();
-        const parsedData: string[][] = parse(content, {
-            columns: false,
-            skip_empty_lines: true,
-            relax_column_count: true,
-        });
+        // const content = await file.text();
+        // const parsedData: string[][] = parse(content, {
+        //     columns: false,
+        //     skip_empty_lines: true,
+        //     relax_column_count: true,
+        // });
 
         // Remove header instruction if present
-        if (
-            parsedData.length > 0 &&
-            parsedData[0][0] &&
-            parsedData[0][0].startsWith('MAKE A COPY AND FILL OUT YOUR OWN FILE')
-        ) {
-            parsedData.shift();
-        }
+        // if (
+        //     parsedData.length > 0 &&
+        //     parsedData[0][0] &&
+        //     parsedData[0][0].startsWith('MAKE A COPY AND FILL OUT YOUR OWN FILE')
+        // ) {
+        //     parsedData.shift();
+        // }
 
-        // Validate headers
-        const headers = parsedData.shift();
-        if (!headers) {
-            return NextResponse.json({ error: 'CSV headers missing' }, { status: 400 });
-        }
+        // // Validate headers
+        // const headers = parsedData.shift();
+        // if (!headers) {
+        //     return NextResponse.json({ error: 'CSV headers missing' }, { status: 400 });
+        // }
 
-        const headersMatch = REQUIRED_HEADERS.every((header, index) => headers[index] === header);
-        if (!headersMatch) {
-            return NextResponse.json({ 
-                error: 'Invalid CSV format. Headers must exactly match the template.',
-                expected: REQUIRED_HEADERS,
-                received: headers
-            }, { status: 400 });
-        }
+        // const headersMatch = REQUIRED_HEADERS.every((header, index) => headers[index] === header);
+        // if (!headersMatch) {
+        //     return NextResponse.json({ 
+        //         error: 'Invalid CSV format. Headers must exactly match the template.',
+        //         expected: REQUIRED_HEADERS,
+        //         received: headers
+        //     }, { status: 400 });
+        // }
 
         // Process records
-        let records = parsedData.map((row: string[]) => {
-            const record = {} as Record;
-            headers.forEach((header: string, index: number) => {
-                record[header] = row[index];
-            });
-            return record;
-        });
+        // let records = parsedData.map((row: string[]) => {
+        //     const record = {} as Record;
+        //     headers.forEach((header: string, index: number) => {
+        //         record[header] = row[index];
+        //     });
+        //     return record;
+        // });
 
         // Filter valid records
-        records = records.filter((record: Record) => {
-            const { Item, 'QTY to Buy': qtyToBuy, Cost, Vendor } = record;
-            const quantity = parseInt(qtyToBuy, 10);
-            const sanitizedCost = Cost ? Cost.replace(/[^0-9.-]+/g, '') : '';
-            const price = parseFloat(sanitizedCost);
-            return (
-                Item && qtyToBuy && Cost && Vendor && 
-                !isNaN(quantity) && !isNaN(price)
-            );
-        });
+        // records = records.filter((record: Record) => {
+        //     const { Item, 'QTY to Buy': qtyToBuy, Cost, Vendor } = record;
+        //     const quantity = parseInt(qtyToBuy, 10);
+        //     const sanitizedCost = Cost ? Cost.replace(/[^0-9.-]+/g, '') : '';
+        //     const price = parseFloat(sanitizedCost);
+        //     return (
+        //         Item && qtyToBuy && Cost && Vendor &&
+        //         !isNaN(quantity) && !isNaN(price)
+        //     );
+        // });
 
         // Prepare items data
-        const itemsData = records.map(record => {
-            const { Item, 'Part Number': partNumber, Notes, 'QTY to Buy': qtyToBuy, Cost, Vendor, Link } = record;
-            const sanitizedCost = Cost.replace(/[^0-9.-]+/g, '');
-            const quantity = parseInt(qtyToBuy, 10);
-            const price = parseFloat(sanitizedCost);
+        // const itemsData = records.map(record => {
+        //     const { Item, 'Part Number': partNumber, Notes, 'QTY to Buy': qtyToBuy, Cost, Vendor, Link } = record;
+        //     const sanitizedCost = Cost.replace(/[^0-9.-]+/g, '');
+        //     const quantity = parseInt(qtyToBuy, 10);
+        //     const price = parseFloat(sanitizedCost);
 
-            return {
+        //     return {
+        //         internalItemId: `ITEM-${Math.floor(Math.random() * 100000)}`,
+        //         name: Item,
+        //         partNumber: partNumber || '',
+        //         notes: Notes || null,
+        //         quantity,
+        //         price,
+        //         vendor: Vendor,
+        //         link: Link || null,
+        //         status: ItemStatus.TO_ORDER,
+        //     };
+        // });
+
+        const itemsData: {
+            internalItemId: string;
+            name: string;
+            partNumber: string;
+            notes: string | null;
+            quantity: number;
+            price: number;
+            vendor: string;
+            link: string | null;
+            status: ItemStatus;
+        }[] = [];
+
+        for (let i = 0; formData.has(`items[${i}][itemName]`); i++) {
+            const itemName = formData.get(`items[${i}][itemName]`) as string;
+            const partNumber = formData.get(`items[${i}][partNumber]`) as string;
+            const notes = formData.get(`items[${i}][notes]`) as string;
+            const quantity = parseInt(formData.get(`items[${i}][quantity]`) as string, 10);
+            const cost = parseFloat(formData.get(`items[${i}][cost]`) as string);
+            const vendor = formData.get(`items[${i}][vendor]`) as string;
+            const link = formData.get(`items[${i}][link]`) as string;
+
+            if (!itemName || !quantity || !cost || !vendor) continue; // basic validation
+
+            itemsData.push({
                 internalItemId: `ITEM-${Math.floor(Math.random() * 100000)}`,
-                name: Item,
-                partNumber: partNumber || '',
-                notes: Notes || null,
+                name: itemName,
+                partNumber: partNumber || "",
+                notes: notes || null,
                 quantity,
-                price,
-                vendor: Vendor,
-                link: Link || null,
+                price: cost,
+                vendor,
+                link: link || null,
                 status: ItemStatus.TO_ORDER,
-            };
-        });
+            });
+        }
 
         // Process supporting documents
         const supportingDocs: SupportingDoc[] = [];
@@ -192,15 +228,15 @@ export async function POST(request: NextRequest) {
         });
 
         console.log('Created order with items:', JSON.stringify(result, null, 2));
-        
-        return NextResponse.json({ 
+
+        return NextResponse.json({
             message: 'Order, items, and documents created successfully',
-            order: result 
+            order: result
         });
 
     } catch (error) {
         console.error('Error processing upload:', error);
-        return NextResponse.json({ 
+        return NextResponse.json({
             error: error instanceof Error ? error.message : 'Error creating order'
         }, { status: 500 });
     }

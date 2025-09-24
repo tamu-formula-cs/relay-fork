@@ -23,8 +23,12 @@
     z-index: 3;
 }
 
-.formContainerSmall{
+.formContainerSmall {
     width: 30%;
+}
+
+.formContainerWide {
+  max-width: 1400px;
 }
 
 .formHeader {
@@ -160,7 +164,7 @@ button.backButton {
     padding: 1rem 1.5rem;
 }
 
-button.nextButton:hover{
+button.nextButton:hover {
     cursor: pointer;
     background-color: #5938C4;
 }
@@ -171,7 +175,7 @@ button.backButton {
     border: 1px solid #eaeaea;
 }
 
-button.backButton:hover{
+button.backButton:hover {
     cursor: pointer;
     background-color: #eaeaea;
 }
@@ -182,7 +186,7 @@ button.backButton:hover{
     gap: 1rem;
 }
 
-.methodButtonGroup{
+.methodButtonGroup {
     margin-bottom: 2rem;
     justify-content: space-between;
 }
@@ -200,7 +204,7 @@ button.submitButton:hover {
     cursor: pointer;
 }
 
-.singleLink{
+.singleLink {
     margin: 2rem 0;
     width: 100%;
 }
@@ -248,4 +252,80 @@ button.submitButton:hover {
 
 .fileLink:hover {
     text-decoration: underline;
+}
+
+.tableContainer {
+    display: flex;
+    flex-direction: column;
+    margin: 1rem 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.tableHeader,
+.tableRow {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr 0.5fr 1fr 60px;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.75rem 1rem;
+}
+
+.tableHeader {
+    background-color: #f9fafb;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tableRow {
+    background-color: #fff;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.tableRow:hover {
+    background-color: #f9fafb;
+}
+
+.tableRow input {
+    width: 75%;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.tableRow input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.tableFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.removeButton {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.removeButton:hover {
+    color: #dc2626;
+}
+
+.orderTotal {
+    margin-right: 1rem;
+    font-weight: 500;
 }
