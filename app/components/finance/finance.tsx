@@ -50,6 +50,8 @@ interface CostBreakdown {
   BAT: number;
   ECE: number;
   PT: number;
+  DBMS: number;
+  OPS: number;
 }
 
 interface Order {
@@ -90,7 +92,15 @@ const fetcher = async (url: string): Promise<FinanceData> => {
 
 
 const FinanceDashboard: React.FC = () => {
-  const { data, error } = useSWR<FinanceData>('/api/finance', fetcher);
+  const { data, error, mutate } = useSWR<FinanceData>('/api/finance', fetcher, {
+    refreshInterval: 30000, // Refresh every 30 seconds
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+  });
+
+  const handleRefresh = () => {
+    mutate();
+  };
 
   const subteamBudgets: Record<string, number> = {
     AERO: 6300,
@@ -118,17 +128,25 @@ const FinanceDashboard: React.FC = () => {
 
   const subteamSpending = orders.reduce(
   (acc: Record<string, number>, order: Order) => {
+    // Only count orders that are not archived or cancelled
+    if (order.status === OrderStatus.ARCHIVED) {
+      return acc;
+    }
+
     const costBreakdown = order.costBreakdown;
     if (costBreakdown) {
       for (const subteam in costBreakdown) {
         const abbreviation = subteam.toUpperCase() as keyof CostBreakdown;
         const percentage = costBreakdown[abbreviation];
-        const amount = (percentage / 100) * order.totalCost;
-        acc[abbreviation] = (acc[abbreviation] || 0) + amount;
+        if (percentage > 0) {
+          const amount = (percentage / 100) * order.totalCost;
+          acc[abbreviation] = (acc[abbreviation] || 0) + amount;
+        }
       }
     } else {
-      // If there's no cost breakdown, assign to UNKNOWN
-      acc["UNKNOWN"] = (acc["UNKNOWN"] || 0) + order.totalCost;
+      // If there's no cost breakdown, assign to the order's subteam
+      const orderSubteam = order.subteam.toUpperCase();
+      acc[orderSubteam] = (acc[orderSubteam] || 0) + order.totalCost;
     }
     return acc;
   },
@@ -246,10 +264,9 @@ const FinanceDashboard: React.FC = () => {
   );
 
   // 4. Budget Utilization
-  const totalSpent = orders.reduce(
-    (acc: number, order: Order) => acc + order.totalCost,
-    0
-  );
+  const totalSpent = orders
+    .filter(order => order.status !== OrderStatus.ARCHIVED)
+    .reduce((acc: number, order: Order) => acc + order.totalCost, 0);
   const budgetUtilization = (totalSpent / overallBudget) * 100;
 
   // Additional Metrics for Number Widgets
@@ -268,12 +285,22 @@ const FinanceDashboard: React.FC = () => {
 
   // 8. Budget Remaining Amount
   const budgetRemainingAmount = overallBudget - totalSpent;
-  console.log("BUDGET" + subteamBudgetData)
-  console.log("SPENT" + subteamSpentData)
+
+  // Debug logging
+  console.log("Finance Dashboard Debug:");
+  console.log("Total orders:", orders.length);
+  console.log("Active orders:", orders.filter(o => o.status !== OrderStatus.ARCHIVED).length);
+  console.log("Subteam spending:", subteamSpending);
+  console.log("Total spent:", totalSpent);
+  console.log("Budget data:", subteamBudgetData);
+  console.log("Spent data:", subteamSpentData);
   return (
     <div className={styles.dashboardContainer}>
       <div className={styles.dashboardHeader}>
         <h1>Finance Dashboard</h1>
+        <button onClick={handleRefresh} className={styles.refreshButton}>
+          Refresh Data
+        </button>
       </div>
 
       <div className={styles.mainContent}>

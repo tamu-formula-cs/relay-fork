@@ -112,6 +112,7 @@ export default function OrderForm({ onClose }: OrderFormProps) {
                     variant: "affirmation",
                 });
                 mutate('/api/orders');
+                mutate('/api/finance');
                 onClose();
             } else {
                 const errorData = await response.json();
@@ -451,26 +452,26 @@ interface MethodProps {
     onClose: () => void;
 }
 
-function Method({ /*handleSubmitCSV,*/ onNextStep, onBack, onClose }: MethodProps) {
-    // const fileInputRef = useRef<HTMLInputElement>(null);
-    // const { toast } = useToast();
+function Method({ handleSubmitCSV, onNextStep, onBack, onClose }: MethodProps) {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { toast } = useToast();
 
-    // const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    //     const file = e.target.files?.[0];
-    //     if (file && file.name.endsWith('.csv')) {
-    //         try {
-    //             await handleSubmitCSV(file);
-    //         } catch (error) {
-    //             console.error('Error uploading CSV:', error);
-    //         }
-    //     } else {
-    //         toast({
-    //             title: "Invalid File",
-    //             description: "Please upload a valid CSV file.",
-    //             variant: "destructive",
-    //         });
-    //     }
-    // };
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file && file.name.endsWith('.csv')) {
+            try {
+                await handleSubmitCSV(file);
+            } catch (error) {
+                console.error('Error uploading CSV:', error);
+            }
+        } else {
+            toast({
+                title: "Invalid File",
+                description: "Please upload a valid CSV file.",
+                variant: "destructive",
+            });
+        }
+    };
 
     return (
         <div className={styles.formBG}>
@@ -484,11 +485,12 @@ function Method({ /*handleSubmitCSV,*/ onNextStep, onBack, onClose }: MethodProp
 
                 <p className={styles.formParagraph}>How do you want to submit this order?</p>
                 <div className={`${styles.buttonGroup} ${styles.methodButtonGroup}`}>
-                    {/* <button
+                    <button className={styles.nextButton} onClick={() => onNextStep(3)}>Form</button>
+                    <button
                         className={styles.nextButton}
                         onClick={() => fileInputRef.current?.click()}
                     >
-                        Upload CSV
+                        CSV
                     </button>
                     <input
                         type="file"
@@ -496,8 +498,7 @@ function Method({ /*handleSubmitCSV,*/ onNextStep, onBack, onClose }: MethodProp
                         ref={fileInputRef}
                         style={{ display: 'none' }}
                         onChange={handleFileChange}
-                    /> */}
-                    <button className={styles.nextButton} onClick={() => onNextStep(3)}>Order Template</button>
+                    />
                     <button className={styles.nextButton} onClick={() => onNextStep(4)}>Cart Link</button>
                     <button className={styles.nextButton} onClick={() => onNextStep(5)}>Single Item</button>
                 </div>
@@ -554,6 +555,7 @@ function CartLinkOrder({ orderData, onBack, onClose }: CartLinkOrderProps) {
                     variant: "affirmation",
                 });
                 mutate('/api/orders');
+                mutate('/api/finance');
                 onClose();
             } else {
                 const error = await response.json();
@@ -657,6 +659,7 @@ function SingleItemOrder({ orderData, onBack, onClose }: SingleItemOrderProps) {
                     variant: "affirmation",
                 });
                 mutate('/api/orders');
+                mutate('/api/finance');
                 onClose();
             } else {
                 const error = await response.json();
@@ -723,7 +726,6 @@ interface TemplateRow {
     notes: string;
     quantity: number;
     cost: number;
-    vendor: string;
     link: string;
 }
 
@@ -733,13 +735,13 @@ function TemplateEntryForm({ orderData, onBack, onClose }: {
     onClose: () => void;
 }) {
     const [rows, setRows] = useState<TemplateRow[]>([
-        { itemName: "", partNumber: "", notes: "", quantity: 1, cost: 0, vendor: "", link: "" },
+        { itemName: "", partNumber: "", notes: "", quantity: 1, cost: 0, link: "" },
     ]);
     const { toast } = useToast();
     const { data: session } = useSession();
     const email = session?.user.email;
 
-    const addRow = () => setRows([...rows, { itemName: "", partNumber: "", notes: "", quantity: 1, cost: 0, vendor: "", link: "" }]);
+    const addRow = () => setRows([...rows, { itemName: "", partNumber: "", notes: "", quantity: 1, cost: 0, link: "" }]);
 
     const updateRow = (index: number, field: keyof TemplateRow, value: string | number) => {
         const newRows = [...rows];
@@ -777,6 +779,7 @@ function TemplateEntryForm({ orderData, onBack, onClose }: {
         rows.forEach((row, i) => {
             formData.append(`items[${i}][itemName]`, row.itemName);
             formData.append(`items[${i}][partNumber]`, row.partNumber);
+            formData.append(`items[${i}][notes]`, row.notes);
             formData.append(`items[${i}][vendor]`, orderData.vendor);
             formData.append(`items[${i}][quantity]`, String(row.quantity));
             formData.append(`items[${i}][cost]`, String(row.cost));
@@ -819,7 +822,7 @@ function TemplateEntryForm({ orderData, onBack, onClose }: {
         <div className={styles.formBG}>
             <div className={`${styles.formContainer} ${styles.formContainerWide}`}>
                 <div className={styles.formHeader}>
-                    <h1 className={styles.formTitle}>Order Template Form</h1>
+                    <h1 className={styles.formTitle}>MEEN Template Form</h1>
                     <button className={styles.closeButton} onClick={onClose}>X</button>
                 </div>
                 <div className={styles.tableContainer}>
@@ -872,7 +875,13 @@ function TemplateEntryForm({ orderData, onBack, onClose }: {
                             />
                             <button
                                 className={styles.removeButton}
-                                onClick={() => setRows(rows.filter((_, i) => i !== idx))}
+                                onClick={() => {
+                                    if (rows.length > 1) {
+                                        setRows(rows.filter((_, i) => i !== idx));
+                                    }
+                                }}
+                                disabled={rows.length === 1}
+                                title={rows.length === 1 ? "At least one row is required" : "Remove row"}
                             >
                                 ✕
                             </button>

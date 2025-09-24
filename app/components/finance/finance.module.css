@@ -13,7 +13,9 @@
   padding: 1rem;
   border-radius: 10px;
   margin-bottom: 1rem;
-  display: inline-block;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .dashboardHeader h1 {
@@ -142,6 +144,22 @@
 
 p.tileSub {
   font-size: 0.8rem;
+}
+
+.refreshButton {
+  background-color: #7044F2;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+}
+
+.refreshButton:hover {
+  background-color: #5932d1;
 }
 
 /* Responsive adjustments */
