@@ -182,6 +182,7 @@ const BacklogComponent: React.FC = () => {
       
           if (response.ok) {
             mutate('/api/orders');
+            mutate('/api/finance');
             toast({
               title: markAsPickedUpTarget.type === 'order' ? "Order Picked Up" : "Item Picked Up",
               description: markAsPickedUpTarget.type === 'order' ? "Order has been picked up." : "Item has been picked up.",
@@ -661,6 +662,7 @@ const BacklogComponent: React.FC = () => {
                             if (response.ok) {
                                 // Update local state
                                 mutate('/api/orders');
+            mutate('/api/finance');
                                 setIsMeenOrderIdModalOpen(false);
                                 toast({
                                     title: "Order Updated",

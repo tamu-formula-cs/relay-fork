@@ -120,6 +120,7 @@ const OrderTable: React.FC = () => {
             const updatedOrder = JSON.parse(event.data);
             console.log('Order updated:', updatedOrder);
             mutate('/api/orders');
+            mutate('/api/finance');
         };
         eventSource.onerror = (error) => {
             console.error('EventSource error:', error);
@@ -237,6 +238,7 @@ const OrderTable: React.FC = () => {
 
     const updateOrderInState = () => {
         mutate('/api/orders');
+        mutate('/api/finance');
     };
 
     const toggleExpand = (orderId: number, orderItems: Item[], orderUrl: string | null) => {

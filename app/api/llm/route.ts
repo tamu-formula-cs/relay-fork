@@ -3,9 +3,18 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
 import { OpenAI } from "openai";
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+    if (!openai) {
+        const apiKey = process.env.OPENAI_API_KEY;
+        if (!apiKey) {
+            throw new Error('OPENAI_API_KEY environment variable is not set');
+        }
+        openai = new OpenAI({ apiKey });
+    }
+    return openai;
+}
 
 interface OrderDetails {
     meenId: string,
@@ -75,7 +84,8 @@ async function parseData(query: string): Promise<OrderDetails | null> {
     Return the response **only** as a JSON object.
     `;
 
-    const chat_completion = await openai.chat.completions.create({
+    const openaiClient = getOpenAIClient();
+    const chat_completion = await openaiClient.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
             {
@@ -119,20 +129,33 @@ async function parseData(query: string): Promise<OrderDetails | null> {
 
 export async function GET(req: NextRequest) {
     try {
-        // const { searchParams } = new URL(req.url);
-        // const query = searchParams.get('query');
-
         const query = req.nextUrl.searchParams.get('query');
 
         if (!query) {
             return NextResponse.json({ error: 'Missing query parameter' }, { status: 400 });
         }
 
+        // Check if OpenAI API key is available
+        if (!process.env.OPENAI_API_KEY) {
+            return NextResponse.json({
+                error: 'OpenAI API key not configured',
+                message: 'The LLM service is not available because the OPENAI_API_KEY environment variable is not set.'
+            }, { status: 503 });
+        }
+
         const response = await parseData(query);
         return NextResponse.json(response);
     } catch (error) {
         const err = error as Error;
-        console.error('Error fetching emails:', err);
+        console.error('Error in LLM API:', err);
+
+        if (err.message.includes('OPENAI_API_KEY')) {
+            return NextResponse.json({
+                error: 'OpenAI API key not configured',
+                message: 'The LLM service is not available.'
+            }, { status: 503 });
+        }
+
         return NextResponse.json({ error: 'Internal Server Error', message: err.message }, { status: 500 });
     }
 }

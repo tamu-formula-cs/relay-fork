@@ -80,9 +80,9 @@ export default function OrderForm({ onClose }: OrderFormProps) {
             });
             return;
         }
-    
+
         const formData = new FormData();
-        
+
         formData.append('file', file);
         formData.append('orderName', orderData.orderName);
         formData.append('vendor', orderData.vendor);
@@ -93,18 +93,18 @@ export default function OrderForm({ onClose }: OrderFormProps) {
         for (const [key, value] of Object.entries(orderData.costBreakdown)) {
             formData.append(`costBreakdown[${key}]`, String(value));
         }
-    
+
         orderData.supportingDocs.forEach((doc, index) => {
             formData.append(`supportingDocs[${index}][name]`, doc.name);
             formData.append(`supportingDocs[${index}][url]`, doc.url);
         });
-    
+
         try {
             const response = await fetch('/api/orders/upload', {
                 method: 'POST',
                 body: formData,
             });
-    
+
             if (response.ok) {
                 toast({
                     title: "Order Created",
@@ -112,6 +112,7 @@ export default function OrderForm({ onClose }: OrderFormProps) {
                     variant: "affirmation",
                 });
                 mutate('/api/orders');
+                mutate('/api/finance');
                 onClose();
             } else {
                 const errorData = await response.json();
@@ -129,7 +130,7 @@ export default function OrderForm({ onClose }: OrderFormProps) {
                 variant: "destructive",
             });
         }
-    };    
+    };
 
     const onNextStep = (index: number) => {
         setCurrentScreen(index);
@@ -159,6 +160,12 @@ export default function OrderForm({ onClose }: OrderFormProps) {
             onClose={onClose}
             onNextStep={onNextStep}
         />,
+        <TemplateEntryForm
+            key="template-entry"
+            orderData={orderData}
+            onBack={() => setCurrentScreen(2)}
+            onClose={onClose}
+        />,
         <CartLinkOrder
             key="cart-link-order"
             orderData={orderData}
@@ -184,7 +191,7 @@ interface GeneralInfoScreenProps {
     setOrderData: React.Dispatch<React.SetStateAction<OrderData>>;
 }
 
-function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrderData }:  GeneralInfoScreenProps) {
+function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrderData }: GeneralInfoScreenProps) {
     const [showCustomDelivery, setShowCustomDelivery] = useState(false);
     const [customDelivery, setCustomDelivery] = useState('')
     const isNextDisabled = !orderData.orderName || !orderData.vendor || orderData.estimatedCost <= 0 || (showCustomDelivery && customDelivery === '');
@@ -209,13 +216,13 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
     };
 
     const handleCustomDelivery = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-            const { value } = e.target;
-            if (value === 'Other') {
-                setShowCustomDelivery(true);
-            } else {
-                setShowCustomDelivery(false);
-            }
-        };
+        const { value } = e.target;
+        if (value === 'Other') {
+            setShowCustomDelivery(true);
+        } else {
+            setShowCustomDelivery(false);
+        }
+    };
 
     const handleFileUpload = async () => {
         const file = fileInputRef.current?.files?.[0];
@@ -227,7 +234,7 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
             });
             return;
         }
-    
+
         try {
             const { url } = await upload(file.name, file, {
                 access: 'public',
@@ -235,14 +242,14 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
             });
 
             const newFile = { name: file.name, url };
-    
+
             setOrderData((prevData) => ({
                 ...prevData,
                 supportingDocs: [...prevData.supportingDocs, { name: file.name, url }],
             }));
 
             setUploadedFiles((prevFiles) => [...prevFiles, newFile]);
-    
+
             toast({
                 title: "File Uploaded",
                 description: "Your PDF was successfully uploaded.",
@@ -257,8 +264,8 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
             });
         }
     };
-    
-    
+
+
 
     return (
         <div className={styles.formBG}>
@@ -266,7 +273,7 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
                 <div className={styles.formHeader}>
                     <h1 className={styles.formTitle}>Order Form</h1>
                     <button className={styles.closeButton} onClick={onClose}>
-                        <Image src={CloseIcon.src} height={10} width={10} alt='close'/>
+                        <Image src={CloseIcon.src} height={10} width={10} alt='close' />
                     </button>
                 </div>
                 <p className={styles.formParagraph}>General Info</p>
@@ -327,14 +334,14 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
                                     onInputChange(e);
                                 }
                             }}
-                            >
+                        >
                             <option value=''>N/A</option>
                             <option value='Instrumentation'>Instrumentation</option>
                             <option value='FEDC'>FEDC</option>
                             <option value='Other'>Other</option>
                         </select>
                     </div>
-                    {showCustomDelivery  &&
+                    {showCustomDelivery &&
                         <div className={styles.inputGroup}>
                             <label>Enter Custom Delivery Location*</label>
                             <input
@@ -342,10 +349,10 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
                                 name="deliveryLocation"
                                 placeholder="Enter Delivery Location"
                                 value={customDelivery}
-                                onChange={(e) => setCustomDelivery(e.target.value)} 
+                                onChange={(e) => setCustomDelivery(e.target.value)}
                             />
                         </div>
-                    }  
+                    }
                 </div>
                 <div className={styles.buttonGroup}>
                     <div className={styles.uploadedFilesContainer}>
@@ -411,7 +418,7 @@ function CostBreakdownScreen({ costBreakdown, onCostChange, onNext, onBack, onCl
                 <div className={styles.formHeader}>
                     <h1 className={styles.formTitle}>Order Form</h1>
                     <button className={styles.closeButton} onClick={onClose}>
-                        <Image src={CloseIcon.src} height={10} width={10} alt='close'/>
+                        <Image src={CloseIcon.src} height={10} width={10} alt='close' />
                     </button>
                 </div>
                 <p className={styles.formParagraph}>Cost Breakdown (Must add up to 100%)</p>
@@ -448,10 +455,10 @@ interface MethodProps {
 function Method({ handleSubmitCSV, onNextStep, onBack, onClose }: MethodProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
-    
+
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.name.endsWith('.csv')) {
+        const file = e.target.files?.[0];
+        if (file && file.name.endsWith('.csv')) {
             try {
                 await handleSubmitCSV(file);
             } catch (error) {
@@ -472,17 +479,18 @@ function Method({ handleSubmitCSV, onNextStep, onBack, onClose }: MethodProps) {
                 <div className={styles.formHeader}>
                     <h1 className={styles.formTitle}>Order Form</h1>
                     <button className={styles.closeButton} onClick={onClose}>
-                        <Image src={CloseIcon.src} height={10} width={10} alt='close'/>
+                        <Image src={CloseIcon.src} height={10} width={10} alt='close' />
                     </button>
                 </div>
 
                 <p className={styles.formParagraph}>How do you want to submit this order?</p>
                 <div className={`${styles.buttonGroup} ${styles.methodButtonGroup}`}>
+                    <button className={styles.nextButton} onClick={() => onNextStep(3)}>Form</button>
                     <button
                         className={styles.nextButton}
                         onClick={() => fileInputRef.current?.click()}
                     >
-                        Upload CSV
+                        CSV
                     </button>
                     <input
                         type="file"
@@ -491,8 +499,8 @@ function Method({ handleSubmitCSV, onNextStep, onBack, onClose }: MethodProps) {
                         style={{ display: 'none' }}
                         onChange={handleFileChange}
                     />
-                    <button className={styles.nextButton} onClick={() => onNextStep(3)}>Cart Link</button>
-                    <button className={styles.nextButton} onClick={() => onNextStep(4)}>Single Item</button>
+                    <button className={styles.nextButton} onClick={() => onNextStep(4)}>Cart Link</button>
+                    <button className={styles.nextButton} onClick={() => onNextStep(5)}>Single Item</button>
                 </div>
                 <button className={styles.backButton} onClick={onBack}>Back</button>
             </div>
@@ -547,6 +555,7 @@ function CartLinkOrder({ orderData, onBack, onClose }: CartLinkOrderProps) {
                     variant: "affirmation",
                 });
                 mutate('/api/orders');
+                mutate('/api/finance');
                 onClose();
             } else {
                 const error = await response.json();
@@ -568,7 +577,7 @@ function CartLinkOrder({ orderData, onBack, onClose }: CartLinkOrderProps) {
                 <div className={styles.formHeader}>
                     <h1 className={styles.formTitle}>Cart Link Order</h1>
                     <button className={styles.closeButton} onClick={onClose}>
-                        <Image src={CloseIcon.src} height={10} width={10} alt='close'/>
+                        <Image src={CloseIcon.src} height={10} width={10} alt='close' />
                     </button>
                 </div>
                 <div className={`${styles.inputGroup} ${styles.singleLink}`}>
@@ -604,7 +613,7 @@ function SingleItemOrder({ orderData, onBack, onClose }: SingleItemOrderProps) {
     const { toast } = useToast();
     const { data: session } = useSession();
     const email = session?.user.email;
-    
+
     const handleSubmit = async () => {
         if (!name || !quantity || !cost) {
             toast({
@@ -650,6 +659,7 @@ function SingleItemOrder({ orderData, onBack, onClose }: SingleItemOrderProps) {
                     variant: "affirmation",
                 });
                 mutate('/api/orders');
+                mutate('/api/finance');
                 onClose();
             } else {
                 const error = await response.json();
@@ -671,7 +681,7 @@ function SingleItemOrder({ orderData, onBack, onClose }: SingleItemOrderProps) {
                 <div className={styles.formHeader}>
                     <h1 className={styles.formTitle}>Single Item Order</h1>
                     <button className={styles.closeButton} onClick={onClose}>
-                        <Image src={CloseIcon.src} height={10} width={10} alt='close'/>
+                        <Image src={CloseIcon.src} height={10} width={10} alt='close' />
                     </button>
                 </div>
                 <p className={styles.formParagraph}>Item info</p>
@@ -699,6 +709,190 @@ function SingleItemOrder({ orderData, onBack, onClose }: SingleItemOrderProps) {
                     <div className={styles.inputGroup}>
                         <label>Link to Item</label>
                         <input type="text" placeholder="Link to Item" value={link} onChange={(e) => setLink(e.target.value)} />
+                    </div>
+                </div>
+                <div className={styles.buttonGroup}>
+                    <button className={styles.backButton} onClick={onBack}>Back</button>
+                    <button className={styles.nextButton} onClick={handleSubmit}>Submit</button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+interface TemplateRow {
+    itemName: string;
+    partNumber: string;
+    notes: string;
+    quantity: number;
+    cost: number;
+    link: string;
+}
+
+function TemplateEntryForm({ orderData, onBack, onClose }: {
+    orderData: OrderData;
+    onBack: () => void;
+    onClose: () => void;
+}) {
+    const [rows, setRows] = useState<TemplateRow[]>([
+        { itemName: "", partNumber: "", notes: "", quantity: 1, cost: 0, link: "" },
+    ]);
+    const { toast } = useToast();
+    const { data: session } = useSession();
+    const email = session?.user.email;
+
+    const addRow = () => setRows([...rows, { itemName: "", partNumber: "", notes: "", quantity: 1, cost: 0, link: "" }]);
+
+    const updateRow = (index: number, field: keyof TemplateRow, value: string | number) => {
+        const newRows = [...rows];
+        (newRows[index][field] as unknown) = value;
+        setRows(newRows);
+    };
+
+    const handleSubmit = async () => {
+        if (rows.some(r => !r.itemName || !r.quantity || !r.cost)) {
+            toast({
+                title: "Missing Fields",
+                description: "Each row needs Item Name, Quantity, and Cost.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("orderName", orderData.orderName);
+        formData.append("vendor", orderData.vendor);
+        formData.append("notes", orderData.notes);
+        formData.append("estimatedCost", String(orderData.estimatedCost));
+        formData.append("userEmail", email || "");
+        formData.append("deliveryLocation", orderData.deliveryLocation);
+
+        for (const [key, value] of Object.entries(orderData.costBreakdown)) {
+            formData.append(`costBreakdown[${key}]`, String(value));
+        }
+
+        orderData.supportingDocs.forEach((doc, index) => {
+            formData.append(`supportingDocs[${index}][name]`, doc.name);
+            formData.append(`supportingDocs[${index}][url]`, doc.url);
+        });
+
+        rows.forEach((row, i) => {
+            formData.append(`items[${i}][itemName]`, row.itemName);
+            formData.append(`items[${i}][partNumber]`, row.partNumber);
+            formData.append(`items[${i}][notes]`, row.notes);
+            formData.append(`items[${i}][vendor]`, orderData.vendor);
+            formData.append(`items[${i}][quantity]`, String(row.quantity));
+            formData.append(`items[${i}][cost]`, String(row.cost));
+            formData.append(`items[${i}][link]`, row.link);
+        });
+
+        try {
+            const response = await fetch("/api/orders/upload", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (response.ok) {
+                toast({
+                    title: "Order Created",
+                    description: "Order created successfully!",
+                    variant: "affirmation",
+                });
+                mutate("/api/orders");
+                onClose();
+            } else {
+                const errorData = await response.json();
+                toast({
+                    title: "Error",
+                    description: `Error: ${errorData.error}`,
+                    variant: "destructive",
+                });
+            }
+        } catch (error) {
+            console.error("Upload error:", error);
+            toast({
+                title: "Upload Error",
+                description: "An error occurred while submitting the order.",
+                variant: "destructive",
+            });
+        }
+    };
+
+    return (
+        <div className={styles.formBG}>
+            <div className={`${styles.formContainer} ${styles.formContainerWide}`}>
+                <div className={styles.formHeader}>
+                    <h1 className={styles.formTitle}>MEEN Template Form</h1>
+                    <button className={styles.closeButton} onClick={onClose}>X</button>
+                </div>
+                <div className={styles.tableContainer}>
+                    <div className={styles.tableHeader}>
+                        <span>Item Name</span>
+                        <span>Part Number</span>
+                        <span>Notes</span>
+                        <span>Quantity</span>
+                        <span>Cost per Item</span>
+                        <span>Total</span>
+                        <span>Link</span>
+                    </div>
+
+                    {rows.map((row, idx) => (
+                        <div key={idx} className={styles.tableRow}>
+                            <input
+                                value={row.itemName}
+                                onChange={(e) => updateRow(idx, "itemName", e.target.value)}
+                            />
+                            <input
+                                value={row.partNumber}
+                                onChange={(e) => updateRow(idx, "partNumber", e.target.value)}
+                            />
+                            <input
+                                value={row.notes}
+                                onChange={(e) => updateRow(idx, "notes", e.target.value)}
+                            />
+                            <input
+                                type="number"
+                                value={row.quantity ?? ""}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    updateRow(idx, "quantity", val === "" ? "" : Number(val));
+                                }}
+                            />
+                            <input
+                                type="number"
+                                placeholder="Cost"
+                                value={row.cost === undefined ? "" : row.cost}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    updateRow(idx, "cost", val === "" ? "" : Number(val));
+                                }}
+                            />
+
+                            <span>{(row.quantity || 0) * (row.cost || 0)}</span>
+                            <input
+                                value={row.link}
+                                onChange={(e) => updateRow(idx, "link", e.target.value)}
+                            />
+                            <button
+                                className={styles.removeButton}
+                                onClick={() => {
+                                    if (rows.length > 1) {
+                                        setRows(rows.filter((_, i) => i !== idx));
+                                    }
+                                }}
+                                disabled={rows.length === 1}
+                                title={rows.length === 1 ? "At least one row is required" : "Remove row"}
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    ))}
+                </div>
+                <div className={styles.tableFooter}>
+                    <button className={styles.backButton} onClick={addRow}>+ Add Row</button>
+                    <div className={styles.orderTotal}>
+                        <span>Total Order Cost: $</span>
+                        {rows.reduce((sum, r) => sum + (r.quantity || 0) * (r.cost || 0), 0)}
                     </div>
                 </div>
                 <div className={styles.buttonGroup}>

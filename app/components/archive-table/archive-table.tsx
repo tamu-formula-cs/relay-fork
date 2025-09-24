@@ -108,6 +108,7 @@ const ArchiveTable: React.FC = () => {
 
     const updateOrderInState = () => {
         mutate('/api/orders/archived');
+        mutate('/api/finance');
     };
 
     const toggleExpand = (orderId: number, orderItems: SerializedOrderWithRelations['items'], orderUrl: string | null) => {
