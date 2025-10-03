@@ -103,18 +103,18 @@ const FinanceDashboard: React.FC = () => {
   };
 
   const subteamBudgets: Record<string, number> = {
-    AERO: 6300,
-    CHS: 2500,
-    SUS: 10000,
-    BAT: 16000,
-    ECE: 5200,
-    PT: 20500,
-    SW: 0,
-    DBMS: 1500,
-    OPS: 10500,
+    AERO: 8915,
+    CHS: 4000,
+    SUS: 18950,
+    BAT: 17500,
+    ECE: 7130,
+    PT: 21274,
+    SW: 500,
+    DBMS: 2500,
+    OPS: 10000,
   };
 
-  const overallBudget = 72500;
+  const overallBudget = 90769;
 
   if (error) {
     return <div>Error loading finance data.</div>;
