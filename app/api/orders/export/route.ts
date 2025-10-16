@@ -4,8 +4,12 @@ import ExcelJS from 'exceljs';
 
 const prisma = new PrismaClient();
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
     const orders = await prisma.order.findMany({
+        orderBy: { createdAt: 'desc' },
         include: {
             user: true,
             items: true,
@@ -74,6 +78,9 @@ export async function GET() {
         headers: {
             'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition': 'attachment; filename="orders.xlsx"',
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            Pragma: 'no-cache',
+            Expires: '0',
         },
     });
 }
