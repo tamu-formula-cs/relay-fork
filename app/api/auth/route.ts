@@ -2,6 +2,8 @@ import { google } from 'googleapis';
 import { NextResponse } from 'next/server';
 import { loadCredentials } from '../../lib/google-auth';
 
+export const dynamic = 'force-dynamic';
+
 const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/pubsub'];
 
 // async function loadCredentials() {

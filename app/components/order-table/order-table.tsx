@@ -71,6 +71,7 @@ export interface SerializedOrderWithRelations {
     // }[];
     items: SerializedItemsWithRelations[];
     deliveryLocation: string | null;
+    deliveryPhotoUrl: string | null;
 }
 
 export interface SerializedItemsWithRelations {
@@ -92,6 +93,7 @@ export interface SerializedItemsWithRelations {
     level: StockLevel | null;
     createdAt: Date;
     updatedAt: Date;
+    deliveryPhotoUrl: string | null;
 };
 
 const subteamMapping: { [key: string]: string } = {

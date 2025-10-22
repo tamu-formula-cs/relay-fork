@@ -9,17 +9,18 @@ generator client {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  phone     String?
-  carrier   String?
-  role      Role
-  password  String
-  subteam   String
-  orders    Order[]  @relation("UserOrders")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int          @id @default(autoincrement())
+  name       String
+  email      String       @unique
+  phone      String?
+  carrier    String?
+  role       Role
+  password   String
+  subteam    String
+  orders     Order[]      @relation("UserOrders")
+  pushTokens PushToken[]  @relation("UserPushTokens")
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 }
 
 enum Role {
@@ -53,6 +54,7 @@ model Order {
   receipts        Document[]  @relation("Receipts")
   notified        Boolean     @default(false)
   deliveryLocation String?
+  deliveryPhotoUrl String?
 }
 
 enum OrderStatus {
@@ -85,6 +87,7 @@ model Item {
   level          StockLevel?
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
+  deliveryPhotoUrl String?
 }
 
 enum ItemStatus {
@@ -115,4 +118,18 @@ model Document {
 model Token {
   id  Int    @id @default(autoincrement())
   url String
+}
+
+model PushToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  user      User     @relation("UserPushTokens", fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  platform  String   // "ios", "android", or "expo"
+  deviceId  String?  // Optional device identifier
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([token])
 }
