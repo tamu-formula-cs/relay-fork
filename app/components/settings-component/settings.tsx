@@ -46,8 +46,12 @@ const subteamMapping: { [key: string]: string } = {
     BAT: 'Battery',
     ECE: 'Electronics',
     PT: 'Powertrain',
+    SW: 'Software',
     DBMS: 'Distributed BMS',
-    OPS: 'Operations'
+    OPS: 'Operations',
+    FACIL: 'Facilities/Infrastructure',
+    FLEET: 'Fleet Maintenance',
+    MKTG: 'Marketing'
 };
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -67,8 +71,12 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
         BAT: 0,
         ECE: 0,
         PT: 0,
+        SW: 0,
         DBMS: 0,
         OPS: 0,
+        FACIL: 0,
+        FLEET: 0,
+        MKTG: 0,
         ...(order?.costBreakdown || {}),
     };
 
@@ -414,7 +422,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                 {Object.keys(subteamMapping).map((subteam) => (
                                     <div key={subteam} className={styles.breakdownItem}>
                                         <label className={styles.breakdownLabel}>
-                                            {subteamMapping[subteam] || subteam}:
+                                            {subteam}:
                                         </label>
                                         {isAdmin ? (
                                             <input
@@ -455,40 +463,6 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                             </a>
                                         ))}
                                     </div>
-                                </div>
-                            )}
-
-                            {receipts && receipts.length > 0 ? (
-                                <div className={styles.receiptSection}>
-                                    <h4 className={styles.infoLabel}>Receipts:</h4>
-                                    <div className={styles.docsContainer}>
-                                        {receipts.map((doc: Document) => (
-                                            <div key={doc.id} className={styles.docItem}>
-                                                <a
-                                                    href={doc.url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className={styles.docLink}
-                                                >
-                                                    <span className={styles.docIcon}>📄</span>
-                                                    <span className={styles.docName}>{doc.url.split('/').pop()}</span>
-                                                </a>
-                                                {isAdmin && (
-                                                    <button
-                                                        onClick={() => handleDeleteReceipt(doc.id)}
-                                                        className={styles.deleteButton}
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className={styles.receiptSection}>
-                                    <h4 className={styles.infoLabel}>Receipts:</h4>
-                                    <p className={styles.infoText}>No receipts added yet.</p>
                                 </div>
                             )}
 
@@ -620,6 +594,40 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                         className={styles.textInput}
                                     />
                                 </div>
+
+                                {receipts && receipts.length > 0 ? (
+                                    <div className={styles.receiptSection}>
+                                        <h4 className={styles.infoLabel}>Receipts:</h4>
+                                        <div className={styles.docsContainer}>
+                                            {receipts.map((doc: Document) => (
+                                                <div key={doc.id} className={styles.docItem}>
+                                                    <a
+                                                        href={doc.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className={styles.docLink}
+                                                    >
+                                                        <span className={styles.docIcon}>📄</span>
+                                                        <span className={styles.docName}>{doc.url.split('/').pop()}</span>
+                                                    </a>
+                                                    {isAdmin && (
+                                                        <button
+                                                            onClick={() => handleDeleteReceipt(doc.id)}
+                                                            className={styles.deleteButton}
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className={styles.receiptSection}>
+                                        <h4 className={styles.infoLabel}>Receipts:</h4>
+                                        <p className={styles.infoText}>No receipts added yet.</p>
+                                    </div>
+                                )}
                             </>
                         )}
                     </div>

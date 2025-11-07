@@ -50,8 +50,12 @@ interface CostBreakdown {
   BAT: number;
   ECE: number;
   PT: number;
+  SW: number;
   DBMS: number;
   OPS: number;
+  FACIL: number;
+  FLEET: number;
+  MKTG: number;
 }
 
 interface Order {
@@ -102,6 +106,26 @@ const FinanceDashboard: React.FC = () => {
     mutate();
   };
 
+  // Normalize subteam names to abbreviations
+  const normalizeSubteam = (subteam: string): string => {
+    const normalized = subteam.toUpperCase();
+    const mapping: Record<string, string> = {
+      'AERODYNAMICS': 'AERO',
+      'CHASSIS': 'CHS',
+      'SUSPENSION': 'SUS',
+      'BATTERY': 'BAT',
+      'ELECTRONICS': 'ECE',
+      'POWERTRAIN': 'PT',
+      'SOFTWARE': 'SW',
+      'DISTRIBUTED BMS': 'DBMS',
+      'OPERATIONS': 'OPS',
+      'FACILITIES/INFRASTRUCTURE': 'FACIL',
+      'FLEET MAINTENANCE': 'FLEET',
+      'MARKETING': 'MKTG',
+    };
+    return mapping[normalized] || normalized;
+  };
+
   const subteamBudgets: Record<string, number> = {
     AERO: 8915,
     CHS: 4000,
@@ -112,9 +136,12 @@ const FinanceDashboard: React.FC = () => {
     SW: 500,
     DBMS: 2500,
     OPS: 10000,
+    FACIL: 4500,
+    FLEET: 2500,
+    MKTG: 1000,
   };
 
-  const overallBudget = 90769;
+  const overallBudget = 110000;
 
   if (error) {
     return <div>Error loading finance data.</div>;
@@ -136,16 +163,16 @@ const FinanceDashboard: React.FC = () => {
     const costBreakdown = order.costBreakdown;
     if (costBreakdown) {
       for (const subteam in costBreakdown) {
-        const abbreviation = subteam.toUpperCase() as keyof CostBreakdown;
-        const percentage = costBreakdown[abbreviation];
+        const normalized = normalizeSubteam(subteam);
+        const percentage = costBreakdown[subteam as keyof typeof costBreakdown];
         if (percentage > 0) {
           const amount = (percentage / 100) * order.totalCost;
-          acc[abbreviation] = (acc[abbreviation] || 0) + amount;
+          acc[normalized] = (acc[normalized] || 0) + amount;
         }
       }
     } else {
       // If there's no cost breakdown, assign to the order's subteam
-      const orderSubteam = order.subteam.toUpperCase();
+      const orderSubteam = normalizeSubteam(order.subteam);
       acc[orderSubteam] = (acc[orderSubteam] || 0) + order.totalCost;
     }
     return acc;

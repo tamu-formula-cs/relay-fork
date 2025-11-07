@@ -103,8 +103,12 @@ const subteamMapping: { [key: string]: string } = {
     BAT: 'Battery',
     ECE: 'Electronics',
     PT: 'Powertrain',
+    SW: 'Software',
     DBMS: 'Distributed BMS',
     OPS: 'Operations',
+    FACIL: 'Facilities/Infrastructure',
+    FLEET: 'Fleet Maintenance',
+    MKTG: 'Marketing',
 };
 
 const fetcher = async (url: string) => {

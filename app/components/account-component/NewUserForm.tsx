@@ -11,7 +11,7 @@ import { Toaster } from "../toast/toaster";
 const roles = ["", "BUSINESS", "ENGINEER"];
 
 const subteamsByRole = {
-  BUSINESS: ["", "FINANCE", "OPERATIONS"],
+  BUSINESS: ["", "FINANCE", "OPERATIONS", "MARKETING"],
   ENGINEER: ["", "AERODYNAMICS", "BATTERY", "CHASSIS","ELECTRONICS", "POWERTRAIN", "SUSPENSION", "DISTRIBUTED BMS", "SOFTWARE"],
 };
 

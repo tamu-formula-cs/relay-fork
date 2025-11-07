@@ -23,8 +23,12 @@ interface OrderData {
         BAT: number;
         ECE: number;
         PT: number;
+        SW: number;
         DBMS: number;
         OPS: number;
+        FACIL: number;
+        FLEET: number;
+        MKTG: number;
     };
     supportingDocs: { name: string; url: string }[];
     deliveryLocation: string;
@@ -47,8 +51,12 @@ export default function OrderForm({ onClose }: OrderFormProps) {
             BAT: 0,
             ECE: 0,
             PT: 0,
+            SW: 0,
             DBMS: 0,
-            OPS: 0
+            OPS: 0,
+            FACIL: 0,
+            FLEET: 0,
+            MKTG: 0
         },
         supportingDocs: [],
         deliveryLocation: '',
@@ -327,7 +335,7 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
                 </div>
                 <div className={styles.generalRowThree}>
                     <div className={styles.inputGroup}>
-                        <label>Delivery Location</label>
+                        <label>Delivery Location*</label>
                         <select name="deliveryLocation"
                             value={showCustomDelivery ? 'Other' : orderData.deliveryLocation}
                             onChange={(e) => {
@@ -427,7 +435,7 @@ function CostBreakdownScreen({ costBreakdown, onCostChange, onNext, onBack, onCl
                 </div>
                 <p className={styles.formParagraph}>Cost Breakdown (Must add up to 100%)</p>
                 <div className={styles.costBreakdownRow}>
-                    {['AERO', 'CHS', 'SUS', 'BAT', 'ECE', 'PT', 'DBMS', 'OPS'].map((subteam) => (
+                    {['AERO', 'BAT', 'CHS', 'DBMS', 'ECE', 'PT', 'SUS', 'SW', 'OPS', 'FACIL', 'FLEET', 'MKTG'].map((subteam) => (
                         <div key={subteam} className={styles.inputGroup}>
                             <label>Order Cost Percentage ({subteam})</label>
                             <input

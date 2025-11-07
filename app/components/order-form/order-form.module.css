@@ -49,7 +49,6 @@ p.formParagraph {
     margin-bottom: 2rem;
 }
 
-/* Input Group Styling */
 .inputGroup {
     display: flex;
     flex-direction: column;
@@ -113,6 +112,10 @@ p.formParagraph {
     flex-wrap: wrap;
     gap: 2rem;
     margin-bottom: 2rem;
+}
+
+.costBreakdownRow .inputGroup {
+    width: 30%;
 }
 
 /* Button Styles */

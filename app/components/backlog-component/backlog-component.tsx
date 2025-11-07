@@ -24,11 +24,16 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 const subteamMapping: { [key: string]: string } = {
     AERO: 'Aerodynamics',
     CHS: 'Chassis',
+    SUS: 'Suspension',
     BAT: 'Battery',
     ECE: 'Electronics',
     PT: 'Powertrain',
-    SUS: 'Suspension',
-    Operations: 'Operations',
+    SW: 'Software',
+    DBMS: 'Distributed BMS',
+    OPS: 'Operations',
+    FACIL: 'Facilities/Infrastructure',
+    FLEET: 'Fleet Maintenance',
+    MKTG: 'Marketing',
 };
 
 const BacklogComponent: React.FC = () => {

@@ -372,11 +372,11 @@ li.breakdownItem {
 .breakdownItem {
     display: flex;
     align-items: center;
-    width: calc(50% - 1rem);
+    width: calc(50% - 3rem);
 }
 
 .breakdownLabel {
-    width: 100px;
+    width: 50px;
     font-weight: normal;
     color: #333;
 }
