@@ -155,11 +155,6 @@ const FinanceDashboard: React.FC = () => {
 
   const subteamSpending = orders.reduce(
   (acc: Record<string, number>, order: Order) => {
-    // Only count orders that are not archived or cancelled
-    if (order.status === OrderStatus.ARCHIVED) {
-      return acc;
-    }
-
     const costBreakdown = order.costBreakdown;
     if (costBreakdown) {
       for (const subteam in costBreakdown) {
@@ -292,7 +287,6 @@ const FinanceDashboard: React.FC = () => {
 
   // 4. Budget Utilization
   const totalSpent = orders
-    .filter(order => order.status !== OrderStatus.ARCHIVED)
     .reduce((acc: number, order: Order) => acc + order.totalCost, 0);
   const budgetUtilization = (totalSpent / overallBudget) * 100;
 
