@@ -6,6 +6,7 @@ import useSWR from 'swr';
 import { Bar, Pie } from 'react-chartjs-2';
 import 'chart.js/auto';
 import { Item } from '@prisma/client';
+import * as XLSX from 'xlsx';
 
 // Enums based on your schema
 enum Role {
@@ -106,6 +107,12 @@ const FinanceDashboard: React.FC = () => {
 
   const overallBudget = 72500;
 
+  const startDate = new Date('2024-09-01');
+  const endDate = new Date('2026-05-31');
+  const currentDate = new Date();
+  const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  const daysPassed = Math.ceil((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+
   if (error) {
     return <div>Error loading finance data.</div>;
   }
@@ -145,6 +152,17 @@ const FinanceDashboard: React.FC = () => {
     return spent;
   });
 
+  const subteamPaceData = subteamLabels.map((subteam, index) => {
+    const spent = subteamSpentData[index];
+    const budget = subteamBudgetData[index];
+    if (daysPassed <= 0 || budget <= 0) return 0;
+    const pace = (spent / daysPassed) * totalDays / budget;
+    console.log(subteam, " has spent ", spent, " out of their ", budget);
+    return pace * 100;
+  });
+
+  const subteamPaceColors = subteamPaceData.map(pace => pace <= 100 ? '#44CF6C' : '#DE3C4B');
+
   // Determine over-budget subteams
   const subteamOverBudget = subteamLabels.map((subteam, index) => {
     return subteamSpentData[index] > subteamBudgetData[index];
@@ -179,7 +197,6 @@ const FinanceDashboard: React.FC = () => {
   );
 
   // Calculate spending this month vs last month
-  const currentDate = new Date();
   const currentMonthIndex = currentDate.getMonth();
   const currentMonthName = currentDate.toLocaleString('default', {
     month: 'short',
@@ -270,10 +287,60 @@ const FinanceDashboard: React.FC = () => {
   const budgetRemainingAmount = overallBudget - totalSpent;
   console.log("BUDGET" + subteamBudgetData)
   console.log("SPENT" + subteamSpentData)
+
+  const handleDownload = () => {
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: Subteam Spending
+    const subteamData = subteamLabels.map((label, i) => ({
+      Subteam: label,
+      Budget: subteamBudgetData[i],
+      Spent: subteamSpentData[i],
+      Pace: `${subteamPaceData[i].toFixed(2)}%`
+    }));
+    const ws1 = XLSX.utils.json_to_sheet(subteamData);
+    XLSX.utils.book_append_sheet(wb, ws1, 'Subteam Spending');
+
+    // Sheet 2: Monthly Spending
+    const monthlyData = months.map((month, i) => ({
+      Month: month,
+      Spending: monthlySpendingData[i]
+    }));
+    const ws2 = XLSX.utils.json_to_sheet(monthlyData);
+    XLSX.utils.book_append_sheet(wb, ws2, 'Monthly Spending');
+
+    // Sheet 3: Top Vendors
+    const vendorSheetData = vendorLabels.map((label, i) => ({
+      Vendor: label,
+      Spending: vendorData[i]
+    }));
+    const ws3 = XLSX.utils.json_to_sheet(vendorSheetData);
+    XLSX.utils.book_append_sheet(wb, ws3, 'Top Vendors');
+
+    // Sheet 4: Key Metrics
+    const metricsData = [
+      { Metric: 'Spending This Month', Value: `$${spentThisMonth.toFixed(2)}` },
+      { Metric: 'Budget Utilization', Value: `${budgetUtilization.toFixed(2)}%` },
+      { Metric: 'Budget Remaining', Value: `$${budgetRemainingAmount.toFixed(2)}` },
+      { Metric: 'Number of Vendors', Value: numberOfVendors },
+      { Metric: 'Orders to Place', Value: `${toOrderOrders.length} ($${toOrderValue.toFixed(2)})` },
+      { Metric: 'Active Orders', Value: `${activeOrders.length} ($${activeOrderValue.toFixed(2)})` },
+      { Metric: 'Average Order Value', Value: `$${averageOrderValue.toFixed(2)}` },
+      { Metric: 'Highest Order Value', Value: `$${highestOrderValue.toFixed(2)}` },
+      { Metric: 'Budget Left', Value: `$${budgetRemainingAmount.toFixed(2)}` }
+    ];
+    const ws4 = XLSX.utils.json_to_sheet(metricsData);
+    XLSX.utils.book_append_sheet(wb, ws4, 'Key Metrics');
+
+    // Download
+    XLSX.writeFile(wb, 'finance_dashboard.xlsx');
+  };
+
   return (
     <div className={styles.dashboardContainer}>
       <div className={styles.dashboardHeader}>
         <h1>Finance Dashboard</h1>
+        <button onClick={handleDownload} className={styles.downloadButton}>Download Spreadsheet</button>
       </div>
 
       <div className={styles.mainContent}>
@@ -393,6 +460,40 @@ const FinanceDashboard: React.FC = () => {
               />
             </div>
           </div>
+
+          {/* Budget Pace by Subteam */}
+          <div className={styles.chartTile}>
+            <h2 className={styles.tileTitle}>Budget Pace by Subteam</h2>
+            <div className={styles.chartWrapper}>
+              <Bar
+                data={{
+                  labels: subteamLabels,
+                  datasets: [
+                    {
+                      label: 'Pace (%)',
+                      data: subteamPaceData,
+                      backgroundColor: subteamPaceColors,
+                      borderRadius: 10,
+                      barPercentage: 0.4,
+                    },
+                  ],
+                }}
+                options={{
+                  indexAxis: 'x',
+                  maintainAspectRatio: false,
+                  scales: {
+                    x: { ticks: { color: '#4C4C4C' } },
+                    y: { ticks: { color: '#4C4C4C' } },
+                  },
+                  plugins: {
+                    legend: {
+                      display: false,
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Right Side - Tiles */}
@@ -471,6 +572,13 @@ const FinanceDashboard: React.FC = () => {
                 ${highestOrderValue.toFixed(2)}
               </p>
               <p className={styles.tileSub}>Largest single order</p>
+            </div>
+
+            {/* Budget Left */}
+            <div className={styles.tile}>
+              <h2 className={styles.tileTitle}>Budget Left</h2>
+              <p className={styles.amount}>${budgetRemainingAmount.toFixed(2)}</p>
+              <p className={styles.tileSub}>Remaining from ${overallBudget}</p>
             </div>
           </div>
         </div>
