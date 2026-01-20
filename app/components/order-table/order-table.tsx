@@ -10,6 +10,7 @@ import LinkIcon from "../../../assets/link.svg";
 import EmptyIcon from "../../../assets/empty.svg";
 import SortIcon from "../../../assets/sort.svg"
 import OpenURLIcon from "../../../assets/open_url.svg"
+import ShareIcon from "../../../assets/share.svg";
 import Image from 'next/image';
 import useSWR, { mutate } from 'swr';
 import { useSession } from 'next-auth/react';
@@ -283,6 +284,18 @@ const OrderTable: React.FC = () => {
         }
     };
 
+    const handleShareOrder = (event: React.MouseEvent, orderId: number) => {
+        event.stopPropagation();
+        
+        const shareUrl = `${window.location.origin}/order/${orderId}`;
+        
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            alert('Order link copied to clipboard!');
+        }).catch(() => {
+            prompt('Copy this link to share:', shareUrl);
+        });
+    };
+
     // Export Orders handler
     const handleExportOrders = async () => {
         try {
@@ -382,8 +395,9 @@ const OrderTable: React.FC = () => {
                             </th>
                             <th className={`${styles.thText} ${styles.statusColumn}`}>Status</th>
                             <th className={`${styles.thText} ${styles.subteamColumn}`}>Subteam</th>
-                            <th className={`${styles.thText} ${styles.commentsColumnHeader} ${styles.commentsColumn}`}>Comments</th>
+                            <th className={`${styles.commentsColumnHeader} ${styles.commentsColumn}`}>Comments</th>
                             <th className={`${styles.settingsCellHeader} ${styles.settingsColumn}`}></th>
+                            <th className={`${styles.settingsCellHeader} ${styles.shareColumn}`}></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -437,13 +451,19 @@ const OrderTable: React.FC = () => {
                                                 ? styles.orderStatusToOrder
                                                 : order.status === OrderStatus.PLACED
                                                 ? styles.orderStatusPlaced
+                                                : order.status === OrderStatus.MEEN_HOLD
+                                                ? styles.orderStatusMeenHold
                                                 : order.status === OrderStatus.PROCESSED
                                                 ? styles.orderStatusProcessed
+                                                : order.status === OrderStatus.SHIPPED
+                                                ? styles.orderStatusShipped
+                                                : order.status === OrderStatus.AWAITING_PICKUP
+                                                ? styles.orderStatusAwaitingPickup
                                                 : order.status === OrderStatus.DELIVERED
                                                 ? styles.orderStatusDelivered
                                                 : order.status === OrderStatus.PARTIAL
                                                 ? styles.orderStatusPartial
-                                                : styles.orderStatusShipped
+                                                : styles.orderStatusDefault
                                         }`}
                                         onClick={(event)=>handleStatusClick(event, order)}
                                     >
@@ -492,10 +512,27 @@ const OrderTable: React.FC = () => {
                                             />
                                         </button>
                                     </td>
+                                    <td
+                                        className={styles.shareCell}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <button
+                                            className={styles.shareButton}
+                                            onClick={(e) => handleShareOrder(e, order.id)}
+                                            title="Share order link"
+                                        >
+                                            <Image
+                                                src={ShareIcon.src}
+                                                height={15}
+                                                width={15}
+                                                alt="share"
+                                            />
+                                        </button>
+                                    </td>
                                 </tr>
                                 {expandedOrderIds.includes(order.id) && (
                                     <tr>
-                                        <td colSpan={10}>
+                                        <td colSpan={11}>
                                             <div className={styles.expandedOrder}>
                                                 {order.items.map((item) => (
                                                     <div

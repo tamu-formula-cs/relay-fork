@@ -214,10 +214,23 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
 
                 if (response.ok) {
                     onUpdateOrder();
+                    toast({
+                        title: "Order Updated",
+                        description: "Order status updated successfully.",
+                        variant: "affirmation",
+                    });
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to update order');
                 }
             }
             onClose();
         } catch (error) {
+            toast({
+                title: "Update Error",
+                description: (error as Error).message || 'An error occurred while updating the order.',
+                variant: "destructive",
+            });
             console.error('Error updating status:', error);
         }
     };
