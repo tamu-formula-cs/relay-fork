@@ -60,7 +60,7 @@ async function parseData(query: string): Promise<OrderDetails | null> {
     4. **Order Status**: 
     - Extract the current status of the order (e.g., Ordered, Shipped, Delivered, In transit).
     - If no clear order status is stated, return **null**.
-    - PLEASE RETURN in the form of TO_ORDER, PLACED, PROCESSED, SHIPPED, DELIVERED, PICKED_UP, and no variation of these (exact spelling).
+    - PLEASE RETURN in the form of TO_ORDER, PLACED, MEEN_HOLD, PROCESSED, SHIPPED, AWAITING_PICKUP, DELIVERED, PICKED_UP, and no variation of these (exact spelling).
 
     5. **Vendor Order Number**: 
     - Look for any unique order number provided by the vendor, often labeled as **Order #** or similar.
