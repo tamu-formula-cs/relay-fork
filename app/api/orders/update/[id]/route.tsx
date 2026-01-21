@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
-import { ItemStatus, OrderStatus } from '@prisma/client';
+import { ItemStatus, OrderStatus, Prisma } from '@prisma/client';
 
 // Define the progression of statuses with corresponding indices
 const orderStatusIndices: { [key in OrderStatus]: number } = {
   TO_ORDER: 0,
   PLACED: 1,
-  PROCESSED: 2,
-  SHIPPED: 3,
-  PARTIAL: 4,
-  DELIVERED: 5,
-  ARCHIVED: 6,
+  MEEN_HOLD: 2,
+  PROCESSED: 3,
+  SHIPPED: 4,
+  AWAITING_PICKUP: 5,
+  PARTIAL: 6,
+  DELIVERED: 7,
+  ARCHIVED: 8,
 };
 
 const itemStatusIndices: { [key in ItemStatus]: number } = {
@@ -24,16 +26,26 @@ const itemStatusIndices: { [key in ItemStatus]: number } = {
 
 // Map order statuses to item statuses
 function mapOrderStatusToItemStatus(orderStatus: OrderStatus): ItemStatus | null {
-  if (orderStatus === OrderStatus.PARTIAL) {
-    // Do not update items if order status is PARTIAL
-    return null;
-  } else if (orderStatus === OrderStatus.ARCHIVED) {
+  if (orderStatus === OrderStatus.ARCHIVED) {
     // Map ARCHIVED to PICKED_UP for items
     return ItemStatus.PICKED_UP;
-  } else if (orderStatus in ItemStatus) {
-    return orderStatus as ItemStatus;
+  } else if (orderStatus === OrderStatus.TO_ORDER) {
+    return ItemStatus.TO_ORDER;
+  } else if (orderStatus === OrderStatus.PLACED) {
+    return ItemStatus.PLACED;
+  } else if (orderStatus === OrderStatus.MEEN_HOLD) {
+    return ItemStatus.PLACED;
+  } else if (orderStatus === OrderStatus.PROCESSED) {
+    return ItemStatus.PROCESSED;
+  } else if (orderStatus === OrderStatus.SHIPPED) {
+    return ItemStatus.SHIPPED;
+  } else if (orderStatus === OrderStatus.AWAITING_PICKUP) {
+    return ItemStatus.SHIPPED;
+  } else if (orderStatus === OrderStatus.PARTIAL) {
+    return ItemStatus.SHIPPED;
+  } else if (orderStatus === OrderStatus.DELIVERED) {
+    return ItemStatus.DELIVERED;
   } else {
-    // If the order status doesn't directly map to an item status, return null
     return null;
   }
 }
@@ -43,7 +55,15 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   const orderId = Number(params.id);
-  const { status: statusString, totalCost, costVerified, carrier, trackingId, meenOrderId, comments, costBreakdown, } = await request.json();
+  const body = await request.json();
+  const { status: statusString, totalCost, costVerified, carrier, trackingId, meenOrderId, comments, costBreakdown, } = body;
+  
+  console.log('Update request received:', { orderId, statusString, totalCost, costVerified, carrier, trackingId, meenOrderId, comments });
+
+  if (!statusString || !orderStatusIndices.hasOwnProperty(statusString)) {
+    return NextResponse.json({ error: `Invalid status: ${statusString}` }, { status: 400 });
+  }
+
   const newOrderStatus = statusString as OrderStatus;
 
   try {
@@ -61,20 +81,38 @@ export async function PUT(
     const currentOrderStatusIndex = orderStatusIndices[currentOrderStatus];
     const newOrderStatusIndex = orderStatusIndices[newOrderStatus];
 
+    console.log('Status transition:', { from: currentOrderStatus, to: newOrderStatus, fromIndex: currentOrderStatusIndex, toIndex: newOrderStatusIndex });
+
+    const updateData: {
+      status: OrderStatus;
+      totalCost?: number;
+      costVerified?: boolean;
+      carrier?: string;
+      trackingId?: string;
+      meenOrderId?: string;
+      comments?: string;
+      costBreakdown?: Prisma.InputJsonValue;
+    } = {
+      status: newOrderStatus,
+    };
+
+    if (totalCost !== undefined) updateData.totalCost = totalCost;
+    if (costVerified !== undefined) updateData.costVerified = costVerified;
+    if (carrier !== undefined) updateData.carrier = carrier;
+    if (trackingId !== undefined) updateData.trackingId = trackingId;
+    if (meenOrderId !== undefined) updateData.meenOrderId = meenOrderId;
+    if (comments !== undefined) updateData.comments = comments;
+    if (costBreakdown !== undefined) updateData.costBreakdown = costBreakdown;
+
+    console.log('Update data:', updateData);
+
     // Update the order status, total cost, and cost verification if provided
-    await prisma.order.update({
+    const result = await prisma.order.update({
       where: { id: orderId },
-      data: {
-        status: newOrderStatus,
-        totalCost: totalCost !== undefined ? totalCost : undefined,
-        costVerified: costVerified !== undefined ? costVerified : undefined,
-        carrier: carrier !== undefined ? carrier : undefined,
-        trackingId: trackingId !== undefined ? trackingId : undefined,
-        meenOrderId: meenOrderId !== undefined ? meenOrderId : undefined,
-        comments: comments !== undefined ? comments : undefined,
-        costBreakdown: costBreakdown !== undefined ? costBreakdown : undefined,
-      },
+      data: updateData,
     });
+
+    console.log('Order updated:', result);
 
     // Map the new order status to an item status, if applicable
     const mappedItemStatus = mapOrderStatusToItemStatus(newOrderStatus);
@@ -112,11 +150,16 @@ export async function PUT(
       include: { user: true, items: true },
     });
 
+    console.log('Returning updated order:', updatedOrder);
     return NextResponse.json(updatedOrder);
   } catch (error) {
     console.error('Failed to update order:', error);
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
-      { error: 'Failed to update order' },
+      { error: 'Failed to update order', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

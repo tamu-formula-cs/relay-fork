@@ -206,8 +206,10 @@ export async function notifyOrderStatusChange(
   const statusMessages: Record<OrderStatus, string> = {
     TO_ORDER: 'is ready to be ordered',
     PLACED: 'has been placed',
+    MEEN_HOLD: 'is on hold',
     PROCESSED: 'is being processed',
     SHIPPED: 'has been shipped',
+    AWAITING_PICKUP: 'is awaiting pickup',
     PARTIAL: 'has been partially delivered',
     DELIVERED: 'has been delivered',
     ARCHIVED: 'has been archived',

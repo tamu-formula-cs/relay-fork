@@ -2,15 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../../lib/prisma';
 import { ItemStatus, OrderStatus } from '@prisma/client';
 
-// Define the progression of statuses with corresponding indices
 const orderStatusIndices: { [key in OrderStatus]: number } = {
   TO_ORDER: 0,
   PLACED: 1,
-  PROCESSED: 2,
-  SHIPPED: 3,
-  PARTIAL: 4,
-  DELIVERED: 5,
-  ARCHIVED: 6,
+  MEEN_HOLD: 2,
+  PROCESSED: 3,
+  SHIPPED: 4,
+  AWAITING_PICKUP: 5,
+  PARTIAL: 6,
+  DELIVERED: 7,
+  ARCHIVED: 8,
 };
 
 const itemStatusIndices: { [key in ItemStatus]: number } = {
