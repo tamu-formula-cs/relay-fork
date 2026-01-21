@@ -387,10 +387,14 @@ const FinanceDashboard: React.FC = () => {
     <div className={styles.dashboardContainer}>
       <div className={styles.dashboardHeader}>
         <h1>Finance Dashboard</h1>
-        <button onClick={handleRefresh} className={styles.refreshButton}>
-          Refresh Data
-        </button>
-        <button onClick={handleDownload} className={styles.downloadButton}>Download Spreadsheet</button>
+        <div className={styles.headerButtons}>
+          <button onClick={handleRefresh} className={styles.refreshButton}>
+            Refresh Data
+          </button>
+          <button onClick={handleDownload} className={styles.downloadButton}>
+            Download Spreadsheet
+          </button>
+        </div>
       </div>
 
       <div className={styles.mainContent}>
@@ -475,6 +479,41 @@ const FinanceDashboard: React.FC = () => {
             </div>
           </div>
 
+          {/* Budget Pace by Subteam */}
+          <div className={styles.chartTile}>
+            <h2 className={styles.tileTitle}>Budget Pace by Subteam</h2>
+            <div className={styles.chartWrapper}>
+              <Bar
+                data={{
+                  labels: subteamLabels,
+                  datasets: [
+                    {
+                      label: 'Pace (%)',
+                      data: subteamPaceData,
+                      backgroundColor: subteamPaceColors,
+                      borderRadius: 10,
+                      barPercentage: 0.4,
+                    },
+                  ],
+                }}
+                options={{
+                  indexAxis: 'x',
+                  maintainAspectRatio: false,
+                  scales: {
+                    x: { ticks: { color: '#4C4C4C' } },
+                    y: { ticks: { color: '#4C4C4C' } },
+                  },
+                  plugins: {
+                    legend: {
+                      display: false,
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+
+
           {/* Top Vendors */}
           <div className={styles.chartTile}>
             <h2 className={styles.tileTitle}>Top Vendors</h2>
@@ -504,40 +543,6 @@ const FinanceDashboard: React.FC = () => {
                       labels: {
                         color: '#4C4C4C',
                       },
-                    },
-                  },
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Budget Pace by Subteam */}
-          <div className={styles.chartTile}>
-            <h2 className={styles.tileTitle}>Budget Pace by Subteam</h2>
-            <div className={styles.chartWrapper}>
-              <Bar
-                data={{
-                  labels: subteamLabels,
-                  datasets: [
-                    {
-                      label: 'Pace (%)',
-                      data: subteamPaceData,
-                      backgroundColor: subteamPaceColors,
-                      borderRadius: 10,
-                      barPercentage: 0.4,
-                    },
-                  ],
-                }}
-                options={{
-                  indexAxis: 'x',
-                  maintainAspectRatio: false,
-                  scales: {
-                    x: { ticks: { color: '#4C4C4C' } },
-                    y: { ticks: { color: '#4C4C4C' } },
-                  },
-                  plugins: {
-                    legend: {
-                      display: false,
                     },
                   },
                 }}
