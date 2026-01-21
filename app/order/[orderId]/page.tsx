@@ -6,7 +6,6 @@ import styles from './order-detail.module.css';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import LinkIcon from '../../../assets/link.svg';
-import OpenURLIcon from '../../../assets/open_url.svg';
 
 interface SerializedItemsWithRelations {
     id: number;
@@ -31,7 +30,7 @@ interface SerializedItemsWithRelations {
 
 interface SerializedOrderWithRelations {
     subteam: string;
-    supportingDocs: any[];
+    supportingDocs: { id: number; url: string; uploadedAt: string }[];
     id: number;
     internalOrderId: string;
     meenOrderId: string | null;
@@ -45,7 +44,7 @@ interface SerializedOrderWithRelations {
     url: string | null;
     carrier: string | null;
     trackingId: string | null;
-    costBreakdown: any;
+    costBreakdown: Record<string, number> | null;
     createdAt: string;
     updatedAt: string;
     user: {
@@ -60,17 +59,6 @@ interface SerializedOrderWithRelations {
     items: SerializedItemsWithRelations[];
     deliveryLocation: string | null;
 }
-
-const subteamMapping: { [key: string]: string } = {
-    AERO: 'Aerodynamics',
-    CHS: 'Chassis',
-    SUS: 'Suspension',
-    BAT: 'Battery',
-    ECE: 'Electronics',
-    PT: 'Powertrain',
-    DBMS: 'Distributed BMS',
-    OPS: 'Operations',
-};
 
 export default function OrderDetail() {
     const params = useParams();
@@ -219,7 +207,7 @@ export default function OrderDetail() {
                     <h3>Cost Breakdown</h3>
                     {order.costBreakdown ? (
                         <div className={styles.costBreakdown}>
-                            {Object.entries(order.costBreakdown).map(([subteam, percentage]: [string, any]) => (
+                            {Object.entries(order.costBreakdown).map(([subteam, percentage]: [string, number]) => (
                                 percentage > 0 && (
                                     <div key={subteam} className={styles.breakdownItem}>
                                         <span>{subteam}: </span>

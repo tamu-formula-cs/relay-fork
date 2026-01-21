@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
-import { ItemStatus, OrderStatus } from '@prisma/client';
+import { ItemStatus, OrderStatus, Prisma } from '@prisma/client';
 
 // Define the progression of statuses with corresponding indices
 const orderStatusIndices: { [key in OrderStatus]: number } = {
@@ -83,7 +83,16 @@ export async function PUT(
 
     console.log('Status transition:', { from: currentOrderStatus, to: newOrderStatus, fromIndex: currentOrderStatusIndex, toIndex: newOrderStatusIndex });
 
-    const updateData: any = {
+    const updateData: {
+      status: OrderStatus;
+      totalCost?: number;
+      costVerified?: boolean;
+      carrier?: string;
+      trackingId?: string;
+      meenOrderId?: string;
+      comments?: string;
+      costBreakdown?: Prisma.InputJsonValue;
+    } = {
       status: newOrderStatus,
     };
 
