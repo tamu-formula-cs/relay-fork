@@ -18,6 +18,11 @@
   align-items: center;
 }
 
+.headerButtons {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .dashboardHeader h1 {
   font-family: 'Poppins';
   font-size: 1.25rem;

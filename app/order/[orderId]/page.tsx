@@ -91,11 +91,25 @@ export default function OrderDetail() {
         fetchOrder();
     }, [orderId]);
 
+    const getStatusClass = (status: string) => {
+        const map: { [key: string]: string } = {
+            'TO_ORDER': styles.orderStatusToOrder,
+            'PLACED': styles.orderStatusPlaced,
+            'MEEN_HOLD': styles.orderStatusMeenHold,
+            'PROCESSED': styles.orderStatusProcessed,
+            'SHIPPED': styles.orderStatusShipped,
+            'AWAITING_PICKUP': styles.orderStatusAwaitingPickup,
+            'DELIVERED': styles.orderStatusDelivered,
+            'PARTIAL': styles.orderStatusPartial,
+        };
+        return map[status] || styles.orderStatusDefault;
+    };
+
     if (!session) {
         return (
-            <div className={styles.container}>
-                <div className={styles.errorMessage}>
-                    <p>Please log in to view this order</p>
+            <div className={styles.mainContainer}>
+                <div className={styles.errorState}>
+                    <p>Please log in to view this order.</p>
                     <button onClick={() => router.push('/account')} className={styles.backButton}>
                         Go to Login
                     </button>
@@ -106,32 +120,21 @@ export default function OrderDetail() {
 
     if (loading) {
         return (
-            <div className={styles.container}>
-                <p>Loading order details...</p>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className={styles.container}>
-                <div className={styles.errorMessage}>
-                    <p>Error: {error}</p>
-                    <button onClick={() => router.back()} className={styles.backButton}>
-                        Go Back
-                    </button>
+            <div className={styles.mainContainer}>
+                <div className={styles.loadingState}>
+                    <p>Loading details...</p>
                 </div>
             </div>
         );
     }
 
-    if (!order) {
+    if (error || !order) {
         return (
-            <div className={styles.container}>
-                <div className={styles.errorMessage}>
-                    <p>Order not found</p>
+            <div className={styles.mainContainer}>
+                <div className={styles.errorState}>
+                    <p>{error || 'Order not found'}</p>
                     <button onClick={() => router.back()} className={styles.backButton}>
-                        Go Back
+                        ← Go Back
                     </button>
                 </div>
             </div>
@@ -139,148 +142,141 @@ export default function OrderDetail() {
     }
 
     return (
-        <div className={styles.container}>
-            <button onClick={() => router.back()} className={styles.backButton}>
-                ← Back
-            </button>
-
-            <div className={styles.orderHeader}>
-                <h1>{order.name}</h1>
-                <span className={styles.orderId}>#{order.meenOrderId || order.id}</span>
+        <div className={styles.mainContainer}>
+            <div className={styles.topNavigation}>
+                <button 
+                    onClick={() => router.push('https://relay.tamuformulaelectric.com')} // Or router.back()
+                    className={styles.backButton}
+                >
+                    ← Back to Orders
+                </button>
             </div>
 
-            <div className={styles.orderInfo}>
-                <div className={styles.infoCard}>
-                    <h3>Order Details</h3>
-                    <div className={styles.infoRow}>
-                        <label>Status:</label>
-                        <span className={getStatusClassName(order.status)}>{order.status}</span>
+            <div className={styles.headerSection}>
+                <h1 className={styles.pageTitle}>{order.name}</h1>
+                <span className={styles.orderIdBadge}>
+                    {order.meenOrderId ? `#${order.meenOrderId}` : `#${order.id}`}
+                </span>
+            </div>
+
+            <div className={styles.infoGrid}>
+                <div className={styles.detailCard}>
+                    <h3 className={styles.cardHeader}>Order Information</h3>
+                    
+                    <div className={styles.row}>
+                        <span className={styles.label}>Current Status</span>
+                        <span className={getStatusClass(order.status)}>{order.status}</span>
                     </div>
-                    <div className={styles.infoRow}>
-                        <label>Vendor:</label>
-                        <span>{order.vendor}</span>
+                    
+                    <div className={styles.row}>
+                        <span className={styles.label}>Vendor</span>
+                        <span className={styles.value}>{order.vendor}</span>
                     </div>
-                    <div className={styles.infoRow}>
-                        <label>Total Cost:</label>
-                        <span>${order.totalCost.toFixed(2)} {order.costVerified && <span className={styles.verified}>✓</span>}</span>
+
+                    <div className={styles.row}>
+                        <span className={styles.label}>Total Cost</span>
+                        <span className={styles.value}>
+                            ${order.totalCost.toFixed(2)} 
+                            {order.costVerified && <span className={styles.verified}>✓</span>}
+                        </span>
                     </div>
-                    <div className={styles.infoRow}>
-                        <label>Date Placed:</label>
-                        <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+
+                    <div className={styles.row}>
+                        <span className={styles.label}>Date Placed</span>
+                        <span className={styles.value}>{new Date(order.createdAt).toLocaleDateString()}</span>
                     </div>
-                    <div className={styles.infoRow}>
-                        <label>Placed By:</label>
-                        <span>{order.user.name} ({order.user.email})</span>
+
+                    <div className={styles.row}>
+                        <span className={styles.label}>Requester</span>
+                        <span className={styles.value}>{order.user.name} ({order.user.subteam})</span>
                     </div>
+
                     {order.deliveryLocation && (
-                        <div className={styles.infoRow}>
-                            <label>Delivery Location:</label>
-                            <span>{order.deliveryLocation}</span>
+                        <div className={styles.row}>
+                            <span className={styles.label}>Delivery Loc</span>
+                            <span className={styles.value}>{order.deliveryLocation}</span>
                         </div>
                     )}
-                    {order.carrier && order.trackingId && (
-                        <div className={styles.infoRow}>
-                            <label>Tracking:</label>
-                            <span>{order.carrier} - {order.trackingId}</span>
+
+                    {(order.carrier || order.trackingId) && (
+                        <div className={styles.row}>
+                            <span className={styles.label}>Tracking</span>
+                            <span className={styles.value}>
+                                {order.carrier || 'Unknown'} — {order.trackingId || 'N/A'}
+                            </span>
                         </div>
                     )}
+
                     {order.url && (
-                        <div className={styles.infoRow}>
-                            <label>Link:</label>
+                        <div className={styles.row}>
+                            <span className={styles.label}>Vendor Link</span>
                             <button 
-                                className={styles.externalLink}
+                                className={styles.actionButton}
                                 onClick={() => window.open(order.url!, '_blank')}
                             >
-                                View Vendor Link <Image src={LinkIcon.src} height={12} width={12} alt="link" />
+                                Open URL <Image src={LinkIcon.src} height={12} width={12} alt="link" />
                             </button>
                         </div>
                     )}
+
                     {order.comments && (
-                        <div className={styles.infoRow}>
-                            <label>Comments:</label>
-                            <span>{order.comments}</span>
+                        <div className={styles.row} style={{flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem'}}>
+                            <span className={styles.label}>Comments</span>
+                            <span className={styles.value} style={{textAlign: 'left', fontStyle: 'italic'}}>
+                                &quot;{order.comments}&quot;
+                            </span>
                         </div>
                     )}
                 </div>
 
-                <div className={styles.infoCard}>
-                    <h3>Cost Breakdown</h3>
+                <div className={styles.detailCard}>
+                    <h3 className={styles.cardHeader}>Cost Breakdown</h3>
                     {order.costBreakdown ? (
-                        <div className={styles.costBreakdown}>
-                            {Object.entries(order.costBreakdown).map(([subteam, percentage]: [string, number]) => (
+                        <div className={styles.breakdownList}>
+                            {Object.entries(order.costBreakdown).map(([subteam, percentage]) => (
                                 percentage > 0 && (
-                                    <div key={subteam} className={styles.breakdownItem}>
-                                        <span>{subteam}: </span>
-                                        <span className={styles.percentage}>{percentage}%</span>
+                                    <div key={subteam} className={styles.breakdownRow}>
+                                        <strong>{subteam}</strong>
+                                        <span>{percentage}%</span>
                                     </div>
                                 )
                             ))}
                         </div>
                     ) : (
-                        <p>No cost breakdown available</p>
+                        <p className={styles.value} style={{textAlign: 'center'}}>No breakdown available</p>
                     )}
                 </div>
             </div>
 
             <div className={styles.itemsSection}>
-                <h2>Items in Order</h2>
+                <h2 className={styles.cardHeader}>Items in Order ({order.items.length})</h2>
+                
                 {order.items.length > 0 ? (
-                    <div className={styles.itemsGrid}>
+                    <div className={styles.itemsList}>
                         {order.items.map((item) => (
-                            <div key={item.id} className={styles.itemCard}>
-                                <div className={styles.itemHeader}>
-                                    <h4>{item.name}</h4>
-                                    <span className={getItemStatusClassName(item.status)}>{item.status}</span>
+                            <div key={item.id} className={styles.itemRow}>
+                                <div className={styles.itemInfo}>
+                                    <h4 className={styles.itemName}>{item.name}</h4>
+                                    <span className={styles.itemSub}>
+                                        {item.vendor} {item.partNumber ? `• P/N: ${item.partNumber}` : ''}
+                                    </span>
+                                    <span className={styles.itemSub}>
+                                        {item.quantity} x ${item.price.toFixed(2)}
+                                    </span>
                                 </div>
-                                <div className={styles.itemDetails}>
-                                    <div className={styles.itemRow}>
-                                        <label>Quantity:</label>
-                                        <span>{item.quantity}</span>
-                                    </div>
-                                    <div className={styles.itemRow}>
-                                        <label>Price:</label>
-                                        <span>${item.price.toFixed(2)}</span>
-                                    </div>
-                                    <div className={styles.itemRow}>
-                                        <label>Vendor:</label>
-                                        <span>{item.vendor}</span>
-                                    </div>
-                                    {item.vendorSKU && (
-                                        <div className={styles.itemRow}>
-                                            <label>Vendor SKU:</label>
-                                            <span>{item.vendorSKU}</span>
-                                        </div>
-                                    )}
-                                    {item.internalSKU && (
-                                        <div className={styles.itemRow}>
-                                            <label>Internal SKU:</label>
-                                            <span>{item.internalSKU}</span>
-                                        </div>
-                                    )}
-                                    {item.partNumber && (
-                                        <div className={styles.itemRow}>
-                                            <label>Part Number:</label>
-                                            <span>{item.partNumber}</span>
-                                        </div>
-                                    )}
-                                    {item.location && (
-                                        <div className={styles.itemRow}>
-                                            <label>Location:</label>
-                                            <span>{item.location}</span>
-                                        </div>
-                                    )}
-                                    {item.notes && (
-                                        <div className={styles.itemRow}>
-                                            <label>Notes:</label>
-                                            <span>{item.notes}</span>
-                                        </div>
-                                    )}
+
+                                <div className={styles.itemActions}>
+                                    <span className={getStatusClass(item.status)}>
+                                        {item.status.toUpperCase()}
+                                    </span>
+                                    
                                     {item.link && (
                                         <button 
-                                            className={styles.itemLink}
+                                            className={styles.actionButton}
+                                            style={{backgroundColor: '#F3F4F6', color: '#5D5D5D'}}
                                             onClick={() => window.open(item.link!, '_blank')}
                                         >
-                                            View Product Link
+                                            View Item
                                         </button>
                                     )}
                                 </div>
@@ -288,34 +284,9 @@ export default function OrderDetail() {
                         ))}
                     </div>
                 ) : (
-                    <p>No items in this order</p>
+                    <p style={{textAlign: 'center'}}>No items attached to this order.</p>
                 )}
             </div>
         </div>
     );
-}
-
-function getStatusClassName(status: string): string {
-    const statusClass = {
-        'TO_ORDER': 'statusToOrder',
-        'PLACED': 'statusPlaced',
-        'MEEN_HOLD': 'statusMeenHold',
-        'PROCESSED': 'statusProcessed',
-        'SHIPPED': 'statusShipped',
-        'AWAITING_PICKUP': 'statusAwaitingPickup',
-        'DELIVERED': 'statusDelivered',
-        'PARTIAL': 'statusPartial',
-    }[status] || 'statusDefault';
-    return statusClass;
-}
-
-function getItemStatusClassName(status: string): string {
-    const statusClass = {
-        'TO_ORDER': 'itemStatusToOrder',
-        'PLACED': 'itemStatusPlaced',
-        'PROCESSED': 'itemStatusProcessed',
-        'SHIPPED': 'itemStatusShipped',
-        'DELIVERED': 'itemStatusDelivered',
-    }[status] || 'itemStatusDefault';
-    return statusClass;
 }
