@@ -23,9 +23,9 @@ function mapItemStatusToOrderStatus(itemStatus: ItemStatus): OrderStatus | null 
 
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const itemId = Number(params.id);
+    const itemId = Number((await params).id);
     const {
         internalSKU,
         name,

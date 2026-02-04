@@ -5,10 +5,10 @@ import prisma from '../../../../lib/prisma';
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = Number(params.id);
+        const id = Number((await params).id);
         if (!id) {
             return NextResponse.json({ error: 'Item ID is required' }, { status: 400 });
         }

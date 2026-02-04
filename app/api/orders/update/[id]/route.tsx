@@ -52,9 +52,10 @@ function mapOrderStatusToItemStatus(orderStatus: OrderStatus): ItemStatus | null
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const orderId = Number(params.id);
+  const { id } = await params;
+  const orderId = Number(id);
   const body = await request.json();
   const { status: statusString, totalCost, costVerified, carrier, trackingId, meenOrderId, comments, costBreakdown, } = body;
   

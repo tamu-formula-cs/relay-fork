@@ -3,10 +3,10 @@ import prisma from '../../../lib/prisma';
 
 export async function GET(
     request: Request,
-    { params }: { params: { orderId: string } }
+    { params }: { params: Promise<{ orderId: string }> }
 ) {
     try {
-        const orderId = parseInt(params.orderId);
+        const orderId = parseInt((await params).orderId);
 
         if (isNaN(orderId)) {
             return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 });
