@@ -4,9 +4,9 @@ import prisma from '../../../../lib/prisma';
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { orderId: string } }
+    { params }: { params: Promise<{ orderId: string }> }
 ) {
-    const orderId = parseInt(params.orderId, 10);
+    const orderId = parseInt((await params).orderId, 10);
 
     try {
         await prisma.order.update({

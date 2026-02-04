@@ -41,9 +41,10 @@ function mapOrderStatusToItemStatus(orderStatus: OrderStatus): ItemStatus | null
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { order: string } }
+  { params }: { params: Promise<{ order: string }> }
 ) {
-  const itemName = decodeURIComponent(params.order);
+  const { order } = await params;
+  const itemName = decodeURIComponent(order);
   console.log(itemName)
   const { status: statusString, totalCost, costVerified, carrier, trackingId } = await request.json();
   const newOrderStatus = statusString as OrderStatus;

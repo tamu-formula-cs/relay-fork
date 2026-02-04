@@ -5,9 +5,9 @@ import { OrderStatus } from '@prisma/client';
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { orderId: string } }
+    { params }: { params: Promise<{ orderId: string }> }
 ) {
-    const orderId = parseInt(params.orderId, 10);
+    const orderId = parseInt((await params).orderId, 10);
     const { meenOrderId } = await request.json();
 
     if (!meenOrderId) {

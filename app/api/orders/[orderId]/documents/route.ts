@@ -2,8 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
 
-export async function GET(request: NextRequest, { params }: { params: { orderId: string } }) {
-    const { orderId } = params;
+export async function GET(request: NextRequest, { params }: { params: Promise<{ orderId: string }> }) {
+    const { orderId } = await params;
 
     try {
         const documents = await prisma.document.findMany({

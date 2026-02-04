@@ -4,9 +4,9 @@ import prisma from '../../../../lib/prisma';
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { itemId: string } }
+    { params }: { params: Promise<{ itemId: string }> }
 ) {
-    const itemId = parseInt(params.itemId, 10);
+    const itemId = parseInt((await params).itemId, 10);
 
     try {
         // Step 1: Update the item's status to PICKED_UP

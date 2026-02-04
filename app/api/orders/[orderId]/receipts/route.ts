@@ -3,9 +3,9 @@ import prisma from '../../../../lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
-  const { orderId } = params;
+  const { orderId } = await params;
 
   try {
     const receipts = await prisma.document.findMany({
