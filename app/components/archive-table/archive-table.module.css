@@ -38,6 +38,7 @@ h1.purchaseHeader{
     border-radius: 10px;
     table-layout: fixed;
     overflow: hidden;
+    font-family: inherit;
 }
 
 .tableHeader th:first-child {
