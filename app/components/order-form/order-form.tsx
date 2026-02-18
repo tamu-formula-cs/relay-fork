@@ -236,8 +236,9 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
         }
     };
 
-    const handleFileUpload = async () => {
-        const file = fileInputRef.current?.files?.[0];
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        
         if (!file || file.type !== 'application/pdf') {
             toast({
                 title: "Invalid File",
@@ -269,6 +270,7 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
             });
         } catch (error) {
             console.error('Upload error:', error);
+            console.error('Error message:', error instanceof Error ? error.message : String(error));
             toast({
                 title: "Upload Error",
                 description: "An error occurred while uploading the PDF.",
