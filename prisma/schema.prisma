@@ -14,9 +14,9 @@ model User {
   email      String       @unique
   phone      String?
   carrier    String?
-  role       Role
-  password   String
-  subteam    String
+  role       Role         @default(ENGINEER)
+  password   String?
+  subteam    String       @default("Unassigned")
   orders     Order[]      @relation("UserOrders")
   pushTokens PushToken[]  @relation("UserPushTokens")
   createdAt  DateTime     @default(now())

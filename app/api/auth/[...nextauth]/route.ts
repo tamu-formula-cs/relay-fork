@@ -1,88 +1,67 @@
-import NextAuth, { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
+import NextAuth from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
 import prisma from '../../../lib/prisma';
-import { compare } from 'bcryptjs';
 
-const authOptions: NextAuthOptions = {
+const handler = NextAuth({
   providers: [
-    CredentialsProvider({
-      name: 'Credentials',
-      credentials: {
-        email: { label: "Email", type: "text", placeholder: "email@example.com" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Please enter an email and password');
-        }
-
-        // Fetch user from the database
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            password: true,
-            subteam: true,
-            carrier: true,
-          },
-        });
-
-        if (!user) {
-          throw new Error('No user found');
-        }
-
-        // Compare the password
-        const isValidPassword = await compare(credentials.password, user.password);
-
-        if (!isValidPassword) {
-          throw new Error('Invalid password');
-        }
-
-        // Return user object without password
-        return {
-          id: String(user.id),
-          name: user.name,
-          email: user.email,
-          subteam: user.subteam,
-          carrier: user.carrier || ""
-        };
-      },
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
   callbacks: {
+    async signIn({ user }) {
+      if (!user.email || !user.email.endsWith('@tamu.edu')) return false;
+
+      const existingUser = await prisma.user.findUnique({
+        where: { email: user.email },
+      });
+
+      if (!existingUser) {
+        await prisma.user.create({
+          data: {
+            email: user.email,
+            name: user.name ?? 'User',
+            role: 'ENGINEER',
+            subteam: 'Unassigned',
+            phone: null,
+            carrier: null,
+            password: "null",
+          },
+        });
+      }
+
+      return true;
+    },
     async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.name = user.name;
+      if (user?.email) {
         token.email = user.email;
-        token.subteam = user.subteam;
-        token.carrier = user.carrier;
       }
       return token;
     },
     async session({ session, token }) {
-      if (token) {
-        session.user = {
-          id: token.id,
-          name: token.name,
-          email: token.email,
-          subteam: token.subteam as string,
-          carrier: token.carrier as string,
-        };
-      }
+      if (!session.user?.email) return session;
+
+      const dbUser = await prisma.user.findUnique({
+        where: { email: session.user.email },
+      });
+
+      if (!dbUser) throw new Error('User not found');
+
+      session.user = {
+        id: dbUser.id.toString(),
+        name: dbUser.name,
+        email: dbUser.email,
+        subteam: dbUser.subteam ?? '',
+        carrier: dbUser.carrier ?? '',
+      };
+
       return session;
     },
   },
-  session: {
-    strategy: 'jwt',
-  },
-  pages: {
-    signIn: '/account',
-  },
+  session: { strategy: 'jwt' },
+  pages: { signIn: '/account' },
   secret: process.env.NEXTAUTH_SECRET,
-};
+});
 
-const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

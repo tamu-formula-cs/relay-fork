@@ -19,6 +19,8 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import SignOutModal from '../signout-component/signout-modal';
+import { checkAdmin } from '../../lib/checkAdmin';
+
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -29,8 +31,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const { data: session } = useSession();
   const email = session?.user.email;
-  const admins = process.env.NEXT_PUBLIC_ADMINS?.split(",") || [];
-  const isAdmin = email ? admins.includes(email) : false;
+  const netId = email?.split("@")[0];
+  const [isAdmin, setIsAdmin] = useState(false);
+const [isAdminLoading, setIsAdminLoading] = useState(true);
+
+useEffect(() => {
+  if (!netId) {
+    setIsAdmin(false);
+    setIsAdminLoading(false);
+    return;
+  }
+
+  checkAdmin(netId)
+    .then(setIsAdmin)
+    .catch(() => setIsAdmin(false))
+    .finally(() => setIsAdminLoading(false));
+}, [netId]);
   const [windowWidth, setWindowWidth] = useState(0);
 
   // Load sidebar state from local storage on component mount
@@ -121,19 +137,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </Link>
           </li>
           {
-            isAdmin &&
-            <li className={pathname === '/backlog' ? styles.active : ''}>
-              <Link href="/backlog">
-                <Image 
-                  src={BacklogIcon} 
-                  alt="Backlog" 
-                  width={16} 
-                  height={16}
-                  className={pathname === '/backlog' ? styles.activeIcon : ''}
-                />
-                <span>Backlog</span>
-              </Link>
-            </li>
+            !isAdminLoading && isAdmin && (
+              <li className={pathname === '/backlog' ? styles.active : ''}>
+                <Link href="/backlog">
+                  <Image 
+                    src={BacklogIcon} 
+                    alt="Backlog" 
+                    width={16} 
+                    height={16}
+                    className={pathname === '/backlog' ? styles.activeIcon : ''}
+                  />
+                  <span>Backlog</span>
+                </Link>
+              </li>
+            )
           }
           <li className={pathname === '/finance' ? styles.active : ''}>
             <Link href="/finance">
