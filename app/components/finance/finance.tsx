@@ -480,7 +480,7 @@ const FinanceDashboard: React.FC = () => {
           </div>
 
           {/* Budget Pace by Subteam */}
-          <div className={styles.chartTile}>
+          {/* <div className={styles.chartTile}>
             <h2 className={styles.tileTitle}>Budget Pace by Subteam</h2>
             <div className={styles.chartWrapper}>
               <Bar
@@ -511,7 +511,7 @@ const FinanceDashboard: React.FC = () => {
                 }}
               />
             </div>
-          </div>
+          </div> */}
 
 
           {/* Top Vendors */}
