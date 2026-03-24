@@ -122,6 +122,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
     const [meenOrderId, setMeenOrderId] = useState<string>(order?.meenOrderId || '');
     const [isPriceVerified, setIsPriceVerified] = useState(order ? order.costVerified : false);
 
+    const canEdit = isAdmin || isLead;
     const userSubteam = session?.user.subteam;
     const [canDeleteOrder, setCanDeleteOrder] = useState(false);
 
@@ -204,7 +205,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                     onUpdateOrder();
                 }
             } else if (order) {
-                if (isAdmin) {
+                if (canEdit) {
                     const totalPercentage = Object.values(costBreakdown).reduce((a, b) => a + b, 0);
                     if (totalPercentage !== 100) {
                         toast({
@@ -215,12 +216,17 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                         return;
                     }
                 }
-                const body: UpdateOrderBody = { status: orderStatus, carrier, trackingId, meenOrderId, comments };
-                if (priceEdited) {
-                    body.totalCost = price;
+                const body: UpdateOrderBody = { status: orderStatus, comments };
+                if (canEdit) {
+                    body.carrier = carrier;
+                    body.trackingId = trackingId;
+                    body.meenOrderId = meenOrderId;
+                    if (priceEdited) {
+                        body.totalCost = price;
+                    }
+                    body.costVerified = isPriceVerified;
                 }
-                body.costVerified = isPriceVerified;
-                if (isAdmin) {
+                if (canEdit) {
                     body.costBreakdown = costBreakdown;
                 }
 
@@ -431,7 +437,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                             <h4 className={styles.infoLabel}>Deliver to:</h4>
                             <p className={styles.infoText}>{order.deliveryLocation}</p>
 
-                            {isAdmin && (
+                            {canEdit && (
                                 <>
                                     <h4 className={styles.infoLabel}>Cost Breakdown:</h4>
                                     <div className={styles.costBreakdownList}>
@@ -476,7 +482,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                 </div>
                             )}
 
-                            {(isAdmin || session?.user.subteam === order.subteam) && (
+                            {(canEdit || session?.user.subteam === order.subteam) && (
                                 <div className={styles.commentSection}>
                                     <h4 className={styles.infoLabel}>Comments:</h4>
                                     <textarea
@@ -526,7 +532,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                         <p className={styles.infoText}>{item.notes}</p>
                                     </div>
                                 )}
-                                {isAdmin && (
+                                {canEdit && (
                                     <div className={styles.inputGroup}>
                                         <label>Status:</label>
                                         <select value={itemStatus} onChange={handleItemStatusChange}>
@@ -541,7 +547,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                             </>
                         )}
 
-                        {order && isAdmin && (
+                        {order && canEdit && (
                             <>
                                 <div className={styles.inputGroup}>
                                     <label>Status:</label>
@@ -636,9 +642,9 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                     </div>
                 </div>
 
-                {(isAdmin || canDeleteOrder) && (
+                {(canEdit || canDeleteOrder) && (
                     <div className={styles.receiptButton}>
-                        {isAdmin && (
+                        {canEdit && (
                             <>
                                 <button onClick={handleAddReceipt} className={`${styles.saveButton} ${styles.button}`}>
                                     Add Receipt
