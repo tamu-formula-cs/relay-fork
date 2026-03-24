@@ -60,21 +60,20 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpdateOrder }) => {
     const { data: session } = useSession();
     const email = session?.user.email;
-    const netId = email?.split("@")[0];
 
     const [isAdmin, setIsAdmin] = useState(false);
     const [isLead, setIsLead] = useState(false);
     const [isAdminLoading, setIsAdminLoading] = useState(true);
 
     useEffect(() => {
-        if (!netId) {
+        if (!session) {
             setIsAdmin(false);
             setIsLead(false);
             setIsAdminLoading(false);
             return;
         }
 
-        Promise.all([checkAdmin(netId), checkLead(netId)])
+        Promise.all([checkAdmin(), checkLead()])
             .then(([admin, lead]) => {
                 setIsAdmin(admin);
                 setIsLead(lead);
@@ -84,7 +83,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                 setIsLead(false);
             })
             .finally(() => setIsAdminLoading(false));
-    }, [netId]);
+    }, [session]);
 
     const initialCostBreakdown = {
         AERO: 0,
