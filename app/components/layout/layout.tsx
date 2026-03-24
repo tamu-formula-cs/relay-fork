@@ -30,23 +30,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [showSignOutModal, setShowSignOutModal] = useState(false);
 
   const { data: session } = useSession();
-  const email = session?.user.email;
-  const netId = email?.split("@")[0];
   const [isAdmin, setIsAdmin] = useState(false);
-const [isAdminLoading, setIsAdminLoading] = useState(true);
+  const [isAdminLoading, setIsAdminLoading] = useState(true);
 
-useEffect(() => {
-  if (!netId) {
-    setIsAdmin(false);
-    setIsAdminLoading(false);
-    return;
-  }
+  useEffect(() => {
+    if (!session) {
+      setIsAdmin(false);
+      setIsAdminLoading(false);
+      return;
+    }
 
-  checkAdmin(netId)
-    .then(setIsAdmin)
-    .catch(() => setIsAdmin(false))
-    .finally(() => setIsAdminLoading(false));
-}, [netId]);
+    checkAdmin()
+      .then(setIsAdmin)
+      .catch(() => setIsAdmin(false))
+      .finally(() => setIsAdminLoading(false));
+  }, [session]);
   const [windowWidth, setWindowWidth] = useState(0);
 
   // Load sidebar state from local storage on component mount
