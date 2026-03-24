@@ -84,6 +84,8 @@ useEffect(() => {
   useEffect(() => {
     if (!session) {
       router.push('/account');
+    } else if (session.user?.needsRegistration) {
+      router.push('/new-user');
     }
   }, [session, router]);
 

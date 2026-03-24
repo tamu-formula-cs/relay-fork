@@ -3,22 +3,23 @@ import { DefaultSession, DefaultUser } from 'next-auth';
 declare module 'next-auth' {
     interface Session {
         user: {
-            id: string;
-            subteam: string; // Add subteam to Session user
-            carrier: string;
+            id?: string;
+            subteam?: string;
+            carrier?: string;
+            needsRegistration?: boolean;
         } & DefaultSession['user'];
     }
 
     interface User extends DefaultUser {
         id: string;
-        subteam: string; // Add subteam to User
+        subteam: string;
         carrier: string;
     }
 }
 
 declare module 'next-auth/jwt' {
     interface JWT {
-        id: string;
-        subteam: string; // Add subteam to JWT
+        id?: string;
+        subteam?: string;
     }
 }

@@ -9,7 +9,7 @@ import { SerializedOrderWithRelations } from '../order-table/order-table';
 import { useSession } from 'next-auth/react';
 import DownloadIcon from "../../../assets/file_download.svg"
 import * as XLSX from 'xlsx';
-import { checkAdmin } from '../../lib/checkAdmin';
+import { checkAdmin, checkLead } from '../../lib/checkAdmin';
 
 interface SettingsMenuProps {
     order: SerializedOrderWithRelations | null;
@@ -60,27 +60,31 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpdateOrder }) => {
     const { data: session } = useSession();
     const email = session?.user.email;
-    const leads = process.env.NEXT_PUBLIC_LEADS?.split(",") || [];
-    const isLead = email ? leads.includes(email) : false;
-
-    // --- Async isAdmin ---
     const netId = email?.split("@")[0];
+
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isLead, setIsLead] = useState(false);
     const [isAdminLoading, setIsAdminLoading] = useState(true);
 
     useEffect(() => {
         if (!netId) {
             setIsAdmin(false);
+            setIsLead(false);
             setIsAdminLoading(false);
             return;
         }
 
-        checkAdmin(netId)
-            .then(setIsAdmin)
-            .catch(() => setIsAdmin(false))
+        Promise.all([checkAdmin(netId), checkLead(netId)])
+            .then(([admin, lead]) => {
+                setIsAdmin(admin);
+                setIsLead(lead);
+            })
+            .catch(() => {
+                setIsAdmin(false);
+                setIsLead(false);
+            })
             .finally(() => setIsAdminLoading(false));
     }, [netId]);
-    // ---------------------
 
     const initialCostBreakdown = {
         AERO: 0,
