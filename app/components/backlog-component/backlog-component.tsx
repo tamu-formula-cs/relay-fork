@@ -11,6 +11,7 @@ import CloseIcon from "../../../assets/close.svg"
 import EmptyIcon from "../../../assets/empty.svg"
 import { useToast } from '../toast/use-toast';
 import { useSession } from 'next-auth/react';
+import { checkAdmin } from '../../lib/checkAdmin';
 
 interface Document {
     id: number;
@@ -39,8 +40,22 @@ const subteamMapping: { [key: string]: string } = {
 const BacklogComponent: React.FC = () => {
     const { data: session } = useSession();
     const email = session?.user.email;
-    const admins = process.env.NEXT_PUBLIC_ADMINS?.split(",") || [];
-    const isAdmin = email ? admins.includes(email) : false;
+    const netId = email?.split("@")[0];
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [isAdminLoading, setIsAdminLoading] = useState(true);
+
+    useEffect(() => {
+    if (!netId) {
+        setIsAdmin(false);
+        setIsAdminLoading(false);
+        return;
+    }
+
+    checkAdmin(netId)
+        .then(setIsAdmin)
+        .catch(() => setIsAdmin(false))
+        .finally(() => setIsAdminLoading(false));
+    }, [netId]);
 
     useEffect(() => {
         if (!isAdmin) {

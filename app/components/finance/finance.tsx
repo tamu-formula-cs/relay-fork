@@ -197,7 +197,6 @@ const FinanceDashboard: React.FC = () => {
     const budget = subteamBudgetData[index];
     if (daysPassed <= 0 || budget <= 0) return 0;
     const pace = (spent / daysPassed) * totalDays / budget;
-    console.log(subteam, " has spent ", spent, " out of their ", budget);
     return pace * 100;
   });
 
@@ -635,6 +634,15 @@ const FinanceDashboard: React.FC = () => {
               <p className={styles.amount}>${budgetRemainingAmount.toFixed(2)}</p>
               <p className={styles.tileSub}>Remaining from ${overallBudget}</p>
             </div>
+
+            <div className={styles.tile}>
+          <img
+            src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3918298.png"   // change to your image path
+            alt="Josh Allen"
+            className={styles.tileImage}
+          />
+        </div>
+
           </div>
         </div>
       </div>

@@ -3,5 +3,5 @@
 body, html{
   margin: 0;
   background-color: #F5F5F5;
-  font-family: 'Inter';
+  font-family: 'Inter', sans-serif;
 }

@@ -38,7 +38,7 @@ h1.purchaseHeader{
     border-radius: 10px;
     table-layout: fixed;
     overflow: hidden;
-    font-family: inherit;
+    font-family: 'Inter', sans-serif;
 }
 
 .tableHeader th:first-child {

@@ -1,28 +1,34 @@
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../../lib/auth';
 import prisma from '../../../lib/prisma';
-import { hash } from 'bcryptjs';
 
 export async function POST(request: Request) {
-    const { email, name, role, subteam, phone, carrier, password } = await request.json();
-    const auth_emails = (process.env.AUTHORIZED_EMAILS || "").split(',');
+    const session = await getServerSession(authOptions);
 
-    if (!auth_emails.includes(email)) {
-        return NextResponse.json({ error: 'Email not authorized' }, { status: 403 });
+    if (!session?.user?.email) {
+        return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+
+    const email = session.user.email;
+    const { name, role, subteam, phone, carrier } = await request.json();
+
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+        return NextResponse.json({ error: 'Account already exists' }, { status: 409 });
     }
 
     try {
-        const hashedPassword = await hash(password, 12);
-
         const newUser = await prisma.user.create({
-        data: {
-            email,
-            name,
-            role,
-            subteam,
-            phone,
-            carrier,
-            password: hashedPassword,
-        },
+            data: {
+                email,
+                name,
+                role,
+                subteam,
+                phone,
+                carrier,
+                password: null,
+            },
         });
         return NextResponse.json({ user: newUser });
     } catch (error) {

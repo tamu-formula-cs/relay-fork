@@ -79,6 +79,26 @@
     background-color: #5936c4;
 }
 
+.secondaryButton {
+    background-color: #F8F9FB;
+    color: #545360;
+    border: 1px solid #d8d9de;
+    padding: 1rem 1.5rem;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.secondaryButton:hover {
+    background-color: #eceef2;
+    border-color: #d1d3d8;
+}
+
 .newAccountLink {
     font-size: 14px;
     font-weight: 400;
