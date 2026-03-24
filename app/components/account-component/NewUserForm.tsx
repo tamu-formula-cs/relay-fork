@@ -2,6 +2,7 @@
 
 import React, { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Logo from "../../../assets/logo.svg";
 import styles from "./new-user.module.css";
 import { useToast } from "../toast/use-toast";
@@ -17,14 +18,12 @@ const subteamsByRole = {
 
 const UserInfoForm: React.FC = () => {
   const { toast } = useToast();
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
+  const { data: session, update } = useSession();
+  const [name, setName] = useState(session?.user?.name ?? "");
   const [role, setRole] = useState("");
   const [subteam, setSubteam] = useState("");
   const [phone, setPhone] = useState("");
   const [carrier, setCarrier] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const carriers = ["", "AT&T", "Verizon", "T-Mobile", "Sprint"];
@@ -46,32 +45,24 @@ const UserInfoForm: React.FC = () => {
 
     setIsSubmitted(false);
 
-    if (password !== confirmPassword) {
-      toast({
-          title: "Passwords Do Not Match",
-          description: "Your passwords do not match. Please try again.",
-          variant: "destructive",
-      });
-      return;
-    }
-
     try {
       const response = await fetch("/api/auth/NewUserInfo", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, name, role, subteam, phone, carrier, password }),
+        body: JSON.stringify({ name, role, subteam, phone, carrier }),
       });
 
       if (response.ok) {
         setIsSubmitted(true);
         toast({
-            title: "User created",
-            description: "User created successfully!",
+            title: "Account created",
+            description: "Your account has been created successfully!",
             variant: "affirmation",
         });
-        router.push("/account");
+        await update();
+        router.push("/");
       } else {
         const result = await response.json();
         toast({
@@ -93,17 +84,15 @@ const UserInfoForm: React.FC = () => {
   return (
     <div className={styles.newMain}>
       <form onSubmit={handleSubmit} className={styles.formContainer}>
-        <h2 className={styles.heading}>Create Your Account</h2>
+        <h2 className={styles.heading}>Complete Your Account</h2>
 
         <div className={styles.newRow}>
           <div className={styles.inputGroup}>
             <label>Email:</label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter email address"
-              required
+              value={session?.user?.email ?? ""}
+              disabled
               className={styles.inputField}
             />
           </div>
@@ -115,32 +104,6 @@ const UserInfoForm: React.FC = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter full name"
-              required
-              className={styles.inputField}
-            />
-          </div>
-        </div>
-
-        <div className={styles.newRow}>
-          <div className={styles.inputGroup}>
-            <label>Password:</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
-              required
-              className={styles.inputField}
-            />
-          </div>
-
-          <div className={styles.inputGroup}>
-            <label>Confirm Password:</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm password"
               required
               className={styles.inputField}
             />
@@ -191,7 +154,7 @@ const UserInfoForm: React.FC = () => {
               className={styles.inputField}
             />
           </div>
-          
+
           <div className={styles.inputGroup}>
             <label>Cell Carrier:</label>
             <select
@@ -218,11 +181,8 @@ const UserInfoForm: React.FC = () => {
           className={styles.button}
           disabled={
             isSubmitted ||
-            !email ||
             !name ||
             !phone ||
-            !password ||
-            !confirmPassword ||
             !role ||
             !subteam
           }

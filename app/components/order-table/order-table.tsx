@@ -149,7 +149,7 @@ const OrderTable: React.FC = () => {
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
     const { data: session } = useSession();
-    const currentUserSubteam = session ? session?.user.subteam : "";
+    const currentUserSubteam = session?.user?.subteam ?? "";
 
     const { data, error } = useSWR('/api/orders', fetcher, { refreshInterval: 60000 });
 

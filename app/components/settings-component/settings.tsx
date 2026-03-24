@@ -9,6 +9,7 @@ import { SerializedOrderWithRelations } from '../order-table/order-table';
 import { useSession } from 'next-auth/react';
 import DownloadIcon from "../../../assets/file_download.svg"
 import * as XLSX from 'xlsx';
+import { checkAdmin, checkLead } from '../../lib/checkAdmin';
 
 interface SettingsMenuProps {
     order: SerializedOrderWithRelations | null;
@@ -59,10 +60,31 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpdateOrder }) => {
     const { data: session } = useSession();
     const email = session?.user.email;
-    const admins = process.env.NEXT_PUBLIC_ADMINS?.split(",") || [];
-    const leads = process.env.NEXT_PUBLIC_LEADS?.split(",") || [];
-    const isAdmin = email ? admins.includes(email) : false;
-    const isLead = email ? leads.includes(email) : false;
+    const netId = email?.split("@")[0];
+
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [isLead, setIsLead] = useState(false);
+    const [isAdminLoading, setIsAdminLoading] = useState(true);
+
+    useEffect(() => {
+        if (!netId) {
+            setIsAdmin(false);
+            setIsLead(false);
+            setIsAdminLoading(false);
+            return;
+        }
+
+        Promise.all([checkAdmin(netId), checkLead(netId)])
+            .then(([admin, lead]) => {
+                setIsAdmin(admin);
+                setIsLead(lead);
+            })
+            .catch(() => {
+                setIsAdmin(false);
+                setIsLead(false);
+            })
+            .finally(() => setIsAdminLoading(false));
+    }, [netId]);
 
     const initialCostBreakdown = {
         AERO: 0,
@@ -100,25 +122,21 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
     const [trackingId, setTrackingId] = useState<string>(order?.trackingId || '');
     const [meenOrderId, setMeenOrderId] = useState<string>(order?.meenOrderId || '');
     const [isPriceVerified, setIsPriceVerified] = useState(order ? order.costVerified : false);
-    
+
     const userSubteam = session?.user.subteam;
     const [canDeleteOrder, setCanDeleteOrder] = useState(false);
+
     useEffect(() => {
-        
         if (order && isLead && userSubteam === order.subteam) {
             const orderCreatedAt = new Date(order.createdAt);
             const currentTime = new Date();
-    
-            // Define the time interval in milliseconds (e.g., 12 hours)
-            const timeInterval = 1 * 60 * 60 * 1000; // 1 hour in milliseconds
-            // For 5 seconds, you can set: const timeInterval = 5 * 1000;
-    
+            const timeInterval = 1 * 60 * 60 * 1000; // 1 hour
             const timeDifference = currentTime.getTime() - orderCreatedAt.getTime();
             if (timeDifference <= timeInterval) {
                 setCanDeleteOrder(true);
             }
         }
-    }, [order, isLead, userSubteam]);    
+    }, [order, isLead, userSubteam]);
 
     useEffect(() => {
         if (order) {
@@ -137,7 +155,6 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
         }
     }, [order]);
 
-    
     const handleCarrierChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setCarrier(e.target.value);
     };
@@ -181,12 +198,9 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                 const body: UpdateItemBody = { status: itemStatus };
                 const response = await fetch(`/api/items/update/${item.id}`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body),
                 });
-
                 if (response.ok) {
                     onUpdateOrder();
                 }
@@ -202,21 +216,18 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                         return;
                     }
                 }
-                const body: UpdateOrderBody = { status: orderStatus, carrier, trackingId, meenOrderId, comments, };
+                const body: UpdateOrderBody = { status: orderStatus, carrier, trackingId, meenOrderId, comments };
                 if (priceEdited) {
                     body.totalCost = price;
                 }
                 body.costVerified = isPriceVerified;
-
                 if (isAdmin) {
                     body.costBreakdown = costBreakdown;
                 }
 
                 const response = await fetch(`/api/orders/update/${order.id}`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body),
                 });
 
@@ -261,21 +272,17 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                         });
                         continue;
                     }
-
                     const formData = new FormData();
                     formData.append('file', file);
-
                     const response = await fetch(`/api/orders/addReceipt?orderId=${order.id}`, {
                         method: 'POST',
                         body: formData,
                     });
-
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.error);
                     }
                 }
-
                 mutateReceipts();
                 toast({
                     title: 'Receipts Uploaded',
@@ -300,7 +307,6 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ documentId }),
             });
-
             if (response.ok) {
                 mutateReceipts();
                 toast({
@@ -361,10 +367,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
 
     const handleDownloadExcel = () => {
         if (order && order.items && order.items.length > 0) {
-            // Create workbook
             const wb = XLSX.utils.book_new();
-            
-            // Prepare headers and data
             const headers = ['Item', 'Part Number', 'Notes', 'QTY to Buy', 'Cost', 'Vendor', 'Link'];
             const rows = order.items.map(item => [
                 item.name || '',
@@ -375,17 +378,9 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                 item.vendor || '',
                 item.link || ''
             ]);
-    
-            // Create worksheet with headers and data
             const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-            
-            // Add worksheet to workbook
             XLSX.utils.book_append_sheet(wb, ws, "Order Items");
-            
-            // Generate Excel file
             const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-            
-            // Create blob and download
             const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
@@ -396,6 +391,17 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
             document.body.removeChild(link);
         }
     };
+
+    // Show a loading state while the admin check is in-flight
+    if (isAdminLoading) {
+        return (
+            <div className={styles.overlay}>
+                <div className={styles.settingsMenu}>
+                    <p>Loading...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.overlay}>
@@ -415,7 +421,6 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                 </div>
 
                 <div className={styles.contentContainer}>
-                    {/* Display additional information for the order */}
                     {!item && order && (
                         <div className={styles.infoSection}>
                             <h4 className={`${styles.infoLabel} ${styles.orderName}`}>Order Name:</h4>
@@ -427,37 +432,30 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                             <h4 className={styles.infoLabel}>Deliver to:</h4>
                             <p className={styles.infoText}>{order.deliveryLocation}</p>
 
-                            {/* Cost Breakdown Section */}
-                            {isAdmin &&
-                            <>
-                            <h4 className={styles.infoLabel}>Cost Breakdown:</h4>
-                            <div className={styles.costBreakdownList}>
-                                {Object.keys(subteamMapping).map((subteam) => (
-                                    <div key={subteam} className={styles.breakdownItem}>
-                                        <label className={styles.breakdownLabel}>
-                                            {subteam}:
-                                        </label>
-                                        {isAdmin ? (
-                                            <input
-                                                type="number"
-                                                className={styles.breakdownInput}
-                                                value={costBreakdown[subteam]}
-                                                onChange={(e) => {
-                                                    const value = parseFloat(e.target.value) || 0;
-                                                    setCostBreakdown((prev) => ({
-                                                        ...prev,
-                                                        [subteam]: value,
-                                                    }));
-                                                }}
-                                            />
-                                        ) : (
-                                            <span>{costBreakdown[subteam]}%</span>
-                                        )}
+                            {isAdmin && (
+                                <>
+                                    <h4 className={styles.infoLabel}>Cost Breakdown:</h4>
+                                    <div className={styles.costBreakdownList}>
+                                        {Object.keys(subteamMapping).map((subteam) => (
+                                            <div key={subteam} className={styles.breakdownItem}>
+                                                <label className={styles.breakdownLabel}>{subteam}:</label>
+                                                <input
+                                                    type="number"
+                                                    className={styles.breakdownInput}
+                                                    value={costBreakdown[subteam]}
+                                                    onChange={(e) => {
+                                                        const value = parseFloat(e.target.value) || 0;
+                                                        setCostBreakdown((prev) => ({
+                                                            ...prev,
+                                                            [subteam]: value,
+                                                        }));
+                                                    }}
+                                                />
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
-                            </>
-                            }
+                                </>
+                            )}
 
                             {supportingDocs && supportingDocs.length > 0 && (
                                 <div className={styles.docSection}>
@@ -479,7 +477,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                 </div>
                             )}
 
-                            {order && (isAdmin || (session?.user.subteam === order.subteam)) && (
+                            {(isAdmin || session?.user.subteam === order.subteam) && (
                                 <div className={styles.commentSection}>
                                     <h4 className={styles.infoLabel}>Comments:</h4>
                                     <textarea
@@ -490,12 +488,10 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                     />
                                 </div>
                             )}
-
                         </div>
                     )}
 
                     <div className={styles.settingsGroup}>
-                        {/* Display item details if an item is provided */}
                         {item && (
                             <>
                                 <div className={styles.inputGroup}>
@@ -525,11 +521,12 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                     <label>Quantity:</label>
                                     <p className={styles.infoText}>{item.quantity || 'N/A'}</p>
                                 </div>
-                                {item.notes && 
-                                <div className={styles.inputGroup}>
-                                    <label>Notes:</label>
-                                    <p className={styles.infoText}>{item.notes}</p>
-                                </div>}
+                                {item.notes && (
+                                    <div className={styles.inputGroup}>
+                                        <label>Notes:</label>
+                                        <p className={styles.infoText}>{item.notes}</p>
+                                    </div>
+                                )}
                                 {isAdmin && (
                                     <div className={styles.inputGroup}>
                                         <label>Status:</label>
@@ -545,7 +542,6 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                             </>
                         )}
 
-                        {/* Display order status and price if an order is provided */}
                         {order && isAdmin && (
                             <>
                                 <div className={styles.inputGroup}>
@@ -567,7 +563,6 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                         className={styles.textInput}
                                     />
                                 </div>
-
                                 <div className={styles.inputGroup}>
                                     <label>Price:</label>
                                     <div className={styles.priceContainer}>
@@ -588,7 +583,6 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                         </label>
                                     </div>
                                 </div>
-
                                 <div className={styles.inputGroup}>
                                     <label>Carrier:</label>
                                     <select value={carrier} onChange={handleCarrierChange}>
@@ -597,7 +591,6 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                         <option value="FEDEX">FEDEX</option>
                                     </select>
                                 </div>
-
                                 <div className={styles.inputGroup}>
                                     <label>Tracking ID:</label>
                                     <input
@@ -623,14 +616,12 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                                         <span className={styles.docIcon}>📄</span>
                                                         <span className={styles.docName}>{doc.url.split('/').pop()}</span>
                                                     </a>
-                                                    {isAdmin && (
-                                                        <button
-                                                            onClick={() => handleDeleteReceipt(doc.id)}
-                                                            className={styles.deleteButton}
-                                                        >
-                                                            Delete
-                                                        </button>
-                                                    )}
+                                                    <button
+                                                        onClick={() => handleDeleteReceipt(doc.id)}
+                                                        className={styles.deleteButton}
+                                                    >
+                                                        Delete
+                                                    </button>
                                                 </div>
                                             ))}
                                         </div>
@@ -663,7 +654,6 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                 />
                             </>
                         )}
-
                         {order && (
                             <button
                                 onClick={handleDeleteOrder}

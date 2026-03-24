@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "role" SET DEFAULT 'ENGINEER',
+ALTER COLUMN "subteam" SET DEFAULT 'Unassigned',
+ALTER COLUMN "password" DROP NOT NULL;
