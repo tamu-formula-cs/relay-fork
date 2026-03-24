@@ -39,23 +39,21 @@ const subteamMapping: { [key: string]: string } = {
 
 const BacklogComponent: React.FC = () => {
     const { data: session } = useSession();
-    const email = session?.user.email;
-    const netId = email?.split("@")[0];
     const [isAdmin, setIsAdmin] = useState(false);
     const [isAdminLoading, setIsAdminLoading] = useState(true);
 
     useEffect(() => {
-    if (!netId) {
-        setIsAdmin(false);
-        setIsAdminLoading(false);
-        return;
-    }
+        if (!session) {
+            setIsAdmin(false);
+            setIsAdminLoading(false);
+            return;
+        }
 
-    checkAdmin(netId)
-        .then(setIsAdmin)
-        .catch(() => setIsAdmin(false))
-        .finally(() => setIsAdminLoading(false));
-    }, [netId]);
+        checkAdmin()
+            .then(setIsAdmin)
+            .catch(() => setIsAdmin(false))
+            .finally(() => setIsAdminLoading(false));
+    }, [session]);
 
     useEffect(() => {
         if (!isAdmin) {
