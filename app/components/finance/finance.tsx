@@ -628,21 +628,6 @@ const FinanceDashboard: React.FC = () => {
               <p className={styles.tileSub}>Largest single order</p>
             </div>
 
-            {/* Budget Left */}
-            <div className={styles.tile}>
-              <h2 className={styles.tileTitle}>Budget Left</h2>
-              <p className={styles.amount}>${budgetRemainingAmount.toFixed(2)}</p>
-              <p className={styles.tileSub}>Remaining from ${overallBudget}</p>
-            </div>
-
-            <div className={styles.tile}>
-          <img
-            src="https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3918298.png"   // change to your image path
-            alt="Josh Allen"
-            className={styles.tileImage}
-          />
-        </div>
-
           </div>
         </div>
       </div>
