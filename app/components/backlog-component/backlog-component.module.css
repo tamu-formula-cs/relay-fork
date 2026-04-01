@@ -120,6 +120,7 @@ h1.purchaseHeader {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 10px;
     padding: 10px;
+    overflow: visible;
 }
 
 .expandedOrderContent {
@@ -151,6 +152,7 @@ a.itemNameLink:hover{
 .itemLeftCol p {
     margin: 0.2rem 0;
     color: #5D5D5D;
+    word-wrap: break-word;
 }
 
 .itemRightCol {
@@ -169,6 +171,7 @@ a.itemNameLink:hover{
 .placedItemRightCol p{
     margin: 0.2rem 0;
     color: #5D5D5D;
+    word-wrap: break-word;
 }
 
 .itemStatusText {
@@ -499,4 +502,24 @@ a.itemNameLink:hover{
 .cancelButton:hover {
     cursor: pointer;
     background-color: #eaeaea;
+}
+
+@media (max-width: 768px) {
+    .expandedOrder {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 10px;
+        padding: 10px;
+        overflow: visible;
+    }
+    .expandedOrderContent {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        max-width: 100%;
+    }
+
+    .itemRightCol {
+        margin-left: 0;
+    }
 }

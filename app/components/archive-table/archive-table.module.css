@@ -232,6 +232,7 @@ button.orderButton:hover{
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     padding: 10px;
+    overflow: visible;
 }
 
 .expandedOrderContent {
@@ -253,6 +254,7 @@ button.orderButton:hover{
 
 .expandedOrderContent p{
     font-size: .9rem;
+    word-wrap: break-word;
 }
 
 .itemRightCol{
@@ -375,4 +377,23 @@ button.orderButton:hover{
 
 .emptyState img {
     margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .expandedOrder {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        padding: 10px;
+        overflow: visible;
+    }
+    .expandedOrderContent {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        max-width: 100%;
+    }
+    .itemRightCol {
+        margin-left: 0;
+    }
 }
