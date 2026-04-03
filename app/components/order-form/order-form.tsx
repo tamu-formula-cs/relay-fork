@@ -290,89 +290,89 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
                         <Image src={CloseIcon.src} height={10} width={10} alt='close' />
                     </button>
                 </div>
-                <p className={styles.formParagraph}>General Info</p>
-                <div className={styles.generalRowOne}>
-                    <div className={styles.inputGroup}>
-                        <label>Order Name (Main Item)*</label>
-                        <input
-                            type="text"
-                            name="orderName"
-                            placeholder="Order Name"
-                            value={orderData.orderName}
-                            onChange={onInputChange}
-                        />
-                    </div>
-                    <div className={styles.inputGroup}>
-                        <label>Vendor Name*</label>
-                        <input
-                            type="text"
-                            name="vendor"
-                            placeholder="Vendor Name"
-                            value={orderData.vendor}
-                            onChange={onInputChange}
-                        />
-                    </div>
-                </div>
-                <div className={styles.generalRowTwo}>
-                    <div className={styles.inputGroup}>
-                        <label>Estimated Total Cost*</label>
-                        <input
-                            type="number"
-                            name="estimatedCost"
-                            placeholder="Estimated Cost"
-                            value={orderData.estimatedCost}
-                            onChange={onInputChange}
-                        />
-                    </div>
-                    <div className={styles.inputGroup}>
-                        <label>Notes (optional)</label>
-                        <textarea
-                            name="notes"
-                            placeholder="Notes"
-                            value={orderData.notes}
-                            onChange={onInputChange}
-                            className={styles.textarea}
-                        />
-                    </div>
-                </div>
-                <div className={styles.generalRowThree}>
-                    <div className={styles.inputGroup}>
-                        <label>Delivery Location*</label>
-                        <select name="deliveryLocation"
-                            value={showCustomDelivery ? 'Other' : orderData.deliveryLocation}
-                            onChange={(e) => {
-                                handleCustomDelivery(e);
-                                if (e.target.value === 'Other') {
-                                    orderData.deliveryLocation = '';
-                                } else {
-                                    onInputChange(e);
-                                }
-                            }}
-                        >
-                            <option value=''>N/A</option>
-                            <option value='Instrumentation'>Instrumentation</option>
-                            <option value='FEDC'>FEDC</option>
-                            <option value='Other'>Other</option>
-                        </select>
-                    </div>
-                    {showCustomDelivery &&
+                <div className={styles.formBody}>
+                    <p className={styles.formParagraph}>General Info</p>
+                    <div className={styles.generalRowOne}>
                         <div className={styles.inputGroup}>
-                            <label>Enter Custom Delivery Location*</label>
+                            <label>Order Name (Main Item)*</label>
                             <input
                                 type="text"
-                                name="deliveryLocation"
-                                placeholder="Enter Delivery Location"
-                                value={customDelivery}
-                                onChange={(e) => setCustomDelivery(e.target.value)}
+                                name="orderName"
+                                placeholder="Order Name"
+                                value={orderData.orderName}
+                                onChange={onInputChange}
                             />
                         </div>
-                    }
-                </div>
-                <div className={styles.buttonGroup}>
+                        <div className={styles.inputGroup}>
+                            <label>Vendor Name*</label>
+                            <input
+                                type="text"
+                                name="vendor"
+                                placeholder="Vendor Name"
+                                value={orderData.vendor}
+                                onChange={onInputChange}
+                            />
+                        </div>
+                    </div>
+                    <div className={styles.generalRowTwo}>
+                        <div className={styles.inputGroup}>
+                            <label>Estimated Total Cost*</label>
+                            <input
+                                type="number"
+                                name="estimatedCost"
+                                placeholder="Estimated Cost"
+                                value={orderData.estimatedCost}
+                                onChange={onInputChange}
+                            />
+                        </div>
+                        <div className={styles.inputGroup}>
+                            <label>Notes (optional)</label>
+                            <textarea
+                                name="notes"
+                                placeholder="Notes"
+                                value={orderData.notes}
+                                onChange={onInputChange}
+                                className={styles.textarea}
+                            />
+                        </div>
+                    </div>
+                    <div className={styles.generalRowThree}>
+                        <div className={styles.inputGroup}>
+                            <label>Delivery Location*</label>
+                            <select name="deliveryLocation"
+                                value={showCustomDelivery ? 'Other' : orderData.deliveryLocation}
+                                onChange={(e) => {
+                                    handleCustomDelivery(e);
+                                    if (e.target.value === 'Other') {
+                                        orderData.deliveryLocation = '';
+                                    } else {
+                                        onInputChange(e);
+                                    }
+                                }}
+                            >
+                                <option value=''>N/A</option>
+                                <option value='Instrumentation'>Instrumentation</option>
+                                <option value='FEDC'>FEDC</option>
+                                <option value='Other'>Other</option>
+                            </select>
+                        </div>
+                        {showCustomDelivery &&
+                            <div className={styles.inputGroup}>
+                                <label>Enter Custom Delivery Location*</label>
+                                <input
+                                    type="text"
+                                    name="deliveryLocation"
+                                    placeholder="Enter Delivery Location"
+                                    value={customDelivery}
+                                    onChange={(e) => setCustomDelivery(e.target.value)}
+                                />
+                            </div>
+                        }
+                    </div>
                     <div className={styles.uploadedFilesContainer}>
                         {uploadedFiles.map((file, index) => (
                             <div key={index} className={styles.uploadedFile}>
-                                <span className={styles.fileIcon}>📄</span> {/* Simple icon */}
+                                <span className={styles.fileIcon}>📄</span>
                                 <a href={file.url} target="_blank" rel="noopener noreferrer" className={styles.fileLink}>
                                     {file.name}
                                 </a>
@@ -391,6 +391,8 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
                             onChange={handleFileUpload}
                         />
                     </div>
+                </div>
+                <div className={styles.buttonGroup}>
                     <button className={styles.nextButton} onClick={handleNextClick}>
                         Next Step
                     </button>
@@ -435,20 +437,22 @@ function CostBreakdownScreen({ costBreakdown, onCostChange, onNext, onBack, onCl
                         <Image src={CloseIcon.src} height={10} width={10} alt='close' />
                     </button>
                 </div>
-                <p className={styles.formParagraph}>Cost Breakdown (Must add up to 100%)</p>
-                <div className={styles.costBreakdownRow}>
-                    {['AERO', 'BAT', 'CHS', 'DBMS', 'ECE', 'PT', 'SUS', 'SW', 'OPS', 'FACIL', 'FLEET', 'MKTG'].map((subteam) => (
-                        <div key={subteam} className={styles.inputGroup}>
-                            <label>Order Cost Percentage ({subteam})</label>
-                            <input
-                                type="number"
-                                name={subteam}
-                                placeholder="0%"
-                                value={costBreakdown[subteam] == 0 ? undefined : costBreakdown[subteam]}
-                                onChange={onCostChange}
-                            />
-                        </div>
-                    ))}
+                <div className={styles.formBody}>
+                    <p className={styles.formParagraph}>Cost Breakdown (Must add up to 100%)</p>
+                    <div className={styles.costBreakdownRow}>
+                        {['AERO', 'BAT', 'CHS', 'DBMS', 'ECE', 'PT', 'SUS', 'SW', 'OPS', 'FACIL', 'FLEET', 'MKTG'].map((subteam) => (
+                            <div key={subteam} className={styles.inputGroup}>
+                                <label>Order Cost Percentage ({subteam})</label>
+                                <input
+                                    type="number"
+                                    name={subteam}
+                                    placeholder="0%"
+                                    value={costBreakdown[subteam] == 0 ? undefined : costBreakdown[subteam]}
+                                    onChange={onCostChange}
+                                />
+                            </div>
+                        ))}
+                    </div>
                 </div>
                 <div className={styles.buttonGroup}>
                     <button className={styles.backButton} onClick={onBack}>Back</button>
@@ -496,27 +500,30 @@ function Method({ handleSubmitCSV, onNextStep, onBack, onClose }: MethodProps) {
                         <Image src={CloseIcon.src} height={10} width={10} alt='close' />
                     </button>
                 </div>
-
-                <p className={styles.formParagraph}>How do you want to submit this order?</p>
-                <div className={`${styles.buttonGroup} ${styles.methodButtonGroup}`}>
-                    <button className={styles.nextButton} onClick={() => onNextStep(3)}>Form</button>
-                    <button
-                        className={styles.nextButton}
-                        onClick={() => fileInputRef.current?.click()}
-                    >
-                        CSV
-                    </button>
-                    <input
-                        type="file"
-                        accept=".csv"
-                        ref={fileInputRef}
-                        style={{ display: 'none' }}
-                        onChange={handleFileChange}
-                    />
-                    <button className={styles.nextButton} onClick={() => onNextStep(4)}>Cart Link</button>
-                    <button className={styles.nextButton} onClick={() => onNextStep(5)}>Single Item</button>
+                <div className={styles.formBody}>
+                    <p className={styles.formParagraph}>How do you want to submit this order?</p>
+                    <div className={`${styles.buttonGroup} ${styles.methodButtonGroup}`}>
+                        <button className={styles.nextButton} onClick={() => onNextStep(3)}>Form</button>
+                        <button
+                            className={styles.nextButton}
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            CSV
+                        </button>
+                        <input
+                            type="file"
+                            accept=".csv"
+                            ref={fileInputRef}
+                            style={{ display: 'none' }}
+                            onChange={handleFileChange}
+                        />
+                        <button className={styles.nextButton} onClick={() => onNextStep(4)}>Cart Link</button>
+                        <button className={styles.nextButton} onClick={() => onNextStep(5)}>Single Item</button>
+                    </div>
                 </div>
-                <button className={styles.backButton} onClick={onBack}>Back</button>
+                <div className={styles.buttonGroup}>
+                    <button className={styles.backButton} onClick={onBack}>Back</button>
+                </div>
             </div>
         </div>
     );
@@ -594,14 +601,16 @@ function CartLinkOrder({ orderData, onBack, onClose }: CartLinkOrderProps) {
                         <Image src={CloseIcon.src} height={10} width={10} alt='close' />
                     </button>
                 </div>
-                <div className={`${styles.inputGroup} ${styles.singleLink}`}>
-                    <label>Link to Shopping Cart*</label>
-                    <input
-                        type="text"
-                        placeholder="www.example.com"
-                        value={cartLink}
-                        onChange={(e) => setCartLink(e.target.value)}
-                    />
+                <div className={styles.formBody}>
+                    <div className={`${styles.inputGroup} ${styles.singleLink}`}>
+                        <label>Link to Shopping Cart*</label>
+                        <input
+                            type="text"
+                            placeholder="www.example.com"
+                            value={cartLink}
+                            onChange={(e) => setCartLink(e.target.value)}
+                        />
+                    </div>
                 </div>
                 <div className={styles.buttonGroup}>
                     <button className={styles.backButton} onClick={onBack}>Back</button>
@@ -698,31 +707,33 @@ function SingleItemOrder({ orderData, onBack, onClose }: SingleItemOrderProps) {
                         <Image src={CloseIcon.src} height={10} width={10} alt='close' />
                     </button>
                 </div>
-                <p className={styles.formParagraph}>Item info</p>
-                <div className={styles.generalRowOne}>
-                    <div className={styles.inputGroup}>
-                        <label>Item Name*</label>
-                        <input type="text" placeholder="Item Name" value={name} onChange={(e) => setName(e.target.value)} />
+                <div className={styles.formBody}>
+                    <p className={styles.formParagraph}>Item info</p>
+                    <div className={styles.generalRowOne}>
+                        <div className={styles.inputGroup}>
+                            <label>Item Name*</label>
+                            <input type="text" placeholder="Item Name" value={name} onChange={(e) => setName(e.target.value)} />
+                        </div>
+                        <div className={styles.inputGroup}>
+                            <label>Part Number</label>
+                            <input type="text" placeholder="Part Number" value={partNumber} onChange={(e) => setPartNumber(e.target.value)} />
+                        </div>
                     </div>
-                    <div className={styles.inputGroup}>
-                        <label>Part Number</label>
-                        <input type="text" placeholder="Part Number" value={partNumber} onChange={(e) => setPartNumber(e.target.value)} />
+                    <div className={styles.generalRowTwo}>
+                        <div className={styles.inputGroup}>
+                            <label>Quantity*</label>
+                            <input type="number" placeholder="Quantity" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} />
+                        </div>
+                        <div className={styles.inputGroup}>
+                            <label>Cost (Per Item)*</label>
+                            <input type="number" placeholder="Cost" value={cost} onChange={(e) => setCost(Number(e.target.value))} />
+                        </div>
                     </div>
-                </div>
-                <div className={styles.generalRowTwo}>
-                    <div className={styles.inputGroup}>
-                        <label>Quantity*</label>
-                        <input type="number" placeholder="Quantity" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} />
-                    </div>
-                    <div className={styles.inputGroup}>
-                        <label>Cost (Per Item)*</label>
-                        <input type="number" placeholder="Cost" value={cost} onChange={(e) => setCost(Number(e.target.value))} />
-                    </div>
-                </div>
-                <div className={styles.generalRowThree}>
-                    <div className={styles.inputGroup}>
-                        <label>Link to Item</label>
-                        <input type="text" placeholder="Link to Item" value={link} onChange={(e) => setLink(e.target.value)} />
+                    <div className={styles.generalRowThree}>
+                        <div className={styles.inputGroup}>
+                            <label>Link to Item</label>
+                            <input type="text" placeholder="Link to Item" value={link} onChange={(e) => setLink(e.target.value)} />
+                        </div>
                     </div>
                 </div>
                 <div className={styles.buttonGroup}>
@@ -839,74 +850,76 @@ function TemplateEntryForm({ orderData, onBack, onClose }: {
                     <h1 className={styles.formTitle}>MEEN Template Form</h1>
                     <button className={styles.closeButton} onClick={onClose}>X</button>
                 </div>
-                <div className={styles.tableContainer}>
-                    <div className={styles.tableHeader}>
-                        <span>Item Name</span>
-                        <span>Part Number</span>
-                        <span>Notes</span>
-                        <span>Quantity</span>
-                        <span>Cost per Item</span>
-                        <span>Total</span>
-                        <span>Link</span>
-                    </div>
-
-                    {rows.map((row, idx) => (
-                        <div key={idx} className={styles.tableRow}>
-                            <input
-                                value={row.itemName}
-                                onChange={(e) => updateRow(idx, "itemName", e.target.value)}
-                            />
-                            <input
-                                value={row.partNumber}
-                                onChange={(e) => updateRow(idx, "partNumber", e.target.value)}
-                            />
-                            <input
-                                value={row.notes}
-                                onChange={(e) => updateRow(idx, "notes", e.target.value)}
-                            />
-                            <input
-                                type="number"
-                                value={row.quantity ?? ""}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    updateRow(idx, "quantity", val === "" ? "" : Number(val));
-                                }}
-                            />
-                            <input
-                                type="number"
-                                placeholder="Cost"
-                                value={row.cost === undefined ? "" : row.cost}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    updateRow(idx, "cost", val === "" ? "" : Number(val));
-                                }}
-                            />
-
-                            <span>{(row.quantity || 0) * (row.cost || 0)}</span>
-                            <input
-                                value={row.link}
-                                onChange={(e) => updateRow(idx, "link", e.target.value)}
-                            />
-                            <button
-                                className={styles.removeButton}
-                                onClick={() => {
-                                    if (rows.length > 1) {
-                                        setRows(rows.filter((_, i) => i !== idx));
-                                    }
-                                }}
-                                disabled={rows.length === 1}
-                                title={rows.length === 1 ? "At least one row is required" : "Remove row"}
-                            >
-                                ✕
-                            </button>
+                <div className={styles.formBody}>
+                    <div className={styles.tableContainer}>
+                        <div className={styles.tableHeader}>
+                            <span>Item Name</span>
+                            <span>Part Number</span>
+                            <span>Notes</span>
+                            <span>Quantity</span>
+                            <span>Cost per Item</span>
+                            <span>Total</span>
+                            <span>Link</span>
                         </div>
-                    ))}
-                </div>
-                <div className={styles.tableFooter}>
-                    <button className={styles.backButton} onClick={addRow}>+ Add Row</button>
-                    <div className={styles.orderTotal}>
-                        <span>Total Order Cost: $</span>
-                        {rows.reduce((sum, r) => sum + (r.quantity || 0) * (r.cost || 0), 0)}
+
+                        {rows.map((row, idx) => (
+                            <div key={idx} className={styles.tableRow}>
+                                <input
+                                    value={row.itemName}
+                                    onChange={(e) => updateRow(idx, "itemName", e.target.value)}
+                                />
+                                <input
+                                    value={row.partNumber}
+                                    onChange={(e) => updateRow(idx, "partNumber", e.target.value)}
+                                />
+                                <input
+                                    value={row.notes}
+                                    onChange={(e) => updateRow(idx, "notes", e.target.value)}
+                                />
+                                <input
+                                    type="number"
+                                    value={row.quantity ?? ""}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        updateRow(idx, "quantity", val === "" ? "" : Number(val));
+                                    }}
+                                />
+                                <input
+                                    type="number"
+                                    placeholder="Cost"
+                                    value={row.cost === undefined ? "" : row.cost}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        updateRow(idx, "cost", val === "" ? "" : Number(val));
+                                    }}
+                                />
+
+                                <span>{(row.quantity || 0) * (row.cost || 0)}</span>
+                                <input
+                                    value={row.link}
+                                    onChange={(e) => updateRow(idx, "link", e.target.value)}
+                                />
+                                <button
+                                    className={styles.removeButton}
+                                    onClick={() => {
+                                        if (rows.length > 1) {
+                                            setRows(rows.filter((_, i) => i !== idx));
+                                        }
+                                    }}
+                                    disabled={rows.length === 1}
+                                    title={rows.length === 1 ? "At least one row is required" : "Remove row"}
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                    <div className={styles.tableFooter}>
+                        <button className={styles.backButton} onClick={addRow}>+ Add Row</button>
+                        <div className={styles.orderTotal}>
+                            <span>Total Order Cost: $</span>
+                            {rows.reduce((sum, r) => sum + (r.quantity || 0) * (r.cost || 0), 0)}
+                        </div>
                     </div>
                 </div>
                 <div className={styles.buttonGroup}>

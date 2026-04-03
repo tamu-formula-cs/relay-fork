@@ -10,24 +10,31 @@
     border-radius: 10px;
 }
 
+
 h1.purchaseHeader{
     font-family: 'Poppins';
     font-weight: normal;
     font-size: 1.25rem;
 }
 
+
 .tableTop{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 95%;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
 }
+
 
 .tableContainer {
     overflow-x: auto;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
 }
 
 .tableBody {
@@ -38,6 +45,7 @@ h1.purchaseHeader{
     table-layout: fixed;
     font-family: 'Inter', sans-serif;
 }
+
 
 .tableHeader {
     border-radius: 10px;
@@ -64,6 +72,7 @@ h1.purchaseHeader{
     font-family: 'Inter', sans-serif;
 }
 
+
 .searchBar:focus {
     border-color: #7044F2;
     outline: none;
@@ -80,11 +89,12 @@ button.orderButton{
     border-radius: 10px;
     border: none;
     padding: 1rem 1.5rem;
+    cursor: pointer;
 }
+
 
 button.orderButton:hover{
     background-color: #5938C4;
-    cursor: pointer;
 }
 
 .thText, .tdText {
@@ -96,6 +106,7 @@ button.orderButton:hover{
     text-overflow: ellipsis;
     position: relative;
 }
+
 
 .thText{
     color: #4C4C4C;
@@ -126,6 +137,8 @@ button.orderButton:hover{
     font-size: .9rem;
     text-decoration: underline;
     color: #5D5D5D;
+    white-space: normal;
+    word-break: break-word;
 }
 
 .tableBody .commentsColumn{
@@ -210,6 +223,16 @@ button.orderButton:hover{
     border-radius: 5px;
 }
 
+.orderStatusDefault {
+    font-size: .9rem;
+    padding: 1rem;
+    text-align: center;
+    color: #5D5D5D;
+    border: 1px solid #5D5D5D;
+    background-color: rgba(93, 93, 93, 0.05);
+    border-radius: 5px;
+}
+
 .openURLIcon {
     position: absolute;
     right: 0rem;
@@ -219,7 +242,6 @@ button.orderButton:hover{
     height: 0.7rem;
 }
 
-/* Item Status */
 .itemStatusDelivered {
     font-size: .9rem;
     padding: 1rem;
@@ -236,6 +258,7 @@ button.orderButton:hover{
     margin-bottom: 10px;
 }
 
+
 .order {
     cursor: pointer;
     height: 4rem;
@@ -245,21 +268,26 @@ button.orderButton:hover{
     border-bottom: 1px solid #ccc !important;
 }
 
+.tableBody td {
+    overflow: hidden;
+}
+
 .expandedOrder {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    padding: 10px;
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0;
+    overflow: visible;
 }
 
 .expandedOrderContent {
     border: 1px solid #E8E8E8;
     padding: 1rem;
-    width: 90%;
+    width: 100%;
     border-radius: 10px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
 }
 
 .expandedOrderContent h4{
@@ -267,10 +295,15 @@ button.orderButton:hover{
     font-weight: normal;
     text-decoration: underline;
     font-size: .9rem;
+    margin: 0 0 0.25rem 0;
+    max-width: 70%;
+    word-break: break-word;
 }
 
 .expandedOrderContent p{
     font-size: .9rem;
+    margin: 0;
+    word-wrap: break-word;
 }
 
 .itemLeftCol p{
@@ -279,6 +312,10 @@ button.orderButton:hover{
 
 .itemRightCol{
     margin-left: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 100px;
 }
 
 .checkMark {
@@ -290,7 +327,6 @@ button.orderButton:hover{
     width: 40px;
 }
 
-/* Settings Cell in Table Body */
 .settingsCell {
     text-align: center;
 }
@@ -306,20 +342,8 @@ button.orderButton:hover{
     opacity: 0.7;
 }
 
-/* Adjusting Item Status Font Size */
 .itemStatusText {
     font-size: 0.7rem;
-}
-
-/* Positioning Settings Button in Item */
-.itemRightCol {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-}
-
-.itemStatus {
-    margin-right: 1rem;
 }
 
 .itemSettingsButton {
@@ -446,7 +470,6 @@ button.orderButton:hover{
     color: #5D5D5D;
 }
 
-/* Sorting Arrow Styles */
 .sortableHeader {
     cursor: pointer;
     position: relative;
@@ -469,103 +492,345 @@ button.orderButton:hover{
     transform: translateX(.4rem) rotate(180deg);
 }
 
-.sortableHeader:hover {
-    background-color: #F0F0F0;
+/* Export button (desktop) */
+.exportButton {
+    background-color: #000 !important;
+    color: white !important;
 }
 
-/* Mobile Breakpoints */
+.exportButton:hover {
+    background-color: #222 !important;
+}
+
+/* Mobile Card View - hidden on desktop */
+.mobileCardList {
+    display: none;
+}
+
 @media screen and (max-width: 768px) {
-    /* Table container adjustments */
-    .tableContainer {
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    /* ===== PAGE CONTAINER ===== */
+    .tableMainContainer {
+        padding: 0;
+        border-radius: 0;
+        background-color: transparent;
     }
 
-    /* Fix minimum widths for columns to prevent squishing */
-    .tableBody {
-        min-width: 1200px; /* Ensures table doesn't get too squished */
-    }
-
-    /* Adjust top section layout */
+    /* ===== HEADER & CONTROLS ===== */
     .tableTop {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-        padding: 0 1rem;
+        align-items: stretch;
+        gap: 0;
+        padding: 0;
+        width: 100%;
     }
 
-    /* Search section adjustments */
+    h1.purchaseHeader {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin: 0 0 16px 0;
+        color: #111;
+    }
+
     .tableSearch {
-        width: 100%;
+        display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: 8px;
+        width: 100%;
+        margin-bottom: 16px;
     }
 
     .searchBar {
         width: 100%;
-        margin-bottom: 0.5rem;
+        flex: none;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        height: auto;
+        border-radius: 12px;
+        border: 1px solid #E0E0E0;
+        background-color: #fff;
+        box-sizing: border-box;
+    }
+
+    .searchBar:focus {
+        border-color: #7044F2;
+        box-shadow: 0 0 0 3px rgba(112, 68, 242, 0.08);
+    }
+
+    .myOrdersButton {
+        flex: 1;
+        margin-left: 0;
+        height: 44px;
+        padding: 0 14px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border-radius: 10px;
+        white-space: nowrap;
+    }
+
+    button.orderButton {
+        flex: 1;
+        width: auto;
+        height: 44px;
+        padding: 0 14px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border-radius: 10px;
+        margin-left: 0;
+    }
+
+    .exportButton {
+        flex: 0 0 auto !important;
+    }
+
+    /* ===== HIDE DESKTOP TABLE ===== */
+    .tableContainer {
+        display: none;
+    }
+
+    /* ===== MOBILE CARD LIST ===== */
+    .mobileCardList {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* ===== CARD ===== */
+    .mobileCard {
+        background: #fff;
+        border-radius: 14px;
+        padding: 16px;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+        transition: box-shadow 0.15s ease, transform 0.15s ease;
+    }
+
+    .mobileCard:active {
+        transform: scale(0.985);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    /* Card header row */
+    .mobileCardHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+
+    .mobileCardTitle {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .mobileCardName {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #111;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.3;
+    }
+
+    .mobileCardId {
+        font-size: 0.72rem;
+        color: #7044F2;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+    }
+
+    .mobileCardActions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-shrink: 0;
+        margin-left: 12px;
+    }
+
+    .mobileCardActions .settingsButton,
+    .mobileCardActions .shareButton {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: #F5F5F5;
+        border: none;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+    .mobileCardActions .settingsButton:active,
+    .mobileCardActions .shareButton:active {
+        background: #EAEAEA;
+    }
+
+    /* Card meta row */
+    .mobileCardMeta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.82rem;
+        color: #666;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        line-height: 1.4;
+    }
+
+    .mobileCardDot {
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background-color: #C4C4C4;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+
+    /* Card footer */
+    .mobileCardFooter {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .mobileCardStatus {
+        font-size: 0.68rem;
+        font-weight: 600;
+        padding: 5px 10px;
+        border-radius: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .mobileCardSubteam {
+        font-size: 0.76rem;
+        color: #999;
+        font-weight: 500;
+    }
+
+    /* Card link button */
+    .mobileCardLink {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 12px;
+        padding: 8px 14px;
+        background: #F5F5F7;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #555;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+    .mobileCardLink:active {
+        background: #EAEAEA;
+    }
+
+    /* ===== EXPANDED ITEMS ===== */
+    .mobileCardItems {
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid #F0F0F0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .mobileCardItem {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 14px;
+        background: #FAFAFB;
+        border-radius: 10px;
+        border: none;
+    }
+
+    .mobileCardItemInfo {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .mobileCardItemName {
+        font-size: 0.86rem;
+        font-weight: 500;
+        color: #222;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mobileCardItemMeta {
+        font-size: 0.75rem;
+        color: #888;
+    }
+
+    .mobileCardItemRight {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+        margin-left: 10px;
+    }
+
+    .mobileCardItemStatus {
+        font-size: 0.62rem;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 5px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        letter-spacing: 0.02em;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .emptyState {
+        padding: 3rem 1rem;
+    }
+
+    .emptyState p {
+        font-size: 0.95rem;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .mobileCardMeta {
+        font-size: 0.78rem;
+    }
+
+    .mobileCardName {
+        font-size: 0.92rem;
+    }
+
+    .mobileCard {
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    /* Stack all three buttons vertically on very small screens */
+    .tableSearch {
+        gap: 8px;
     }
 
     .myOrdersButton,
-    .orderButton {
-        padding: 0.75rem 1rem;
-        font-size: 0.9rem;
-        width: fit-content;
-    }
-
-    /* Maintain minimum widths for specific columns */
-    .idColumn {
-        min-width: 80px;
-    }
-
-    .nameColumn {
-        min-width: 150px;
-    }
-
-    .vendorColumn {
-        min-width: 120px;
-    }
-
-    .linkColumn {
-        min-width: 60px;
-    }
-
-    .priceColumn {
-        min-width: 120px;
-    }
-
-    .statusColumn {
-        min-width: 120px;
-    }
-
-    .commentsColumn {
-        min-width: 150px;
-    }
-
-    .settingsColumn {
-        min-width: 60px;
-    }
-
-    /* Expanded order content adjustments */
-    .expandedOrder {
-        grid-template-columns: 1fr;
-        padding: 0.5rem;
-    }
-
-    .expandedOrderContent {
-        width: 100%;
-        margin-bottom: 0.5rem;
-    }
-}
-
-/* Small mobile breakpoint for even tighter screens */
-@media screen and (max-width: 480px) {
-    .tableSearch {
-        justify-content: space-between;
-    }
-
-    .searchBar {
-        font-size: 0.85rem;
+    button.orderButton {
+        flex: 1 1 calc(33% - 6px);
+        min-width: 0;
+        font-size: 0.8rem;
+        padding: 0 10px;
     }
 }

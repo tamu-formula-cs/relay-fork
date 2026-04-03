@@ -120,6 +120,7 @@ h1.purchaseHeader {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 10px;
     padding: 10px;
+    overflow: visible;
 }
 
 .expandedOrderContent {
@@ -151,6 +152,7 @@ a.itemNameLink:hover{
 .itemLeftCol p {
     margin: 0.2rem 0;
     color: #5D5D5D;
+    word-wrap: break-word;
 }
 
 .itemRightCol {
@@ -169,6 +171,7 @@ a.itemNameLink:hover{
 .placedItemRightCol p{
     margin: 0.2rem 0;
     color: #5D5D5D;
+    word-wrap: break-word;
 }
 
 .itemStatusText {
@@ -499,4 +502,236 @@ a.itemNameLink:hover{
 .cancelButton:hover {
     cursor: pointer;
     background-color: #eaeaea;
+}
+
+@media (max-width: 768px) {
+    .tableMainContainer {
+        padding: 1rem;
+    }
+
+    h1.purchaseHeader {
+        font-size: 1.1rem;
+    }
+
+    .section {
+        width: 100%;
+    }
+
+    .tableContainer {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tableBody {
+        min-width: 700px;
+    }
+
+    .thText, .tdText {
+        padding: 8px 5px;
+        font-size: 0.75rem;
+    }
+
+    .markOrderButton, .markItemButton {
+        padding: 0.4rem 0.7rem;
+        font-size: 0.75rem;
+    }
+
+    .expandedOrder {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px;
+        overflow: visible;
+    }
+
+    .expandedOrderContent {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        max-width: 100%;
+    }
+
+    .itemRightCol {
+        margin-left: 0;
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .placedItemRightCol {
+        flex-direction: row;
+        gap: 1rem;
+    }
+
+    /* Modal responsive */
+    .overlay {
+        align-items: flex-end;
+    }
+
+    .settingsMenu {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+        padding: 1.5rem;
+        max-height: 85vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        box-sizing: border-box;
+    }
+
+    .formHeader {
+        margin-bottom: 1.25rem;
+    }
+
+    .inputGroup {
+        margin-right: 0;
+    }
+
+    .inputGroup input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .buttonGroup {
+        flex-wrap: wrap;
+    }
+
+    .button {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Hide desktop table, show mobile cards */
+    .tableContainer {
+        display: none;
+    }
+
+    .mobileCardList {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .mobileCard {
+        background: white;
+        border: 1px solid #ECECEC;
+        border-radius: 12px;
+        padding: 14px 16px;
+        cursor: pointer;
+    }
+
+    .mobileCard:active {
+        border-color: #d1d3d8;
+    }
+
+    .mobileCardTop {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .mobileCardInfo {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .mobileCardName {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #1a1a1a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mobileCardMeta {
+        font-size: 0.8rem;
+        color: #777;
+    }
+
+    .mobileCardDate {
+        font-size: 0.75rem;
+        color: #999;
+    }
+
+    .mobileCardBreakdown {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+    }
+
+    .mobileCardTag {
+        font-size: 0.7rem;
+        color: #666;
+        background: #F3F4F6;
+        padding: 3px 8px;
+        border-radius: 4px;
+    }
+
+    .mobileCardStatus {
+        font-size: 0.65rem;
+        font-weight: 500;
+        padding: 4px 8px;
+        border-radius: 5px;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .mobileCardItems {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .mobileCardItem {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        background: #FAFAFA;
+        border-radius: 8px;
+        border: 1px solid #f0f0f0;
+    }
+
+    .mobileCardItem > div:first-child {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .mobileCardItemName {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .mobileCardItemMeta {
+        font-size: 0.75rem;
+        color: #888;
+    }
+
+    .mobileCardItemStatus {
+        font-size: 0.6rem;
+        font-weight: 500;
+        padding: 4px 8px;
+        border-radius: 5px;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+}
+
+/* Hidden on desktop */
+.mobileCardList {
+    display: none;
 }
