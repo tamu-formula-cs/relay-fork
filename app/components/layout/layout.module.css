@@ -163,3 +163,201 @@
 .toastActionButton:hover {
   background-color: #5938C4;
 }
+
+@media screen and (max-width: 1024px) {
+  .sidebar {
+    width: 240px;
+    padding: 15px;
+  }
+
+  .sidebar.collapsed {
+    width: 70px;
+  }
+
+  .main {
+    padding: 15px;
+  }
+
+  .logoText {
+    font-size: 1.1rem;
+  }
+
+  .navLinks li a {
+    font-size: 0.85rem;
+    padding: 7px 10px;
+  }
+
+  .menuLabel {
+    font-size: 0.65rem;
+  }
+}
+
+.mobileOnly {
+  display: none;
+}
+
+@media screen and (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .mobileOnly {
+    display: block;
+  }
+
+  .navLinks li a:hover {
+    background-color: transparent;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    padding: 8px 0;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    box-sizing: border-box;
+    border-right: none;
+    border-top: 1px solid #eee;
+    border-bottom: none;
+    position: fixed;
+    bottom: 0;
+    top: auto;
+    left: 0;
+    max-height: none;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+    transition: none;
+    z-index: 100;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .sidebar.collapsed {
+    width: 100%;
+  }
+
+  .toggleButton {
+    display: none;
+  }
+
+  .logoContainer {
+    display: none;
+  }
+
+  .logoText {
+    display: none;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  .menuLabel {
+    display: none;
+  }
+
+  .navLinks {
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    padding: 0;
+    white-space: nowrap;
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .navLinks::-webkit-scrollbar {
+    display: none;
+  }
+
+  .navLinks li {
+    margin: 0;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+
+  .navLinks li a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: auto;
+    padding: 4px 0;
+    border-radius: 0;
+    border: none !important;
+    gap: 3px;
+    color: #999;
+    transition: color 0.2s ease;
+  }
+
+  .navLinks li.active a {
+    background-color: transparent !important;
+    border: none !important;
+    color: #7044F2;
+  }
+
+  .navLinks li a img {
+    width: 22px !important;
+    height: 22px !important;
+    display: block;
+    opacity: 0.45;
+    transition: opacity 0.2s ease;
+  }
+
+  .navLinks li.active a img {
+    opacity: 1;
+  }
+
+  .navLinks li a span {
+    display: block;
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: inherit;
+  }
+
+  .navLinks li.active a span {
+    color: #7044F2;
+  }
+
+  .bottomSection {
+    display: none;
+  }
+
+  .teamLogoContainer {
+    display: none;
+  }
+
+  .main {
+    flex: 1;
+    padding: 16px;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 0;
+  }
+
+  .toastActionButton {
+    height: 1.75rem;
+    padding: 1.5rem 1.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .main {
+    padding: 12px;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+
+  .navLinks li a span {
+    font-size: 0.55rem;
+  }
+
+  .navLinks li a img {
+    width: 20px !important;
+    height: 20px !important;
+  }
+}

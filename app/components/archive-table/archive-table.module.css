@@ -232,6 +232,7 @@ button.orderButton:hover{
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     padding: 10px;
+    overflow: visible;
 }
 
 .expandedOrderContent {
@@ -253,6 +254,7 @@ button.orderButton:hover{
 
 .expandedOrderContent p{
     font-size: .9rem;
+    word-wrap: break-word;
 }
 
 .itemRightCol{
@@ -375,4 +377,198 @@ button.orderButton:hover{
 
 .emptyState img {
     margin-bottom: 1rem;
+}
+
+/* Hidden on desktop */
+.mobileCardList {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .tableMainContainer {
+        padding: 1rem;
+    }
+
+    h1.purchaseHeader {
+        font-size: 1.1rem;
+    }
+
+    .tableTop {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 0.75rem;
+    }
+
+    .tableSearch {
+        width: 100%;
+    }
+
+    .searchBar {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.65rem 0.85rem;
+        border-radius: 10px;
+    }
+
+    /* Hide desktop table, show cards */
+    .tableContainer {
+        display: none;
+    }
+
+    .mobileCardList {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .mobileCard {
+        background: white;
+        border: 1px solid #ECECEC;
+        border-radius: 12px;
+        padding: 14px 16px;
+        cursor: pointer;
+    }
+
+    .mobileCard:active {
+        border-color: #d1d3d8;
+    }
+
+    .mobileCardHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+    }
+
+    .mobileCardTitle {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .mobileCardName {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #1a1a1a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .mobileCardId {
+        font-size: 0.75rem;
+        color: #7044F2;
+        font-weight: 500;
+    }
+
+    .mobileCardMeta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        color: #777;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+    }
+
+    .mobileCardDot {
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background-color: #ccc;
+    }
+
+    .mobileCardFooter {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .mobileCardStatus {
+        font-size: 0.7rem;
+        font-weight: 500;
+        padding: 5px 10px;
+        border-radius: 6px;
+        text-transform: uppercase;
+    }
+
+    .mobileCardSubteam {
+        font-size: 0.75rem;
+        color: #888;
+    }
+
+    .mobileCardItems {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .mobileCardItem {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        background: #FAFAFA;
+        border-radius: 8px;
+        border: 1px solid #f0f0f0;
+    }
+
+    .mobileCardItemInfo {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .mobileCardItemName {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .mobileCardItemMeta {
+        font-size: 0.75rem;
+        color: #888;
+    }
+
+    .mobileCardItemRight {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+
+    .mobileCardItemStatus {
+        font-size: 0.6rem;
+        font-weight: 500;
+        padding: 4px 8px;
+        border-radius: 5px;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .expandedOrder {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px;
+    }
+
+    .expandedOrderContent {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .itemRightCol {
+        margin-left: 0;
+    }
 }

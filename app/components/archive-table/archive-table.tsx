@@ -157,6 +157,7 @@ const ArchiveTable: React.FC = () => {
                     onUpdateOrder={updateOrderInState}
                 />
             )}
+            {/* Desktop Table */}
             <div className={styles.tableContainer}>
                 <table className={styles.tableBody}>
                     <thead className={styles.tableHeader}>
@@ -267,29 +268,17 @@ const ArchiveTable: React.FC = () => {
                                         <td colSpan={10}>
                                             <div className={styles.expandedOrder}>
                                                 {order.items.map((item) => (
-                                                    <div
-                                                        key={item.id}
-                                                        className={styles.expandedOrderContent}
-                                                    >
+                                                    <div key={item.id} className={styles.expandedOrderContent}>
                                                         <div className={styles.itemLeftCol}>
-                                                            <h4>
-                                                                {item.name.length > 18
-                                                                    ? item.name.slice(0, 18) + '...'
-                                                                    : item.name}
-                                                            </h4>
+                                                            <h4>{item.name.length > 18 ? item.name.slice(0, 18) + '...' : item.name}</h4>
                                                             <p>{item.vendor}</p>
                                                             <p>${item.price.toFixed(2)}</p>
                                                         </div>
                                                         <div className={styles.itemRightCol}>
-                                                            <p
-                                                                className={`${styles.itemStatusText} ${styles.itemStatus} ${styles.itemStatusArchived}`}
-                                                            >
+                                                            <p className={`${styles.itemStatusText} ${styles.itemStatus} ${styles.itemStatusArchived}`}>
                                                                 {item.status.toUpperCase()}
                                                             </p>
-                                                            <button
-                                                                className={styles.itemSettingsButton}
-                                                                onClick={() => handleSettingsClick(order, item)}
-                                                            >
+                                                            <button className={styles.itemSettingsButton} onClick={() => handleSettingsClick(order, item)}>
                                                                 <Image src={Settings.src} height={15} width={15} alt="settings" />
                                                             </button>
                                                         </div>
@@ -303,6 +292,58 @@ const ArchiveTable: React.FC = () => {
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className={styles.mobileCardList}>
+                {filteredOrders.map((order) => (
+                    <div key={order.id} className={styles.mobileCard} onClick={() => toggleExpand(order.id, order.items, order.url)}>
+                        <div className={styles.mobileCardHeader}>
+                            <div className={styles.mobileCardTitle}>
+                                <span className={styles.mobileCardName}>{order.name}</span>
+                                <span className={styles.mobileCardId}>{order.meenOrderId ? `#${order.meenOrderId}` : ''}</span>
+                            </div>
+                            <button className={styles.settingsButton} onClick={(e) => { e.stopPropagation(); handleSettingsClick(order); }}>
+                                <Image src={Settings.src} height={16} width={16} alt="settings" />
+                            </button>
+                        </div>
+                        <div className={styles.mobileCardMeta}>
+                            <span>{order.vendor}</span>
+                            <span className={styles.mobileCardDot}></span>
+                            <span>${order.totalCost.toFixed(2)}</span>
+                            <span className={styles.mobileCardDot}></span>
+                            <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <div className={styles.mobileCardFooter}>
+                            <span className={`${styles.mobileCardStatus} ${
+                                order.status === OrderStatus.ARCHIVED ? styles.orderStatusArchived : styles.orderStatusDefault
+                            }`}>{order.status.replace(/_/g, ' ')}</span>
+                            {order.costBreakdown && (
+                                <span className={styles.mobileCardSubteam}>
+                                    {Object.entries(order.costBreakdown).filter(([, p]) => p > 0).map(([s]) => s).join(', ')}
+                                </span>
+                            )}
+                        </div>
+                        {expandedOrderIds.includes(order.id) && order.items.length > 0 && (
+                            <div className={styles.mobileCardItems}>
+                                {order.items.map((item) => (
+                                    <div key={item.id} className={styles.mobileCardItem}>
+                                        <div className={styles.mobileCardItemInfo}>
+                                            <span className={styles.mobileCardItemName}>{item.name}</span>
+                                            <span className={styles.mobileCardItemMeta}>{item.vendor} &middot; ${item.price.toFixed(2)}</span>
+                                        </div>
+                                        <div className={styles.mobileCardItemRight}>
+                                            <span className={`${styles.mobileCardItemStatus} ${styles.itemStatusArchived}`}>{item.status.replace(/_/g, ' ')}</span>
+                                            <button className={styles.itemSettingsButton} onClick={(e) => { e.stopPropagation(); handleSettingsClick(order, item); }}>
+                                                <Image src={Settings.src} height={14} width={14} alt="settings" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ))}
             </div>
             {filteredOrders.length === 0 && (
                 <div className={styles.emptyState}>
