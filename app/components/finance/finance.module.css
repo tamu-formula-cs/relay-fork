@@ -8,6 +8,13 @@
   font-family: 'Inter', sans-serif;
 }
 
+@media (max-width: 768px) {
+  .dashboardContainer {
+    padding: 0.75rem;
+    border-radius: 0;
+  }
+}
+
 .dashboardHeader {
   background-color: white;
   padding: 1rem;
@@ -18,9 +25,25 @@
   align-items: center;
 }
 
+@media (max-width: 768px) {
+  .dashboardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.75rem;
+  }
+}
+
 .headerButtons {
   display: flex;
   gap: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .headerButtons {
+    width: 100%;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+  }
 }
 
 .dashboardHeader h1 {
@@ -29,6 +52,13 @@
   color: black;
   font-weight: normal;
   margin: 0 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .dashboardHeader h1 {
+    font-size: 1rem;
+    margin: 0;
+  }
 }
 
 .downloadButton {
@@ -42,6 +72,14 @@
   font-size: 0.875rem;
 }
 
+@media (max-width: 768px) {
+  .downloadButton {
+    flex: 1;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}
+
 .downloadButton:hover {
   background-color: #5a35c1;
 }
@@ -49,6 +87,13 @@
 .mainContent {
   display: flex;
   gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .mainContent {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 }
 
 .chartsContainer {
@@ -67,6 +112,13 @@
   flex-direction: column;
 }
 
+@media (max-width: 768px) {
+  .chartTile {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
 .chartTile h2 {
   font-family: 'Poppins', sans-serif;
   font-weight: 400;
@@ -77,15 +129,33 @@
   text-align: left;
 }
 
+@media (max-width: 768px) {
+  .chartTile h2 {
+    font-size: 0.9rem;
+  }
+}
+
 .chartWrapper {
   flex: 1;
   position: relative;
   height: 250px;
 }
 
+@media (max-width: 768px) {
+  .chartWrapper {
+    height: 180px;
+  }
+}
+
 .pieChartContainer {
   position: relative;
   height: 250px;
+}
+
+@media (max-width: 768px) {
+  .pieChartContainer {
+    height: 180px;
+  }
 }
 
 .pieChartContainer canvas {
@@ -108,6 +178,20 @@
   gap: 1rem;
 }
 
+@media (max-width: 1024px) {
+  .numberTiles {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .numberTiles {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+}
+
 .tile {
   background-color: white;
   padding: 1rem;
@@ -119,6 +203,12 @@
   justify-content: space-between;
 }
 
+@media (max-width: 768px) {
+  .tile {
+    padding: 0.75rem;
+  }
+}
+
 .tileTitle {
   font-family: 'Poppins', sans-serif;
   font-weight: 400;
@@ -128,11 +218,23 @@
   margin-bottom: 0.5rem;
 }
 
+@media (max-width: 768px) {
+  .tileTitle {
+    font-size: 0.85rem;
+  }
+}
+
 .amount {
   font-size: 1.5rem;
   color: black;
   font-weight: normal;
   margin: 0;
+}
+
+@media (max-width: 768px) {
+  .amount {
+    font-size: 1.2rem;
+  }
 }
 
 .tile p {
@@ -178,16 +280,18 @@ p.tileSub {
   transition: background-color 0.3s ease;
 }
 
+@media (max-width: 768px) {
+  .refreshButton {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+  }
+}
+
 .refreshButton:hover {
   background-color: #5932d1;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
-  .mainContent {
-    flex-direction: column;
-  }
-
   .chartsContainer {
     flex: none;
   }

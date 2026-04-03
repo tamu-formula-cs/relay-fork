@@ -10,17 +10,125 @@
     border-radius: 10px;
 }
 
+@media screen and (max-width: 768px) {
+    .tableContainer {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .tableBody {
+        min-width: 900px;
+    }
+
+    .tableBody td {
+        overflow: visible;
+    }
+
+    .settingsCell,
+    .shareCell {
+        overflow: visible;
+    }
+
+    .tableTop {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+        padding: 0 1rem;
+    }
+
+    .tableSearch {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    .searchBar {
+        width: 100%;
+        padding: 0.7rem 0.85rem;
+        font-size: 0.9rem;
+        height: 40px;
+        border-radius: 8px;
+        box-sizing: border-box;
+    }
+
+    .myOrdersButton,
+    button.orderButton {
+        width: 100%;
+        height: 40px;
+        padding: 0 0.75rem;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        margin-left: 0;
+    }
+
+    .expandedOrder {
+        display: block;
+        padding: 0.5rem;
+        width: 100%;
+        position: relative;
+        z-index: 2;
+    }
+
+    .expandedOrderContent {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+        gap: 0.5rem;
+        max-width: 100%;
+    }
+
+    .itemRightCol {
+        margin-left: 0;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .idColumn { min-width: 80px; }
+    .nameColumn { min-width: 150px; }
+    .vendorColumn { min-width: 120px; }
+    .linkColumn { min-width: 60px; }
+    .priceColumn { min-width: 120px; }
+    .statusColumn { min-width: 120px; }
+    .commentsColumn { min-width: 150px; }
+    .settingsColumn { min-width: 60px; }
+    .shareColumn { min-width: 60px; }
+
+    .tableContainer {
+        margin-top: 0.75rem;
+    }
+}
+
 h1.purchaseHeader{
     font-family: 'Poppins';
     font-weight: normal;
     font-size: 1.25rem;
 }
 
+@media (max-width: 768px) {
+    h1.purchaseHeader {
+        font-size: 1rem;
+    }
+}
+
 .tableTop{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 95%;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+@media (max-width: 768px) {
+    .tableTop {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+        padding: 0 1rem;
+    }
 }
 
 .tableContainer {
@@ -28,6 +136,8 @@ h1.purchaseHeader{
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
 }
 
 .tableBody {
@@ -37,6 +147,15 @@ h1.purchaseHeader{
     border-radius: 10px;
     table-layout: fixed;
     font-family: 'Inter', sans-serif;
+}
+
+@media (max-width: 768px) {
+    .tableBody {
+        width: 100%;
+        min-width: 500px;
+        margin: 0 auto;
+        border-radius: 8px;
+    }
 }
 
 .tableHeader {
@@ -64,6 +183,14 @@ h1.purchaseHeader{
     font-family: 'Inter', sans-serif;
 }
 
+@media (max-width: 768px) {
+    .searchBar {
+        width: 100%;
+        padding: 0.65rem 0.75rem;
+        font-size: 0.85rem;
+    }
+}
+
 .searchBar:focus {
     border-color: #7044F2;
     outline: none;
@@ -80,11 +207,20 @@ button.orderButton{
     border-radius: 10px;
     border: none;
     padding: 1rem 1.5rem;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    button.orderButton {
+        margin-left: 0;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
 }
 
 button.orderButton:hover{
     background-color: #5938C4;
-    cursor: pointer;
 }
 
 .thText, .tdText {
@@ -95,6 +231,13 @@ button.orderButton:hover{
     overflow: hidden;
     text-overflow: ellipsis;
     position: relative;
+}
+
+@media (max-width: 768px) {
+    .thText, .tdText {
+        padding: 8px 5px;
+        font-size: 0.75rem;
+    }
 }
 
 .thText{
@@ -126,6 +269,8 @@ button.orderButton:hover{
     font-size: .9rem;
     text-decoration: underline;
     color: #5D5D5D;
+    white-space: normal;
+    word-break: break-word;
 }
 
 .tableBody .commentsColumn{
@@ -219,7 +364,6 @@ button.orderButton:hover{
     height: 0.7rem;
 }
 
-/* Item Status */
 .itemStatusDelivered {
     font-size: .9rem;
     padding: 1rem;
@@ -236,6 +380,17 @@ button.orderButton:hover{
     margin-bottom: 10px;
 }
 
+@media (max-width: 768px) {
+    .tableSearch {
+        flex-direction: column;
+        justify-content: flex-start;
+        margin-bottom: 15px;
+        gap: 10px;
+        width: 100%;
+        padding: 0 1rem;
+    }
+}
+
 .order {
     cursor: pointer;
     height: 4rem;
@@ -245,21 +400,26 @@ button.orderButton:hover{
     border-bottom: 1px solid #ccc !important;
 }
 
+.tableBody td {
+    overflow: hidden;
+}
+
 .expandedOrder {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    padding: 10px;
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0;
+    overflow: visible;
 }
 
 .expandedOrderContent {
     border: 1px solid #E8E8E8;
     padding: 1rem;
-    width: 90%;
+    width: 100%;
     border-radius: 10px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
 }
 
 .expandedOrderContent h4{
@@ -267,10 +427,15 @@ button.orderButton:hover{
     font-weight: normal;
     text-decoration: underline;
     font-size: .9rem;
+    margin: 0 0 0.25rem 0;
+    max-width: 70%;
+    word-break: break-word;
 }
 
 .expandedOrderContent p{
     font-size: .9rem;
+    margin: 0;
+    word-wrap: break-word;
 }
 
 .itemLeftCol p{
@@ -279,6 +444,10 @@ button.orderButton:hover{
 
 .itemRightCol{
     margin-left: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 100px;
 }
 
 .checkMark {
@@ -290,7 +459,6 @@ button.orderButton:hover{
     width: 40px;
 }
 
-/* Settings Cell in Table Body */
 .settingsCell {
     text-align: center;
 }
@@ -306,20 +474,8 @@ button.orderButton:hover{
     opacity: 0.7;
 }
 
-/* Adjusting Item Status Font Size */
 .itemStatusText {
     font-size: 0.7rem;
-}
-
-/* Positioning Settings Button in Item */
-.itemRightCol {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-}
-
-.itemStatus {
-    margin-right: 1rem;
 }
 
 .itemSettingsButton {
@@ -446,7 +602,6 @@ button.orderButton:hover{
     color: #5D5D5D;
 }
 
-/* Sorting Arrow Styles */
 .sortableHeader {
     cursor: pointer;
     position: relative;
@@ -469,102 +624,85 @@ button.orderButton:hover{
     transform: translateX(.4rem) rotate(180deg);
 }
 
-.sortableHeader:hover {
-    background-color: #F0F0F0;
-}
-
-/* Mobile Breakpoints */
 @media screen and (max-width: 768px) {
-    /* Table container adjustments */
     .tableContainer {
         width: 100%;
         overflow-x: auto;
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     }
-
-    /* Fix minimum widths for columns to prevent squishing */
     .tableBody {
-        min-width: 1200px; /* Ensures table doesn't get too squished */
+        min-width: 1200px;
+        table-layout: fixed;
     }
-
-    /* Adjust top section layout */
+    .settingsCell, .shareCell {
+        overflow: visible;
+    }
     .tableTop {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
+        align-items: stretch;
+        gap: 0.75rem;
         padding: 0 1rem;
     }
-
-    /* Search section adjustments */
     .tableSearch {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
         width: 100%;
-        flex-wrap: wrap;
-        gap: 0.5rem;
+        margin-bottom: 0;
     }
-
     .searchBar {
         width: 100%;
-        margin-bottom: 0.5rem;
-    }
-
-    .myOrdersButton,
-    .orderButton {
-        padding: 0.75rem 1rem;
+        padding: 0.7rem 0.85rem;
         font-size: 0.9rem;
-        width: fit-content;
+        height: 40px;
+        border-radius: 8px;
+        box-sizing: border-box;
     }
-
-    /* Maintain minimum widths for specific columns */
-    .idColumn {
-        min-width: 80px;
+    .myOrdersButton,
+    button.orderButton {
+        width: 100%;
+        height: 40px;
+        padding: 0 0.75rem;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        margin-left: 0;
     }
-
-    .nameColumn {
-        min-width: 150px;
+    .expandedOrderContent {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        max-width: 100%;
     }
-
-    .vendorColumn {
-        min-width: 120px;
+    .itemRightCol {
+        margin-left: 0;
     }
-
-    .linkColumn {
-        min-width: 60px;
-    }
-
-    .priceColumn {
-        min-width: 120px;
-    }
-
-    .statusColumn {
-        min-width: 120px;
-    }
-
-    .commentsColumn {
-        min-width: 150px;
-    }
-
-    .settingsColumn {
-        min-width: 60px;
-    }
-
-    /* Expanded order content adjustments */
+    .idColumn { min-width: 80px; }
+    .nameColumn { min-width: 150px; }
+    .vendorColumn { min-width: 120px; }
+    .linkColumn { min-width: 60px; }
+    .priceColumn { min-width: 120px; }
+    .statusColumn { min-width: 120px; }
+    .commentsColumn { min-width: 150px; }
+    .settingsColumn { min-width: 60px; }
+    .shareColumn { min-width: 60px; }
     .expandedOrder {
-        grid-template-columns: 1fr;
+        display: block;
+        width: 100%;
         padding: 0.5rem;
+        overflow: visible;
     }
-
     .expandedOrderContent {
         width: 100%;
         margin-bottom: 0.5rem;
     }
+    .tableContainer {
+        margin-top: 0.75rem;
+    }
 }
 
-/* Small mobile breakpoint for even tighter screens */
 @media screen and (max-width: 480px) {
     .tableSearch {
         justify-content: space-between;
     }
-
     .searchBar {
         font-size: 0.85rem;
     }
