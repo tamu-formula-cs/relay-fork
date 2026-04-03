@@ -332,3 +332,296 @@ button.submitButton:hover {
     margin-right: 1rem;
     font-weight: normal;
 }
+
+.formBody {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+    .formBG {
+        position: fixed;
+        inset: 0;
+        align-items: stretch;
+        justify-content: stretch;
+        padding: 0;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+
+    .formContainer {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+        padding: 0;
+        height: 100%;
+        max-height: 100%;
+        box-shadow: none;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .formContainerSmall {
+        width: 100%;
+    }
+
+    .formContainerWide {
+        max-width: 100%;
+    }
+
+    /* Header area */
+    .formHeader {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #F0F0F0;
+        flex-shrink: 0;
+    }
+
+    h1.formTitle {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #111;
+    }
+
+    button.closeButton {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: #F5F5F5;
+        border-color: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Step label */
+    p.formParagraph {
+        font-size: 0.85rem;
+        color: #7044F2;
+        font-weight: 500;
+        margin: 0;
+        padding: 1rem 1.5rem 0;
+        flex-shrink: 0;
+    }
+
+    /* Scrollable form body */
+    .formBody {
+        padding-bottom: 1.5rem;
+    }
+
+    .generalRowOne,
+    .generalRowTwo,
+    .generalRowThree,
+    .costBreakdownRow {
+        padding: 0 1.5rem;
+    }
+
+    .generalRowOne,
+    .generalRowTwo,
+    .generalRowThree {
+        flex-direction: column;
+        gap: 1.25rem;
+        margin-bottom: 0;
+        padding-top: 1.25rem;
+    }
+
+    .inputGroup {
+        width: 100%;
+    }
+
+    .inputGroup label {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #555;
+        margin-bottom: 0.4rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .inputGroup input,
+    .inputGroup select,
+    .inputGroup textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.85rem 1rem;
+        font-size: 0.95rem;
+        border: 1.5px solid #E8E8E8;
+        border-radius: 12px;
+        background: #FAFAFA;
+        transition: border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .inputGroup input:focus,
+    .inputGroup select:focus,
+    .inputGroup textarea:focus {
+        border-color: #7044F2;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(112, 68, 242, 0.08);
+    }
+
+    .inputGroup input::placeholder,
+    .inputGroup textarea::placeholder {
+        color: #B0B0B0;
+    }
+
+    /* Cost breakdown grid */
+    .costBreakdownRow {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 0;
+        padding-top: 1.25rem;
+    }
+
+    .costBreakdownRow .inputGroup {
+        width: 100%;
+    }
+
+    .textarea {
+        height: 44px;
+        max-height: 80px;
+        border-radius: 12px;
+    }
+
+    /* Sticky button footer */
+    .buttonGroup {
+        flex-shrink: 0;
+        padding: 1rem 1.5rem;
+        padding-bottom: calc(1rem + 80px + env(safe-area-inset-bottom));
+        background: #fff;
+        border-top: 1px solid #F0F0F0;
+        gap: 0.75rem;
+        margin-top: auto;
+    }
+
+    .methodButtonGroup {
+        flex-direction: column;
+        border-top: none;
+        margin-top: 0;
+        padding-top: 0;
+    }
+
+    button.nextButton {
+        padding: 0.9rem 1.5rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        flex: 1;
+        min-width: 0;
+        border-radius: 12px;
+        letter-spacing: 0.01em;
+    }
+
+    button.backButton {
+        padding: 0.9rem 1.5rem;
+        font-size: 0.95rem;
+        font-weight: 500;
+        flex: 1;
+        min-width: 0;
+        border-radius: 12px;
+    }
+
+    button.submitButton {
+        padding: 0.9rem 1.5rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-radius: 12px;
+        width: 100%;
+    }
+
+    /* Upload section */
+    .uploadButtonContainer {
+        width: 100%;
+        padding: 0 1.5rem;
+    }
+
+    .uploadButton {
+        width: 100%;
+        border-radius: 12px;
+        padding: 0.85rem 1.25rem;
+    }
+
+    .uploadedFilesContainer {
+        flex-direction: column;
+        padding: 0 1.5rem;
+    }
+
+    .singleLink {
+        width: 100%;
+        padding: 0 1.5rem;
+        margin: 1rem 0;
+    }
+
+    .singleLink input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Template entry form table */
+    .tableContainer {
+        margin: 0.75rem 1.5rem;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .tableHeader,
+    .tableRow {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding: 0.75rem;
+    }
+
+    .tableHeader {
+        display: none;
+    }
+
+    .tableRow {
+        display: flex;
+        flex-direction: column;
+        border-bottom: 1px solid #f3f4f6;
+        padding: 1rem;
+        gap: 0.75rem;
+    }
+
+    .tableRow input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        box-sizing: border-box;
+        border-radius: 10px;
+        border: 1.5px solid #E8E8E8;
+        background: #FAFAFA;
+    }
+
+    .tableRow input:focus {
+        border-color: #7044F2;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(112, 68, 242, 0.08);
+    }
+
+    .tableFooter {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+        padding: 0 1.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .orderTotal {
+        text-align: center;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .removeButton {
+        align-self: flex-end;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .costBreakdownRow {
+        grid-template-columns: 1fr;
+    }
+}

@@ -327,35 +327,32 @@ const OrderTable: React.FC = () => {
         <div className={styles.tableMainContainer}>
             <div className={styles.tableTop}>
                 <h1 className={styles.purchaseHeader}>Purchase Orders</h1>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div className={styles.tableSearch}>
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className={styles.searchBar}
-                        />
-                        <button
-                            className={styles.myOrdersButton}
-                            onClick={() => setSearchQuery(currentUserSubteam.toLowerCase())}
-                        >
-                            My Orders
-                        </button>
-                        <button
-                            className={styles.orderButton}
-                            onClick={() => setShowOrderForm(true)}
-                        >
-                            Place Order
-                        </button>
-                        <button
-                        className={styles.orderButton}
-                        onClick={handleExportOrders}
-                        style={{ backgroundColor: '#000', color: 'white' }}
+                <div className={styles.tableSearch}>
+                    <input
+                        type="text"
+                        placeholder="Search orders..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className={styles.searchBar}
+                    />
+                    <button
+                        className={styles.myOrdersButton}
+                        onClick={() => setSearchQuery(currentUserSubteam.toLowerCase())}
                     >
-                        Export Orders
+                        My Orders
                     </button>
-                    </div>
+                    <button
+                        className={styles.orderButton}
+                        onClick={() => setShowOrderForm(true)}
+                    >
+                        Place Order
+                    </button>
+                    <button
+                        className={`${styles.orderButton} ${styles.exportButton}`}
+                        onClick={handleExportOrders}
+                    >
+                        Export
+                    </button>
                 </div>
             </div>
             {showOrderForm && <OrderForm onClose={() => setShowOrderForm(false)} />}
@@ -367,6 +364,7 @@ const OrderTable: React.FC = () => {
                     onUpdateOrder={updateOrderInState}
                 />
             )}
+            {/* Desktop Table View */}
             <div className={styles.tableContainer}>
                 <table className={styles.tableBody}>
                     <thead className={styles.tableHeader}>
@@ -476,7 +474,7 @@ const OrderTable: React.FC = () => {
                                         onClick={(event)=>handleStatusClick(event, order)}
                                     >
                                         {order.status.toUpperCase()}
-                                        {order.status === OrderStatus.SHIPPED && order.trackingId && order.carrier && 
+                                        {order.status === OrderStatus.SHIPPED && order.trackingId && order.carrier &&
                                             <Image
                                             src={OpenURLIcon.src}
                                             height={14}
@@ -589,6 +587,121 @@ const OrderTable: React.FC = () => {
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className={styles.mobileCardList}>
+                {filteredOrders.map((order) => (
+                    <div
+                        key={order.id}
+                        className={styles.mobileCard}
+                        onClick={() => toggleExpand(order.id, order.items, order.url)}
+                    >
+                        <div className={styles.mobileCardHeader}>
+                            <div className={styles.mobileCardTitle}>
+                                <span className={styles.mobileCardName}>{order.name}</span>
+                                <span className={styles.mobileCardId}>
+                                    {order.meenOrderId ? `#${order.meenOrderId}` : ''}
+                                </span>
+                            </div>
+                            <div className={styles.mobileCardActions} onClick={(e) => e.stopPropagation()}>
+                                <button
+                                    className={styles.settingsButton}
+                                    onClick={() => handleSettingsClick(order)}
+                                >
+                                    <Image src={Settings.src} height={16} width={16} alt="settings" />
+                                </button>
+                                <button
+                                    className={styles.shareButton}
+                                    onClick={(e) => handleShareOrder(e, order.id)}
+                                >
+                                    <Image src={ShareIcon.src} height={16} width={16} alt="share" />
+                                </button>
+                            </div>
+                        </div>
+                        <div className={styles.mobileCardMeta}>
+                            <span>{order.vendor}</span>
+                            <span className={styles.mobileCardDot}></span>
+                            <span>${order.totalCost.toFixed(2)}{order.costVerified && <span className={styles.checkMark}>✓</span>}</span>
+                            <span className={styles.mobileCardDot}></span>
+                            <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <div className={styles.mobileCardFooter}>
+                            <span
+                                className={`${styles.mobileCardStatus} ${
+                                    order.status === OrderStatus.TO_ORDER ? styles.orderStatusToOrder
+                                    : order.status === OrderStatus.PLACED ? styles.orderStatusPlaced
+                                    : order.status === OrderStatus.MEEN_HOLD ? styles.orderStatusMeenHold
+                                    : order.status === OrderStatus.PROCESSED ? styles.orderStatusProcessed
+                                    : order.status === OrderStatus.SHIPPED ? styles.orderStatusShipped
+                                    : order.status === OrderStatus.AWAITING_PICKUP ? styles.orderStatusAwaitingPickup
+                                    : order.status === OrderStatus.DELIVERED ? styles.orderStatusDelivered
+                                    : order.status === OrderStatus.PARTIAL ? styles.orderStatusPartial
+                                    : styles.orderStatusDefault
+                                }`}
+                                onClick={(event) => handleStatusClick(event, order)}
+                            >
+                                {order.status.replace(/_/g, ' ')}
+                            </span>
+                            {order.costBreakdown && (
+                                <span className={styles.mobileCardSubteam}>
+                                    {Object.entries(order.costBreakdown)
+                                        .filter(([, p]) => p > 0)
+                                        .map(([s]) => s)
+                                        .join(', ')}
+                                </span>
+                            )}
+                        </div>
+                        {order.url && (
+                            <button
+                                className={styles.mobileCardLink}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.open(order.url!, '_blank');
+                                }}
+                            >
+                                <Image src={LinkIcon.src} height={12} width={12} alt="link" />
+                                <span>View Link</span>
+                            </button>
+                        )}
+                        {expandedOrderIds.includes(order.id) && order.items.length > 0 && (
+                            <div className={styles.mobileCardItems}>
+                                {order.items.map((item) => (
+                                    <div key={item.id} className={styles.mobileCardItem}>
+                                        <div className={styles.mobileCardItemInfo}>
+                                            <span className={styles.mobileCardItemName}>{item.name}</span>
+                                            <span className={styles.mobileCardItemMeta}>
+                                                {item.vendor} &middot; ${item.price.toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <div className={styles.mobileCardItemRight}>
+                                            <span
+                                                className={`${styles.mobileCardItemStatus} ${
+                                                    item.status === ItemStatus.TO_ORDER ? styles.orderStatusToOrder
+                                                    : item.status === ItemStatus.PLACED ? styles.orderStatusPlaced
+                                                    : item.status === ItemStatus.PROCESSED ? styles.orderStatusProcessed
+                                                    : item.status === ItemStatus.DELIVERED ? styles.itemStatusDelivered
+                                                    : styles.orderStatusShipped
+                                                }`}
+                                            >
+                                                {item.status.replace(/_/g, ' ')}
+                                            </span>
+                                            <button
+                                                className={styles.itemSettingsButton}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleSettingsClick(order, item);
+                                                }}
+                                            >
+                                                <Image src={Settings.src} height={14} width={14} alt="settings" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ))}
             </div>
             {filteredOrders.length === 0 && (
             <div className={styles.emptyState}>

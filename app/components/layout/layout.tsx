@@ -126,10 +126,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <ul className={styles.navLinks}>
           <li className={pathname === '/' ? styles.active : ''}>
             <Link href="/">
-              <Image 
-                src={DashboardIcon} 
-                alt="Dashboard" 
-                width={16} 
+              <Image
+                src={DashboardIcon}
+                alt="Dashboard"
+                width={16}
                 height={16}
                 className={pathname === '/' ? styles.activeIcon : ''}
               />
@@ -140,10 +140,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             !isAdminLoading && isAdmin && (
               <li className={pathname === '/backlog' ? styles.active : ''}>
                 <Link href="/backlog">
-                  <Image 
-                    src={BacklogIcon} 
-                    alt="Backlog" 
-                    width={16} 
+                  <Image
+                    src={BacklogIcon}
+                    alt="Backlog"
+                    width={16}
                     height={16}
                     className={pathname === '/backlog' ? styles.activeIcon : ''}
                   />
@@ -154,10 +154,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           }
           <li className={pathname === '/finance' ? styles.active : ''}>
             <Link href="/finance">
-              <Image 
-                src={FinanceIcon} 
-                alt="Finance" 
-                width={16} 
+              <Image
+                src={FinanceIcon}
+                alt="Finance"
+                width={16}
                 height={16}
                 className={pathname === '/finance' ? styles.activeIcon : ''}
               />
@@ -166,10 +166,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </li>
           <li className={pathname === '/archive' ? styles.active : ''}>
             <Link href="/archive">
-              <Image 
-                src={ArchiveIcon} 
-                alt="Archive" 
-                width={16} 
+              <Image
+                src={ArchiveIcon}
+                alt="Archive"
+                width={16}
                 height={16}
                 className={pathname === '/archive' ? styles.activeIcon : ''}
               />
@@ -178,15 +178,32 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </li>
           <li className={pathname === '/inventory' ? styles.active : ''}>
             <Link href="/inventory">
-              <Image 
-                src={InventoryIcon} 
-                alt="Inventory" 
-                width={16} 
+              <Image
+                src={InventoryIcon}
+                alt="Inventory"
+                width={16}
                 height={16}
                 className={pathname === '/inventory' ? styles.activeIcon : ''}
               />
               <span>Inventory</span>
             </Link>
+          </li>
+          <li className={`${styles.mobileOnly}`}>
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowSignOutModal(true);
+              }}
+            >
+              <Image
+                src={AccountIcon}
+                alt="Account"
+                width={16}
+                height={16}
+              />
+              <span>Account</span>
+            </a>
           </li>
         </ul>
 

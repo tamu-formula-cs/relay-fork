@@ -402,3 +402,102 @@ li.breakdownItem {
 h4.orderName{
     margin-top: 0;
 }
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+    .settingsMenu {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+        padding: 1.5rem;
+        max-height: 90vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        box-sizing: border-box;
+    }
+
+    .overlay {
+        align-items: flex-end;
+    }
+
+    .contentContainer {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .infoSection {
+        margin-right: 0;
+    }
+
+    .formHeader {
+        margin-bottom: 1.25rem;
+    }
+
+    .inputGroup {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+
+    .inputGroup input,
+    .inputGroup select {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.75rem;
+    }
+
+    .buttonGroup {
+        flex-wrap: wrap;
+        margin-top: 1.5rem;
+    }
+
+    .button {
+        padding: 0.85rem 1.25rem;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .costBreakdownList {
+        gap: 0.75rem;
+    }
+
+    .breakdownItem {
+        width: calc(50% - 0.75rem);
+    }
+
+    .textarea {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .receiptButton {
+        flex-wrap: wrap;
+    }
+
+    .deleteOrderButton {
+        margin-left: 0;
+    }
+
+    .priceContainer {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .numberInput {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .settingsMenu {
+        padding: 1.25rem;
+    }
+
+    .breakdownItem {
+        width: 100%;
+    }
+
+    .button {
+        width: 100%;
+    }
+}

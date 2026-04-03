@@ -347,6 +347,7 @@ const BacklogComponent: React.FC = () => {
             {/* Orders to be Placed Section */}
             <div className={styles.section}>
                 <h1 className={styles.purchaseHeader}>Orders to be Placed</h1>
+                {/* Desktop Table */}
                 <div className={styles.tableContainer}>
                     <table className={styles.tableBody}>
                         <thead className={styles.tableHeader}>
@@ -468,7 +469,7 @@ const BacklogComponent: React.FC = () => {
                                                                         href={item.link}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
-                                                                        onClick={(e) => e.stopPropagation()} // Prevents the row click event
+                                                                        onClick={(e) => e.stopPropagation()}
                                                                         className={styles.itemNameLink}
                                                                     >
                                                                         {item.name.length > 21
@@ -499,6 +500,46 @@ const BacklogComponent: React.FC = () => {
                         </tbody>
                     </table>
                 </div>
+                {/* Mobile Card View */}
+                <div className={styles.mobileCardList}>
+                    {ordersToBePlaced.map((order) => (
+                        <div key={order.id} className={styles.mobileCard} onClick={() => toggleExpandToBePlaced(order.id, order.items)}>
+                            <div className={styles.mobileCardTop}>
+                                <div className={styles.mobileCardInfo}>
+                                    <span className={styles.mobileCardName}>{order.name}</span>
+                                    <span className={styles.mobileCardMeta}>
+                                        {order.vendor} &middot; ${order.totalCost.toFixed(2)} &middot; {order.user.subteam}
+                                    </span>
+                                    <span className={styles.mobileCardDate}>{new Date(order.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                <button className={styles.markOrderButton} onClick={(e) => { e.stopPropagation(); handleMarkOrder(order.id); }}>
+                                    Mark
+                                </button>
+                            </div>
+                            {order.costBreakdown && (
+                                <div className={styles.mobileCardBreakdown}>
+                                    {Object.entries(order.costBreakdown)
+                                        .filter(([, p]) => (p as number) > 0)
+                                        .map(([s, p]) => <span key={s} className={styles.mobileCardTag}>{Object.keys(subteamMapping).find(key => subteamMapping[key] === s) || s}: {p as number}%</span>)}
+                                </div>
+                            )}
+                            {expandedOrderIdsToBePlaced.includes(order.id) && order.items.length > 0 && (
+                                <div className={styles.mobileCardItems}>
+                                    {order.items.map((item) => (
+                                        <div key={item.id} className={styles.mobileCardItem}>
+                                            <div>
+                                                <span className={styles.mobileCardItemName}>
+                                                    {item.link ? <a href={item.link} target="_blank" rel="noopener noreferrer" className={styles.itemNameLink} onClick={(e) => e.stopPropagation()}>{item.name}</a> : item.name}
+                                                </span>
+                                                <span className={styles.mobileCardItemMeta}>{item.vendor} &middot; ${item.price.toFixed(2)} &middot; Q: {item.quantity}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
                 {ordersToBePlaced.length === 0 && (
                 <div className={styles.emptyState}>
                     <p>No orders to place right now. 🌟</p>
@@ -516,6 +557,7 @@ const BacklogComponent: React.FC = () => {
             {/* Orders to be Picked Up Section */}
             <div className={styles.section}>
                 <h1 className={styles.purchaseHeader}>Orders to be Picked Up</h1>
+                {/* Desktop Table */}
                 <div className={styles.tableContainer}>
                     <table className={styles.tableBody}>
                         <thead className={styles.tableHeader}>
@@ -524,7 +566,7 @@ const BacklogComponent: React.FC = () => {
                                 <th className={`${styles.thText}`}>Name</th>
                                 <th className={`${styles.thText} ${styles.vendorColumn}`}>Vendor</th>
                                 <th className={`${styles.thText} ${styles.linkColumn}`}>Link</th>
-                                <th className={`${styles.thText}`}>Status</th> {/* New Status Column */}
+                                <th className={`${styles.thText}`}>Status</th>
                                 <th className={`${styles.thText} ${styles.subteamColumn}`}>Subteam</th>
                                 <th className={`${styles.thText}`}>Actions</th>
                             </tr>
@@ -567,17 +609,12 @@ const BacklogComponent: React.FC = () => {
                                         </td>
                                         <td
                                             className={`${styles.tdText} ${
-                                                order.status === OrderStatus.TO_ORDER
-                                                    ? styles.orderStatusToOrder
-                                                    : order.status === OrderStatus.PLACED
-                                                    ? styles.orderStatusPlaced
-                                                    : order.status === OrderStatus.PROCESSED
-                                                    ? styles.orderStatusProcessed
-                                                    : order.status === OrderStatus.PARTIAL
-                                                    ? styles.orderStatusPartial
-                                                    : order.status === OrderStatus.DELIVERED
-                                                    ? styles.orderStatusDelivered
-                                                    : styles.orderStatusShipped
+                                                order.status === OrderStatus.TO_ORDER ? styles.orderStatusToOrder
+                                                : order.status === OrderStatus.PLACED ? styles.orderStatusPlaced
+                                                : order.status === OrderStatus.PROCESSED ? styles.orderStatusProcessed
+                                                : order.status === OrderStatus.PARTIAL ? styles.orderStatusPartial
+                                                : order.status === OrderStatus.DELIVERED ? styles.orderStatusDelivered
+                                                : styles.orderStatusShipped
                                             } ${styles.statusColumn}`}
                                         >
                                             {order.status.toUpperCase()}
@@ -602,44 +639,25 @@ const BacklogComponent: React.FC = () => {
                                             <td colSpan={7}>
                                                 <div className={styles.expandedOrder}>
                                                     {order.items.map((item) => (
-                                                        <div
-                                                            key={item.id}
-                                                            className={styles.expandedOrderContent}
-                                                        >
+                                                        <div key={item.id} className={styles.expandedOrderContent}>
                                                             <div className={styles.itemLeftCol}>
-                                                                <h4>
-                                                                    {item.name.length > 18
-                                                                        ? item.name.slice(0, 18) + '...'
-                                                                        : item.name}
-                                                                </h4>
+                                                                <h4>{item.name.length > 18 ? item.name.slice(0, 18) + '...' : item.name}</h4>
                                                                 <p>{item.vendor}</p>
                                                                 <p>${item.price.toFixed(2)}</p>
                                                             </div>
                                                             <div className={styles.itemRightCol}>
-                                                                <p
-                                                                    className={`${styles.itemStatusText} ${
-                                                                        item.status === ItemStatus.TO_ORDER
-                                                                            ? styles.itemStatusToOrder
-                                                                            : item.status === ItemStatus.PLACED
-                                                                            ? styles.orderStatusPlaced
-                                                                            : item.status === ItemStatus.PROCESSED
-                                                                            ? styles.orderStatusProcessed
-                                                                            : item.status === ItemStatus.DELIVERED
-                                                                            ? styles.itemStatusDelivered
-                                                                            : item.status === ItemStatus.PICKED_UP
-                                                                            ? styles.itemStatusPickedUp
-                                                                            : styles.itemStatusShipped
-                                                                    } ${styles.itemStatus}`}                                                                    
-                                                                >
+                                                                <p className={`${styles.itemStatusText} ${
+                                                                    item.status === ItemStatus.TO_ORDER ? styles.itemStatusToOrder
+                                                                    : item.status === ItemStatus.PLACED ? styles.orderStatusPlaced
+                                                                    : item.status === ItemStatus.PROCESSED ? styles.orderStatusProcessed
+                                                                    : item.status === ItemStatus.DELIVERED ? styles.itemStatusDelivered
+                                                                    : item.status === ItemStatus.PICKED_UP ? styles.itemStatusPickedUp
+                                                                    : styles.itemStatusShipped
+                                                                } ${styles.itemStatus}`}>
                                                                     {item.status.toUpperCase()}
                                                                 </p>
                                                                 {item.status === ItemStatus.DELIVERED && (
-                                                                    <button
-                                                                        className={styles.markItemButton}
-                                                                        onClick={() => handleMarkItem(item.id)}
-                                                                    >
-                                                                        Mark Item
-                                                                    </button>
+                                                                    <button className={styles.markItemButton} onClick={() => handleMarkItem(item.id)}>Mark Item</button>
                                                                 )}
                                                             </div>
                                                         </div>
@@ -652,6 +670,51 @@ const BacklogComponent: React.FC = () => {
                             ))}
                         </tbody>
                     </table>
+                </div>
+                {/* Mobile Card View */}
+                <div className={styles.mobileCardList}>
+                    {ordersWithDeliveredItems.map((order) => (
+                        <div key={order.id} className={styles.mobileCard} onClick={() => toggleExpandToBePickedUp(order.id, order.items)}>
+                            <div className={styles.mobileCardTop}>
+                                <div className={styles.mobileCardInfo}>
+                                    <span className={styles.mobileCardName}>{order.name}</span>
+                                    <span className={styles.mobileCardMeta}>{order.vendor} &middot; {order.user.subteam}</span>
+                                </div>
+                                <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                                    <span className={`${styles.mobileCardStatus} ${
+                                        order.status === OrderStatus.DELIVERED ? styles.orderStatusDelivered
+                                        : order.status === OrderStatus.PARTIAL ? styles.orderStatusPartial
+                                        : styles.orderStatusShipped
+                                    }`}>{order.status.replace(/_/g, ' ')}</span>
+                                    <button className={styles.markOrderButton} onClick={(e) => { e.stopPropagation(); handleMarkOrderAsPickedUp(order.id); }}>
+                                        Pick Up
+                                    </button>
+                                </div>
+                            </div>
+                            {expandedOrderIdsToBePickedUp.includes(order.id) && order.items.length > 0 && (
+                                <div className={styles.mobileCardItems}>
+                                    {order.items.map((item) => (
+                                        <div key={item.id} className={styles.mobileCardItem}>
+                                            <div>
+                                                <span className={styles.mobileCardItemName}>{item.name}</span>
+                                                <span className={styles.mobileCardItemMeta}>{item.vendor} &middot; ${item.price.toFixed(2)}</span>
+                                            </div>
+                                            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                                                <span className={`${styles.mobileCardItemStatus} ${
+                                                    item.status === ItemStatus.DELIVERED ? styles.itemStatusDelivered
+                                                    : item.status === ItemStatus.PICKED_UP ? styles.itemStatusPickedUp
+                                                    : styles.itemStatusShipped
+                                                }`}>{item.status.replace(/_/g, ' ')}</span>
+                                                {item.status === ItemStatus.DELIVERED && (
+                                                    <button className={styles.markItemButton} onClick={(e) => { e.stopPropagation(); handleMarkItem(item.id); }}>Mark</button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ))}
                 </div>
                 {ordersWithDeliveredItems.length === 0 && (
                 <div className={styles.emptyState}>

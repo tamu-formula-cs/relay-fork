@@ -113,3 +113,18 @@
     cursor: pointer;
     color: #999999;
   }
+
+  @media screen and (max-width: 768px) {
+    .toastViewport {
+      bottom: calc(80px + env(safe-area-inset-bottom));
+      right: 0.75rem;
+      left: 0.75rem;
+      max-width: none;
+      width: auto;
+    }
+
+    .toastContainer {
+      max-width: 100%;
+      padding: 1rem;
+    }
+  }
