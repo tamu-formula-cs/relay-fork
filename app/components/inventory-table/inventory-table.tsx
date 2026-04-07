@@ -28,12 +28,7 @@ const InventoryTable: React.FC = () => {
     const [levelFilter, setLevelFilter] = useState<StockLevel | 'ALL'>('ALL')
     const dropdownRef = useRef<HTMLSelectElement>(null);
 
-    const { data, error } = useSWR('/api/items', fetcher, {
-        refreshInterval: 60000,
-        dedupingInterval: 5000,
-        keepPreviousData: true,
-        revalidateOnFocus: false,
-    });
+    const { data, error } = useSWR('/api/items', fetcher, { refreshInterval: 60000 });
 
     const items = useMemo(() => data?.items as SerializedItemsWithRelations[] || [], [data]);
 

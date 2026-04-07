@@ -55,12 +55,7 @@ const ApprovalsComponent: React.FC = () => {
   const { data, error } = useSWR<{ orders: PendingOrder[] }>(
     '/api/orders/pending',
     fetcher,
-    {
-      refreshInterval: 15000,
-      dedupingInterval: 5000,
-      keepPreviousData: true,
-      revalidateOnFocus: false,
-    }
+    { refreshInterval: 15000 }
   );
 
   const handleApprove = async (orderId: number) => {

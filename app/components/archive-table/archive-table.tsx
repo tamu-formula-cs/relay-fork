@@ -54,12 +54,7 @@ const ArchiveTable: React.FC = () => {
     const [selectedItem, setSelectedItem] = useState<Item | undefined>(undefined);
     const [showSettingsMenu, setShowSettingsMenu] = useState<boolean>(false);
 
-    const { data, error } = useSWR('/api/orders/archived', fetcher, {
-        refreshInterval: 60000,
-        dedupingInterval: 5000,
-        keepPreviousData: true,
-        revalidateOnFocus: false,
-    });
+    const { data, error } = useSWR('/api/orders/archived', fetcher, { refreshInterval: 60000 });
 
     const orders = useMemo(() => data?.orders as SerializedOrderWithRelations[] || [], [data]);
 
