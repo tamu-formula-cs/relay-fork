@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
 import { ItemStatus, OrderStatus } from '@prisma/client';
+import { checkBudgetExceeded } from '../../../lib/budgets';
 
 export async function POST(request: NextRequest) {
 
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
     if (!user) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    
+
     if (!orderName || !vendor) {
         return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
@@ -29,7 +30,15 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Missing required fields for cart URL order' }, { status: 400 });
         }
 
-        const totalCost = parseFloat(body.estimatedCost) || 0;
+        const parsedCost = parseFloat(body.estimatedCost) || 0;
+
+        // Check budget
+        const budgetCheck = costBreakdown
+            ? await checkBudgetExceeded(costBreakdown, parsedCost)
+            : { exceeded: false, subteams: [] };
+        const orderStatus = budgetCheck.exceeded
+            ? OrderStatus.AWAITING_APPROVAL
+            : OrderStatus.TO_ORDER;
 
         try {
             const order = await prisma.order.create({
@@ -38,16 +47,16 @@ export async function POST(request: NextRequest) {
                     name: orderName,
                     userId: user.id,
                     subteam: user.subteam,
-                    status: OrderStatus.TO_ORDER,
+                    status: orderStatus,
                     vendor,
-                    totalCost,
+                    totalCost: parsedCost,
                     comments: comments || '',
                     url: cartUrl || null,
                     costBreakdown,
                     deliveryLocation,
                 },
             });
-    
+
             if (supportingDocs && supportingDocs.length > 0) {
                 await prisma.document.createMany({
                     data: supportingDocs.map((doc: { url: string; }) => ({
@@ -56,7 +65,14 @@ export async function POST(request: NextRequest) {
                     })),
                 });
                 }
-    
+
+            if (budgetCheck.exceeded) {
+                return NextResponse.json({
+                    message: 'Order submitted for approval',
+                    needsApproval: true,
+                    exceededSubteams: budgetCheck.subteams,
+                });
+            }
             return NextResponse.json({ message: 'Order and documents created successfully' });
         } catch (error) {
             console.error('Error creating cart URL order:', error);
@@ -71,6 +87,16 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Missing required fields for single item order' }, { status: 400 });
         }
 
+        const orderCost = totalCost || cost * quantity;
+
+        // Check budget
+        const budgetCheck = costBreakdown
+            ? await checkBudgetExceeded(costBreakdown, orderCost)
+            : { exceeded: false, subteams: [] };
+        const orderStatus = budgetCheck.exceeded
+            ? OrderStatus.AWAITING_APPROVAL
+            : OrderStatus.TO_ORDER;
+
         // Create the order with a single item
         try {
             await prisma.order.create({
@@ -79,9 +105,9 @@ export async function POST(request: NextRequest) {
                     name: orderName || `Order by ${user.name}`,
                     userId: user.id,
                     subteam: user.subteam,
-                    status: OrderStatus.TO_ORDER,
+                    status: orderStatus,
                     vendor: vendor,
-                    totalCost: totalCost || cost * quantity,
+                    totalCost: orderCost,
                     comments: comments || '',
                     costBreakdown: costBreakdown, // Include cost breakdown
                     items: {
@@ -101,6 +127,13 @@ export async function POST(request: NextRequest) {
                 },
             });
 
+            if (budgetCheck.exceeded) {
+                return NextResponse.json({
+                    message: 'Order submitted for approval',
+                    needsApproval: true,
+                    exceededSubteams: budgetCheck.subteams,
+                });
+            }
             return NextResponse.json({ message: 'Single item order created successfully' });
         } catch (error) {
             console.error('Error creating single item order:', error);

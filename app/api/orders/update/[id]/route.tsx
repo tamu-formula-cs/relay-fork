@@ -4,6 +4,7 @@ import { ItemStatus, OrderStatus, Prisma } from '@prisma/client';
 
 // Define the progression of statuses with corresponding indices
 const orderStatusIndices: { [key in OrderStatus]: number } = {
+  AWAITING_APPROVAL: -1,
   TO_ORDER: 0,
   PLACED: 1,
   MEEN_HOLD: 2,

@@ -39,6 +39,7 @@ export default function OrderForm({ onClose }: OrderFormProps) {
     const { data: session } = useSession();
     const email = session?.user.email;
     const [currentScreen, setCurrentScreen] = useState(0);
+    const [overbudgetSubteams, setOverbudgetSubteams] = useState<string[]>([]);
     const [orderData, setOrderData] = useState<OrderData>({
         orderName: '',
         vendor: '',
@@ -114,14 +115,21 @@ export default function OrderForm({ onClose }: OrderFormProps) {
             });
 
             if (response.ok) {
-                toast({
-                    title: "Order Created",
-                    description: "Order created successfully!",
-                    variant: "affirmation",
-                });
-                mutate('/api/orders');
-                mutate('/api/finance');
-                onClose();
+                const data = await response.json();
+                if (data.needsApproval) {
+                    setOverbudgetSubteams(data.exceededSubteams || []);
+                    setCurrentScreen(6);
+                    mutate('/api/orders/pending');
+                } else {
+                    toast({
+                        title: "Order Created",
+                        description: "Order created successfully!",
+                        variant: "affirmation",
+                    });
+                    mutate('/api/orders');
+                    mutate('/api/finance');
+                    onClose();
+                }
             } else {
                 const errorData = await response.json();
                 toast({
@@ -173,17 +181,34 @@ export default function OrderForm({ onClose }: OrderFormProps) {
             orderData={orderData}
             onBack={() => setCurrentScreen(2)}
             onClose={onClose}
+            onOverbudget={(subteams: string[]) => {
+                setOverbudgetSubteams(subteams);
+                setCurrentScreen(6);
+            }}
         />,
         <CartLinkOrder
             key="cart-link-order"
             orderData={orderData}
             onBack={() => setCurrentScreen(2)}
             onClose={onClose}
+            onOverbudget={(subteams: string[]) => {
+                setOverbudgetSubteams(subteams);
+                setCurrentScreen(6);
+            }}
         />,
         <SingleItemOrder
             key="single-item-order"
             orderData={orderData}
             onBack={() => setCurrentScreen(2)}
+            onClose={onClose}
+            onOverbudget={(subteams: string[]) => {
+                setOverbudgetSubteams(subteams);
+                setCurrentScreen(6);
+            }}
+        />,
+        <OverBudgetScreen
+            key="over-budget"
+            subteams={overbudgetSubteams}
             onClose={onClose}
         />,
     ];
@@ -379,6 +404,9 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
                             </div>
                         ))}
                     </div>
+                    
+                </div>
+                <div className={styles.buttonGroup}>
                     <div className={styles.uploadButtonContainer}>
                         <button className={`${styles.backButton} ${styles.uploadButton}`} onClick={() => fileInputRef.current?.click()}>
                             Upload PDF
@@ -391,8 +419,6 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
                             onChange={handleFileUpload}
                         />
                     </div>
-                </div>
-                <div className={styles.buttonGroup}>
                     <button className={styles.nextButton} onClick={handleNextClick}>
                         Next Step
                     </button>
@@ -533,9 +559,10 @@ interface CartLinkOrderProps {
     orderData: OrderData;
     onBack: () => void;
     onClose: () => void;
+    onOverbudget: (subteams: string[]) => void;
 }
 
-function CartLinkOrder({ orderData, onBack, onClose }: CartLinkOrderProps) {
+function CartLinkOrder({ orderData, onBack, onClose, onOverbudget }: CartLinkOrderProps) {
     const [cartLink, setCartLink] = useState('');
     const { data: session } = useSession();
     const email = session?.user.email;
@@ -570,14 +597,20 @@ function CartLinkOrder({ orderData, onBack, onClose }: CartLinkOrderProps) {
             });
 
             if (response.ok) {
-                toast({
-                    title: "Order Created",
-                    description: "Order created successfully!",
-                    variant: "affirmation",
-                });
-                mutate('/api/orders');
-                mutate('/api/finance');
-                onClose();
+                const data = await response.json();
+                if (data.needsApproval) {
+                    mutate('/api/orders/pending');
+                    onOverbudget(data.exceededSubteams || []);
+                } else {
+                    toast({
+                        title: "Order Created",
+                        description: "Order created successfully!",
+                        variant: "affirmation",
+                    });
+                    mutate('/api/orders');
+                    mutate('/api/finance');
+                    onClose();
+                }
             } else {
                 const error = await response.json();
                 toast({
@@ -625,9 +658,10 @@ interface SingleItemOrderProps {
     orderData: OrderData;
     onBack: () => void;
     onClose: () => void;
+    onOverbudget: (subteams: string[]) => void;
 }
 
-function SingleItemOrder({ orderData, onBack, onClose }: SingleItemOrderProps) {
+function SingleItemOrder({ orderData, onBack, onClose, onOverbudget }: SingleItemOrderProps) {
     const [name, setName] = useState('');
     const [partNumber, setPartNumber] = useState('');
     const [quantity, setQuantity] = useState(1);
@@ -676,14 +710,20 @@ function SingleItemOrder({ orderData, onBack, onClose }: SingleItemOrderProps) {
             });
 
             if (response.ok) {
-                toast({
-                    title: "Order Created",
-                    description: "Order created successfully!",
-                    variant: "affirmation",
-                });
-                mutate('/api/orders');
-                mutate('/api/finance');
-                onClose();
+                const data = await response.json();
+                if (data.needsApproval) {
+                    mutate('/api/orders/pending');
+                    onOverbudget(data.exceededSubteams || []);
+                } else {
+                    toast({
+                        title: "Order Created",
+                        description: "Order created successfully!",
+                        variant: "affirmation",
+                    });
+                    mutate('/api/orders');
+                    mutate('/api/finance');
+                    onClose();
+                }
             } else {
                 const error = await response.json();
                 toast({
@@ -754,10 +794,11 @@ interface TemplateRow {
     link: string;
 }
 
-function TemplateEntryForm({ orderData, onBack, onClose }: {
+function TemplateEntryForm({ orderData, onBack, onClose, onOverbudget }: {
     orderData: OrderData;
     onBack: () => void;
     onClose: () => void;
+    onOverbudget: (subteams: string[]) => void;
 }) {
     const [rows, setRows] = useState<TemplateRow[]>([
         { itemName: "", partNumber: "", notes: "", quantity: 1, cost: 0, link: "" },
@@ -818,13 +859,19 @@ function TemplateEntryForm({ orderData, onBack, onClose }: {
             });
 
             if (response.ok) {
-                toast({
-                    title: "Order Created",
-                    description: "Order created successfully!",
-                    variant: "affirmation",
-                });
-                mutate("/api/orders");
-                onClose();
+                const data = await response.json();
+                if (data.needsApproval) {
+                    mutate('/api/orders/pending');
+                    onOverbudget(data.exceededSubteams || []);
+                } else {
+                    toast({
+                        title: "Order Created",
+                        description: "Order created successfully!",
+                        variant: "affirmation",
+                    });
+                    mutate("/api/orders");
+                    onClose();
+                }
             } else {
                 const errorData = await response.json();
                 toast({
@@ -925,6 +972,46 @@ function TemplateEntryForm({ orderData, onBack, onClose }: {
                 <div className={styles.buttonGroup}>
                     <button className={styles.backButton} onClick={onBack}>Back</button>
                     <button className={styles.nextButton} onClick={handleSubmit}>Submit</button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function OverBudgetScreen({ subteams, onClose }: { subteams: string[]; onClose: () => void }) {
+    return (
+        <div className={styles.formBG}>
+            <div className={`${styles.formContainer} ${styles.formContainerSmall}`}>
+                <div className={styles.formHeader}>
+                    <h1 className={styles.formTitle}>Budget Exceeded</h1>
+                    <button className={styles.closeButton} onClick={onClose}>
+                        <Image src={CloseIcon.src} height={10} width={10} alt='close' />
+                    </button>
+                </div>
+                <div className={styles.overbudgetBody}>
+                    <div className={styles.overbudgetIcon}>
+                        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="28" cy="28" r="26" stroke="#E65100" strokeWidth="2" fill="#FFF8F0"/>
+                            <path d="M28 16L40 38H16L28 16Z" stroke="#E65100" strokeWidth="2" strokeLinejoin="round" fill="none"/>
+                            <path d="M28 24V30" stroke="#E65100" strokeWidth="2" strokeLinecap="round"/>
+                            <circle cx="28" cy="34" r="1.25" fill="#E65100"/>
+                        </svg>
+                    </div>
+                    <h2 className={styles.overbudgetTitle}>Whoa, over budget!</h2>
+                    <p className={styles.overbudgetText}>
+                        This order would push{' '}
+                        <strong>{subteams.join(', ')}</strong>{' '}
+                        past {subteams.length > 1 ? 'their budget limits' : 'its budget limit'} (or it already is...).
+                    </p>
+                    <p className={styles.overbudgetSubtext}>
+                        Your order has been submitted but needs PM approval before it can go through.
+                        Check the <strong>Approvals</strong> tab to track its status. <br/><br/>Alternatively, venmo Athul $5 and I've got you.
+                    </p>
+                </div>
+                <div className={styles.buttonGroup}>
+                    <button className={styles.nextButton} onClick={onClose}>
+                        Got it
+                    </button>
                 </div>
             </div>
         </div>

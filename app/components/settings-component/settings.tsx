@@ -552,7 +552,9 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                                 <div className={styles.inputGroup}>
                                     <label>Status:</label>
                                     <select value={orderStatus} onChange={handleOrderStatusChange}>
-                                        {Object.values(OrderStatus).map((option) => (
+                                        {Object.values(OrderStatus)
+                                            .filter((s) => s !== OrderStatus.AWAITING_APPROVAL)
+                                            .map((option) => (
                                             <option key={option} value={option}>
                                                 {option.toUpperCase()}
                                             </option>

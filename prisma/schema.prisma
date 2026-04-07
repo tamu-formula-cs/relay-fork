@@ -68,6 +68,7 @@ enum OrderStatus {
   PARTIAL
   DELIVERED
   ARCHIVED
+  AWAITING_APPROVAL
 }
 
 model Item {
