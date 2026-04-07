@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 import { NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
 
@@ -9,10 +7,41 @@ export async function GET() {
       where: {
         status: 'AWAITING_APPROVAL',
       },
-      include: {
-        user: true,
-        items: true,
-        supportingDocs: true,
+      select: {
+        id: true,
+        internalOrderId: true,
+        meenOrderId: true,
+        name: true,
+        userId: true,
+        subteam: true,
+        status: true,
+        vendor: true,
+        totalCost: true,
+        costVerified: true,
+        comments: true,
+        url: true,
+        carrier: true,
+        trackingId: true,
+        costBreakdown: true,
+        createdAt: true,
+        updatedAt: true,
+        deliveryLocation: true,
+        deliveryPhotoUrl: true,
+        user: {
+          select: { id: true, name: true, email: true, subteam: true, role: true },
+        },
+        items: {
+          select: {
+            id: true, internalItemId: true, internalSKU: true, orderId: true,
+            name: true, partNumber: true, notes: true, quantity: true, price: true,
+            priceVerified: true, vendor: true, vendorSKU: true, link: true,
+            status: true, location: true, level: true, createdAt: true,
+            updatedAt: true, deliveryPhotoUrl: true,
+          },
+        },
+        supportingDocs: {
+          select: { id: true, url: true, uploadedAt: true },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -23,11 +52,7 @@ export async function GET() {
       ...order,
       createdAt: order.createdAt.toISOString(),
       updatedAt: order.updatedAt.toISOString(),
-      user: {
-        ...order.user,
-        createdAt: order.user.createdAt.toISOString(),
-        updatedAt: order.user.updatedAt.toISOString(),
-      },
+      user: { ...order.user, createdAt: '', updatedAt: '' },
       items: order.items.map((item) => ({
         ...item,
         createdAt: item.createdAt.toISOString(),
@@ -43,7 +68,7 @@ export async function GET() {
     }));
 
     const response = NextResponse.json({ orders: serializedOrders });
-    response.headers.set('Cache-Control', 'no-store');
+    response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=1, stale-while-revalidate=59');
     return response;
   } catch (error) {
     console.error('Error fetching pending orders:', error);

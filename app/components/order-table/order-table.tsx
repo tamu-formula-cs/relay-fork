@@ -115,7 +115,6 @@ const subteamMapping: { [key: string]: string } = {
 const fetcher = async (url: string) => {
     const res = await fetch(url);
     const data = await res.json();
-    console.log('Raw data from API:', data); // Add this
     return data;
 };
 
@@ -151,7 +150,12 @@ const OrderTable: React.FC = () => {
     const { data: session } = useSession();
     const currentUserSubteam = session?.user?.subteam ?? "";
 
-    const { data, error } = useSWR('/api/orders', fetcher, { refreshInterval: 60000 });
+    const { data, error } = useSWR('/api/orders', fetcher, {
+        refreshInterval: 60000,
+        dedupingInterval: 5000,
+        keepPreviousData: true,
+        revalidateOnFocus: false,
+    });
 
     const orders = useMemo(() => (data?.orders as SerializedOrderWithRelations[] || []).filter(order => order.status !== 'ARCHIVED' && order.status !== 'AWAITING_APPROVAL'), [data]);
 
@@ -278,9 +282,42 @@ const OrderTable: React.FC = () => {
         return <div>Error loading orders.</div>;
     }
 
-    if (!data) {
-        return <div>Loading orders...</div>;
-    }
+    const isLoading = !data;
+
+    const skeletonRows = (
+        <>
+            {Array.from({ length: 8 }).map((_, i) => (
+                <tr key={`skeleton-${i}`} className={styles.skeletonRow}>
+                    <td className={styles.skeletonCell}><div className={styles.skeletonBlockNarrow} /></td>
+                    <td className={styles.skeletonCell}><div className={styles.skeletonBlockWide} /></td>
+                    <td className={styles.skeletonCell}><div className={styles.skeletonBlockWide} /></td>
+                    <td className={styles.skeletonCell}><div className={styles.skeletonBlockNarrow} /></td>
+                    <td className={styles.skeletonCell}><div className={styles.skeletonBlockNarrow} /></td>
+                    <td className={styles.skeletonCell}><div className={styles.skeletonBlockNarrow} /></td>
+                    <td className={styles.skeletonCell}><div className={styles.skeletonBlockStatus} /></td>
+                    <td className={styles.skeletonCell}><div className={styles.skeletonBlockNarrow} /></td>
+                    <td className={styles.skeletonCell}><div className={styles.skeletonBlockWide} /></td>
+                    <td className={styles.skeletonCell}><div className={styles.skeletonBlockNarrow} /></td>
+                    <td className={styles.skeletonCell}><div className={styles.skeletonBlockNarrow} /></td>
+                </tr>
+            ))}
+        </>
+    );
+
+    const skeletonCards = (
+        <>
+            {Array.from({ length: 6 }).map((_, i) => (
+                <div key={`skeleton-card-${i}`} className={styles.skeletonCard}>
+                    <div className={styles.skeletonCardHeader}>
+                        <div className={styles.skeletonCardTitle} />
+                        <div className={styles.skeletonCardAction} />
+                    </div>
+                    <div className={styles.skeletonCardMeta} />
+                    <div className={styles.skeletonCardFooter} />
+                </div>
+            ))}
+        </>
+    );
 
     const handleStatusClick = (event: React.MouseEvent, order : SerializedOrderWithRelations) => {
         event.stopPropagation();
@@ -407,7 +444,7 @@ const OrderTable: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredOrders.map((order) => (
+                        {isLoading ? skeletonRows : filteredOrders.map((order) => (
                             <React.Fragment key={order.id}>
                                 <tr
                                     onClick={() => toggleExpand(order.id, order.items, order.url)}
@@ -591,7 +628,7 @@ const OrderTable: React.FC = () => {
 
             {/* Mobile Card View */}
             <div className={styles.mobileCardList}>
-                {filteredOrders.map((order) => (
+                {isLoading ? skeletonCards : filteredOrders.map((order) => (
                     <div
                         key={order.id}
                         className={styles.mobileCard}
@@ -703,7 +740,7 @@ const OrderTable: React.FC = () => {
                     </div>
                 ))}
             </div>
-            {filteredOrders.length === 0 && (
+            {!isLoading && filteredOrders.length === 0 && (
             <div className={styles.emptyState}>
                 <p>No active orders at the moment. 🎉</p>
                 <p>Looks like everything is all set!</p>

@@ -201,9 +201,10 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body),
                 });
-                if (response.ok) {
-                    onUpdateOrder();
+                if (!response.ok) {
+                    throw new Error('Failed to update item');
                 }
+                onUpdateOrder();
             } else if (order) {
                 if (canEdit) {
                     const totalPercentage = Object.values(costBreakdown).reduce((a, b) => a + b, 0);
@@ -237,12 +238,12 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
                 });
 
                 if (response.ok) {
-                    onUpdateOrder();
                     toast({
                         title: "Order Updated",
                         description: "Order status updated successfully.",
                         variant: "affirmation",
                     });
+                    onUpdateOrder();
                 } else {
                     const errorData = await response.json();
                     throw new Error(errorData.error || 'Failed to update order');

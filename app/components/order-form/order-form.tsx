@@ -473,7 +473,7 @@ function CostBreakdownScreen({ costBreakdown, onCostChange, onNext, onBack, onCl
                                     type="number"
                                     name={subteam}
                                     placeholder="0%"
-                                    value={costBreakdown[subteam] == 0 ? undefined : costBreakdown[subteam]}
+                                    value={costBreakdown[subteam] === 0 ? '' : costBreakdown[subteam]}
                                     onChange={onCostChange}
                                 />
                             </div>
