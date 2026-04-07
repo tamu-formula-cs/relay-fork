@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import prisma from '../../lib/prisma';
 
@@ -86,11 +88,7 @@ export async function GET() {
         }));
 
         const response = NextResponse.json({ orders: serializedOrders });
-        // Allow Vercel edge to cache for 1s, serve stale up to 59s while revalidating
-        response.headers.set(
-            'Cache-Control',
-            'public, max-age=0, s-maxage=1, stale-while-revalidate=59'
-        );
+        response.headers.set('Cache-Control', 'no-store');
         return response;
     } catch (error) {
         console.error('Error fetching orders:', error);

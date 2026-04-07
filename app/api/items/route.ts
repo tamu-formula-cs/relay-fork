@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import prisma from '../../lib/prisma';
 
@@ -19,7 +21,7 @@ export async function GET() {
         }));
 
         const response = NextResponse.json({ items: serializedItems });
-        response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=1, stale-while-revalidate=59');
+        response.headers.set('Cache-Control', 'no-store');
         return response;
     } catch (error) {
         console.error('Error fetching orders:', error);

@@ -61,12 +61,7 @@ const BacklogComponent: React.FC = () => {
         }
     }, [isAdmin]);
     
-    const { data, error } = useSWR('/api/orders', fetcher, {
-        refreshInterval: 60000,
-        dedupingInterval: 5000,
-        keepPreviousData: true,
-        revalidateOnFocus: false,
-    });
+    const { data, error } = useSWR('/api/orders', fetcher, { refreshInterval: 60000 });
     const { toast } = useToast();
 
     const orders = useMemo(() => (data?.orders as SerializedOrderWithRelations[] || []), [data]);

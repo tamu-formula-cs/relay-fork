@@ -99,9 +99,7 @@ const fetcher = async (url: string): Promise<FinanceData> => {
 const FinanceDashboard: React.FC = () => {
   const { data, error, mutate } = useSWR<FinanceData>('/api/finance', fetcher, {
     refreshInterval: 30000,
-    dedupingInterval: 5000,
-    keepPreviousData: true,
-    revalidateOnFocus: false,
+    revalidateOnFocus: true,
     revalidateOnReconnect: true,
   });
 
