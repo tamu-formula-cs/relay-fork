@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
 import { parse } from 'csv-parse/sync';
 import { ItemStatus, OrderStatus } from '@prisma/client';
+import { checkBudgetExceeded } from '../../../lib/budgets';
 
 const REQUIRED_HEADERS = ['Item', 'Part Number', 'Notes', 'QTY to Buy', 'Cost', 'Vendor', 'Link'];
 
@@ -218,6 +219,14 @@ export async function POST(request: NextRequest) {
             supportingDocs.push({ name, url });
         }
 
+        // Check budget
+        const budgetCheck = Object.keys(costBreakdown).length > 0
+            ? await checkBudgetExceeded(costBreakdown, estimatedCost)
+            : { exceeded: false, subteams: [] };
+        const orderStatus = budgetCheck.exceeded
+            ? OrderStatus.AWAITING_APPROVAL
+            : OrderStatus.TO_ORDER;
+
         // Execute database operations in a transaction
         const result = await prisma.$transaction(async (tx) => {
             // Create order
@@ -227,7 +236,7 @@ export async function POST(request: NextRequest) {
                     name: orderName,
                     userId: user.id,
                     subteam: user.subteam,
-                    status: OrderStatus.TO_ORDER,
+                    status: orderStatus,
                     vendor: vendor || '',
                     totalCost: estimatedCost,
                     comments: notes || '',
@@ -270,6 +279,15 @@ export async function POST(request: NextRequest) {
         });
 
         console.log('Created order with items:', JSON.stringify(result, null, 2));
+
+        if (budgetCheck.exceeded) {
+            return NextResponse.json({
+                message: 'Order submitted for approval',
+                needsApproval: true,
+                exceededSubteams: budgetCheck.subteams,
+                order: result,
+            });
+        }
 
         return NextResponse.json({
             message: 'Order, items, and documents created successfully',

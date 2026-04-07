@@ -3,6 +3,7 @@ import prisma from '../../../../../lib/prisma';
 import { ItemStatus, OrderStatus } from '@prisma/client';
 
 const orderStatusIndices: { [key in OrderStatus]: number } = {
+  AWAITING_APPROVAL: -1,
   TO_ORDER: 0,
   PLACED: 1,
   MEEN_HOLD: 2,

@@ -22,9 +22,7 @@ h1.purchaseHeader{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 100%;
-    flex-wrap: wrap;
-    gap: 10px;
+    width: 95%;
 }
 
 
@@ -90,6 +88,7 @@ button.orderButton{
     border: none;
     padding: 1rem 1.5rem;
     cursor: pointer;
+    font-size: .9rem;
 }
 
 
@@ -137,8 +136,6 @@ button.orderButton:hover{
     font-size: .9rem;
     text-decoration: underline;
     color: #5D5D5D;
-    white-space: normal;
-    word-break: break-word;
 }
 
 .tableBody .commentsColumn{
@@ -268,26 +265,21 @@ button.orderButton:hover{
     border-bottom: 1px solid #ccc !important;
 }
 
-.tableBody td {
-    overflow: hidden;
-}
-
 .expandedOrder {
-    display: block;
-    width: 100%;
-    padding: 0.5rem 0;
-    overflow: visible;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 10px;
 }
 
 .expandedOrderContent {
     border: 1px solid #E8E8E8;
     padding: 1rem;
-    width: 100%;
+    width: 90%;
     border-radius: 10px;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
+    align-items: center;
 }
 
 .expandedOrderContent h4{
@@ -295,15 +287,10 @@ button.orderButton:hover{
     font-weight: normal;
     text-decoration: underline;
     font-size: .9rem;
-    margin: 0 0 0.25rem 0;
-    max-width: 70%;
-    word-break: break-word;
 }
 
 .expandedOrderContent p{
     font-size: .9rem;
-    margin: 0;
-    word-wrap: break-word;
 }
 
 .itemLeftCol p{
@@ -315,7 +302,6 @@ button.orderButton:hover{
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    min-width: 100px;
 }
 
 .checkMark {
@@ -426,6 +412,7 @@ button.orderButton:hover{
     border-radius: 10px;
     padding: 1rem 1.5rem;
     transition: background-color 0.3s ease, border-color 0.3s ease;
+    font-size: .9rem;
 }
 
 .myOrdersButton:hover {
@@ -490,6 +477,10 @@ button.orderButton:hover{
 
 .desc {
     transform: translateX(.4rem) rotate(180deg);
+}
+
+.sortableHeader:hover {
+    background-color: #F0F0F0;
 }
 
 /* Export button (desktop) */

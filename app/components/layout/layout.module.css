@@ -7,11 +7,10 @@
 }
 
 .sidebar {
-  width: 280px;
+  width: 320px;
   flex-shrink: 0;
   background-color: #fff;
   padding: 20px;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   position: sticky;
@@ -22,7 +21,8 @@
 }
 
 .sidebar.collapsed {
-  width: 80px;
+  width: 88px;
+  padding: 20px 14px;
 }
 
 .main {
@@ -110,12 +110,13 @@
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   padding: 8px 12px;
   border-radius: 10px;
   font-size: 0.9rem;
   white-space: nowrap;
 }
+
 .navLinks li a:hover{
   background-color: rgba(112, 68, 242, 0.05);
 }

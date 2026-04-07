@@ -1,18 +1,13 @@
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
-import prisma from '../../lib/prisma';
+import prisma from '../../../lib/prisma';
 
 export async function GET() {
   try {
     const orders = await prisma.order.findMany({
       where: {
-        createdAt: {
-          gte: new Date('2025-07-01T00:00:00Z'),
-        },
-        NOT: {
-          status: 'AWAITING_APPROVAL',
-        },
+        status: 'AWAITING_APPROVAL',
       },
       include: {
         user: true,
@@ -38,6 +33,10 @@ export async function GET() {
         createdAt: item.createdAt.toISOString(),
         updatedAt: item.updatedAt.toISOString(),
       })),
+      supportingDocs: order.supportingDocs.map((doc) => ({
+        ...doc,
+        uploadedAt: doc.uploadedAt.toISOString(),
+      })),
       costBreakdown: order.costBreakdown
         ? JSON.parse(JSON.stringify(order.costBreakdown))
         : null,
@@ -47,7 +46,10 @@ export async function GET() {
     response.headers.set('Cache-Control', 'no-store');
     return response;
   } catch (error) {
-    console.error('Error fetching orders:', error);
-    return NextResponse.json({ error: 'Error fetching orders' }, { status: 500 });
+    console.error('Error fetching pending orders:', error);
+    return NextResponse.json(
+      { error: 'Error fetching pending orders' },
+      { status: 500 }
+    );
   }
 }

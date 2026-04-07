@@ -26,7 +26,7 @@ async function authorize() {
     access_type: 'offline',
     scope: SCOPES,
     redirect_uri: redirect_uris[0],
-    prompt: 'select_account'
+    prompt: 'consent'
   });
   
   return NextResponse.redirect(url);
