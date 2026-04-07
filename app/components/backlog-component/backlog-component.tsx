@@ -61,7 +61,7 @@ const BacklogComponent: React.FC = () => {
         }
     }, [isAdmin]);
     
-    const { data, error } = useSWR('/api/orders', fetcher, { refreshInterval: 60000 });
+    const { data, error } = useSWR('/api/orders?limit=500', fetcher, { refreshInterval: 60000 });
     const { toast } = useToast();
 
     const orders = useMemo(() => (data?.orders as SerializedOrderWithRelations[] || []), [data]);
@@ -199,7 +199,7 @@ const BacklogComponent: React.FC = () => {
           });
       
           if (response.ok) {
-            mutate('/api/orders');
+            mutate((key: string) => typeof key === 'string' && key.startsWith('/api/orders'));
             mutate('/api/finance');
             toast({
               title: markAsPickedUpTarget.type === 'order' ? "Order Picked Up" : "Item Picked Up",
@@ -742,7 +742,7 @@ const BacklogComponent: React.FC = () => {
 
                             if (response.ok) {
                                 // Update local state
-                                mutate('/api/orders');
+                                mutate((key: string) => typeof key === 'string' && key.startsWith('/api/orders'));
             mutate('/api/finance');
                                 setIsMeenOrderIdModalOpen(false);
                                 toast({

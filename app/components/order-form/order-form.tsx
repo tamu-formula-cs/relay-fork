@@ -126,7 +126,7 @@ export default function OrderForm({ onClose }: OrderFormProps) {
                         description: "Order created successfully!",
                         variant: "affirmation",
                     });
-                    mutate('/api/orders');
+                    mutate((key: string) => typeof key === 'string' && key.startsWith('/api/orders'));
                     mutate('/api/finance');
                     onClose();
                 }
@@ -607,7 +607,7 @@ function CartLinkOrder({ orderData, onBack, onClose, onOverbudget }: CartLinkOrd
                         description: "Order created successfully!",
                         variant: "affirmation",
                     });
-                    mutate('/api/orders');
+                    mutate((key: string) => typeof key === 'string' && key.startsWith('/api/orders'));
                     mutate('/api/finance');
                     onClose();
                 }
@@ -720,7 +720,7 @@ function SingleItemOrder({ orderData, onBack, onClose, onOverbudget }: SingleIte
                         description: "Order created successfully!",
                         variant: "affirmation",
                     });
-                    mutate('/api/orders');
+                    mutate((key: string) => typeof key === 'string' && key.startsWith('/api/orders'));
                     mutate('/api/finance');
                     onClose();
                 }
@@ -869,7 +869,7 @@ function TemplateEntryForm({ orderData, onBack, onClose, onOverbudget }: {
                         description: "Order created successfully!",
                         variant: "affirmation",
                     });
-                    mutate("/api/orders");
+                    mutate((key: string) => typeof key === 'string' && key.startsWith('/api/orders'));
                     onClose();
                 }
             } else {

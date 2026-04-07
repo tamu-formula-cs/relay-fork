@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import styles from './order-table.module.css';
 import OrderForm from '../order-form/order-form';
 import { Item, ItemStatus, OrderStatus, StockLevel } from '@prisma/client';
@@ -54,22 +54,6 @@ export interface SerializedOrderWithRelations {
         createdAt: string;
         updatedAt: Date;
     };
-    // items: {
-    //     id: number;
-    //     internalItemId: string;
-    //     orderId: number;
-    //     name: string;
-    //     partNumber: string;
-    //     notes: string | null;
-    //     quantity: number;
-    //     price: number;
-    //     priceVerified: boolean;
-    //     vendor: string;
-    //     link: string | null;
-    //     status: ItemStatus;
-    //     createdAt: Date;
-    //     updatedAt: Date;
-    // }[];
     items: SerializedItemsWithRelations[];
     deliveryLocation: string | null;
     deliveryPhotoUrl: string | null;
@@ -97,113 +81,118 @@ export interface SerializedItemsWithRelations {
     deliveryPhotoUrl: string | null;
 };
 
-const subteamMapping: { [key: string]: string } = {
-    AERO: 'Aerodynamics',
-    CHS: 'Chassis',
-    SUS: 'Suspension',
-    BAT: 'Battery',
-    ECE: 'Electronics',
-    PT: 'Powertrain',
-    SW: 'Software',
-    DBMS: 'Distributed BMS',
-    OPS: 'Operations',
-    FACIL: 'Facilities/Infrastructure',
-    FLEET: 'Fleet Maintenance',
-    MKTG: 'Marketing',
-};
+const PAGE_SIZE = 25;
 
 const fetcher = async (url: string) => {
     const res = await fetch(url);
-    const data = await res.json();
-    return data;
+    return res.json();
 };
 
 const OrderTable: React.FC = () => {
 
     useEffect(() => {
         const eventSource = new EventSource('/api/notifications');
-        eventSource.onmessage = (event) => {
-            const updatedOrder = JSON.parse(event.data);
-            console.log('Order updated:', updatedOrder);
-            mutate('/api/orders');
+        eventSource.onmessage = () => {
+            mutate((key: string) => typeof key === 'string' && key.startsWith('/api/orders'));
             mutate('/api/finance');
         };
         eventSource.onerror = (error) => {
             console.error('EventSource error:', error);
             eventSource.close();
         };
-    
+
         return () => {
             eventSource.close();
         };
     }, [])
-    
+
     const [expandedOrderIds, setExpandedOrderIds] = useState<number[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [showOrderForm, setShowOrderForm] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<SerializedOrderWithRelations | null>(null);
     const [selectedItem, setSelectedItem] = useState<Item | undefined>(undefined);
     const [showSettingsMenu, setShowSettingsMenu] = useState<boolean>(false);
     const [sortedColumn, setSortedColumn] = useState<string | null>(null);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+    const [extraPages, setExtraPages] = useState<SerializedOrderWithRelations[][]>([]);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [hasMore, setHasMore] = useState(false);
+    const [total, setTotal] = useState(0);
+    const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
     const { data: session } = useSession();
     const currentUserSubteam = session?.user?.subteam ?? "";
 
-    const { data, error } = useSWR('/api/orders', fetcher, { refreshInterval: 60000 });
+    // Debounce search input
+    useEffect(() => {
+        debounceRef.current = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+            setExtraPages([]);  // reset pagination on new search
+        }, 300);
+        return () => clearTimeout(debounceRef.current);
+    }, [searchQuery]);
 
-    const orders = useMemo(() => (data?.orders as SerializedOrderWithRelations[] || []).filter(order => order.status !== 'ARCHIVED' && order.status !== 'AWAITING_APPROVAL'), [data]);
+    const apiUrl = debouncedSearch
+        ? `/api/orders?limit=${PAGE_SIZE}&offset=0&search=${encodeURIComponent(debouncedSearch)}`
+        : `/api/orders?limit=${PAGE_SIZE}&offset=0`;
+
+    const { data, error } = useSWR(apiUrl, fetcher, { refreshInterval: 60000 });
+
+    // Track total / hasMore from first page
+    useEffect(() => {
+        if (data) {
+            setTotal(data.total ?? 0);
+            setHasMore(data.hasMore ?? false);
+        }
+    }, [data]);
+
+    const firstPageOrders = useMemo(
+        () => (data?.orders as SerializedOrderWithRelations[]) || [],
+        [data]
+    );
+
+    const orders = useMemo(() => {
+        return [...firstPageOrders, ...extraPages.flat()];
+    }, [firstPageOrders, extraPages]);
+
+    const loadMore = useCallback(async () => {
+        const nextOffset = firstPageOrders.length + extraPages.flat().length;
+        setLoadingMore(true);
+        try {
+            const url = debouncedSearch
+                ? `/api/orders?limit=${PAGE_SIZE}&offset=${nextOffset}&search=${encodeURIComponent(debouncedSearch)}`
+                : `/api/orders?limit=${PAGE_SIZE}&offset=${nextOffset}`;
+            const res = await fetch(url);
+            const json = await res.json();
+            setExtraPages(prev => [...prev, json.orders]);
+            setHasMore(json.hasMore ?? false);
+        } catch (e) {
+            console.error('Error loading more orders:', e);
+        } finally {
+            setLoadingMore(false);
+        }
+    }, [firstPageOrders.length, extraPages, debouncedSearch]);
+
+    const refreshAllPages = useCallback(() => {
+        // Re-fetch the first page via SWR
+        mutate(apiUrl);
+        mutate('/api/finance');
+        // Clear extra pages so they get re-fetched fresh if user scrolls
+        setExtraPages([]);
+    }, [apiUrl]);
 
     const handleSort = (column: string) => {
         if (sortedColumn === column) {
-            // Toggle sort order if the same column is clicked
             setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
         } else {
-            // Set new column and default to ascending order
             setSortedColumn(column);
             setSortOrder('asc');
         }
     };
 
-    const filteredOrders = useMemo(() => {
+    const displayOrders = useMemo(() => {
         let result = orders;
-
-        if (searchQuery !== '') {
-            const query = searchQuery.toLowerCase();
-            result = result.filter((order) => {
-                // Get subteams involved in the cost breakdown
-                const involvedSubteams = Object.keys(order.costBreakdown || {}).filter(
-                    (subteam) => (order.costBreakdown![subteam] || 0) > 0
-                );
-    
-                // Map subteam acronyms to full names
-                const subteamNames = involvedSubteams.map((acronym) => ({
-                    acronym: acronym.toLowerCase(),
-                    fullName: (subteamMapping[acronym] || '').toLowerCase(),
-                }));
-    
-                // Check if the query matches any subteam acronym or full name
-                const matchesCostBreakdown = subteamNames.some(
-                    ({ acronym, fullName }) =>
-                        acronym.includes(query) || fullName.includes(query)
-                );
-    
-                return (
-                    order.meenOrderId?.toLowerCase().includes(query) ||
-                    order.name.toLowerCase().includes(query) ||
-                    order.vendor.toLowerCase().includes(query) ||
-                    order.status.toLowerCase().includes(query) ||
-                    order.user.subteam.toLowerCase().includes(query) ||
-                    (order.comments && order.comments.toLowerCase().includes(query)) ||
-                    matchesCostBreakdown ||
-                    order.items.some((item) =>
-                        item.name.toLowerCase().includes(query) ||
-                        item.vendor.toLowerCase().includes(query) ||
-                        item.status.toLowerCase().includes(query)
-                    )
-                );
-            });
-        }
 
         if (sortedColumn) {
             result = result.slice().sort((a, b) => {
@@ -216,16 +205,12 @@ const OrderTable: React.FC = () => {
                     aValue = a.totalCost;
                     bValue = b.totalCost;
                 }
-                if (sortOrder === 'asc') {
-                    return aValue - bValue;
-                } else {
-                    return bValue - aValue;
-                }
+                return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
             });
         }
 
         return result;
-    }, [orders, searchQuery, sortedColumn, sortOrder]);
+    }, [orders, sortedColumn, sortOrder]);
 
     const handleSettingsClick = (order: SerializedOrderWithRelations, item?: Item) => {
         if (item) {
@@ -243,33 +228,18 @@ const OrderTable: React.FC = () => {
     };
 
     const updateOrderInState = () => {
-        mutate('/api/orders');
-        mutate('/api/finance');
+        refreshAllPages();
     };
 
     const toggleExpand = (orderId: number, orderItems: Item[], orderUrl: string | null) => {
-        console.log('Toggle expand called with:', {
-            orderId,
-            itemsLength: orderItems?.length,
-            items: orderItems,
-            url: orderUrl
-        });
-    
         if (orderItems.length === 0 && orderUrl) {
-            console.log('First condition met - doing nothing');
             // Do nothing
         } else if (orderItems.length > 0) {
-            console.log('Second condition met - toggling expansion');
-            // If there are items, toggle the expansion
-            setExpandedOrderIds((prev) => {
-                const newIds = prev.includes(orderId)
+            setExpandedOrderIds((prev) =>
+                prev.includes(orderId)
                     ? prev.filter((id) => id !== orderId)
-                    : [...prev, orderId];
-                console.log('New expanded IDs:', newIds);
-                return newIds;
-            });
-        } else {
-            console.log('No conditions met');
+                    : [...prev, orderId]
+            );
         }
     };
 
@@ -326,9 +296,9 @@ const OrderTable: React.FC = () => {
 
     const handleShareOrder = (event: React.MouseEvent, orderId: number) => {
         event.stopPropagation();
-        
+
         const shareUrl = `${window.location.origin}/order/${orderId}`;
-        
+
         navigator.clipboard.writeText(shareUrl).then(() => {
             alert('Order link copied to clipboard!');
         }).catch(() => {
@@ -355,6 +325,23 @@ const OrderTable: React.FC = () => {
         }
     };
 
+    const handleMyOrders = () => {
+        setSearchQuery(currentUserSubteam.toLowerCase());
+    };
+
+    const loadMoreButton = hasMore && !isLoading && (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '1rem' }}>
+            <button
+                className={styles.myOrdersButton}
+                onClick={loadMore}
+                disabled={loadingMore}
+                style={{ minWidth: 160 }}
+            >
+                {loadingMore ? 'Loading...' : `Load More (${orders.length} of ${total})`}
+            </button>
+        </div>
+    );
+
     return (
         <div className={styles.tableMainContainer}>
             <div className={styles.tableTop}>
@@ -369,7 +356,7 @@ const OrderTable: React.FC = () => {
                     />
                     <button
                         className={styles.myOrdersButton}
-                        onClick={() => setSearchQuery(currentUserSubteam.toLowerCase())}
+                        onClick={handleMyOrders}
                     >
                         My Orders
                     </button>
@@ -387,7 +374,7 @@ const OrderTable: React.FC = () => {
                     </button>
                 </div>
             </div>
-            {showOrderForm && <OrderForm onClose={() => setShowOrderForm(false)} />}
+            {showOrderForm && <OrderForm onClose={() => { setShowOrderForm(false); refreshAllPages(); }} />}
             {showSettingsMenu && (
                 <SettingsMenu
                     order={selectedOrder}
@@ -439,7 +426,7 @@ const OrderTable: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {isLoading ? skeletonRows : filteredOrders.map((order) => (
+                        {isLoading ? skeletonRows : displayOrders.map((order) => (
                             <React.Fragment key={order.id}>
                                 <tr
                                     onClick={() => toggleExpand(order.id, order.items, order.url)}
@@ -623,7 +610,7 @@ const OrderTable: React.FC = () => {
 
             {/* Mobile Card View */}
             <div className={styles.mobileCardList}>
-                {isLoading ? skeletonCards : filteredOrders.map((order) => (
+                {isLoading ? skeletonCards : displayOrders.map((order) => (
                     <div
                         key={order.id}
                         className={styles.mobileCard}
@@ -735,7 +722,8 @@ const OrderTable: React.FC = () => {
                     </div>
                 ))}
             </div>
-            {!isLoading && filteredOrders.length === 0 && (
+            {loadMoreButton}
+            {!isLoading && displayOrders.length === 0 && (
             <div className={styles.emptyState}>
                 <p>No active orders at the moment. 🎉</p>
                 <p>Looks like everything is all set!</p>
