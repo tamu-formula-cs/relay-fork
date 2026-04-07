@@ -24,7 +24,7 @@
 }
 
 .formContainerSmall {
-    width: 30%;
+    width: 35%;
 }
 
 .formContainerWide {
@@ -65,7 +65,7 @@ p.formParagraph {
 .inputGroup input,
 .inputGroup select,
 .inputGroup textarea {
-    width: 90%;
+    width: 80%;
     padding: 0.75rem 1rem;
     border: 1px solid #D4D4D4;
     border-radius: 5px;
@@ -187,6 +187,7 @@ button.backButton:hover {
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
+    font-size: .9rem;
 }
 
 .methodButtonGroup {
@@ -337,6 +338,50 @@ button.submitButton:hover {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+}
+
+/* Over Budget Screen */
+.overbudgetBody {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2rem 1.5rem;
+    gap: 0.5rem;
+}
+
+.overbudgetIcon {
+    margin-bottom: 0.5rem;
+}
+
+.overbudgetTitle {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #E65100;
+    margin: 0;
+}
+
+.overbudgetText {
+    font-size: 0.95rem;
+    color: #333;
+    margin: 0.5rem 0;
+    line-height: 1.5;
+}
+
+.overbudgetText strong {
+    color: #E65100;
+}
+
+.overbudgetSubtext {
+    font-size: 0.85rem;
+    color: #777;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.overbudgetSubtext strong {
+    color: #7044F2;
 }
 
 /* Mobile Responsive Styles */

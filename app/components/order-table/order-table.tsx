@@ -153,7 +153,7 @@ const OrderTable: React.FC = () => {
 
     const { data, error } = useSWR('/api/orders', fetcher, { refreshInterval: 60000 });
 
-    const orders = useMemo(() => (data?.orders as SerializedOrderWithRelations[] || []).filter(order => order.status !== 'ARCHIVED'), [data]);
+    const orders = useMemo(() => (data?.orders as SerializedOrderWithRelations[] || []).filter(order => order.status !== 'ARCHIVED' && order.status !== 'AWAITING_APPROVAL'), [data]);
 
     const handleSort = (column: string) => {
         if (sortedColumn === column) {
@@ -330,7 +330,7 @@ const OrderTable: React.FC = () => {
                 <div className={styles.tableSearch}>
                     <input
                         type="text"
-                        placeholder="Search orders..."
+                        placeholder="Search..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className={styles.searchBar}
@@ -351,7 +351,7 @@ const OrderTable: React.FC = () => {
                         className={`${styles.orderButton} ${styles.exportButton}`}
                         onClick={handleExportOrders}
                     >
-                        Export
+                        Export Orders
                     </button>
                 </div>
             </div>

@@ -204,6 +204,7 @@ export async function notifyOrderStatusChange(
   }
 
   const statusMessages: Record<OrderStatus, string> = {
+    AWAITING_APPROVAL: 'is awaiting approval',
     TO_ORDER: 'is ready to be ordered',
     PLACED: 'has been placed',
     MEEN_HOLD: 'is on hold',
