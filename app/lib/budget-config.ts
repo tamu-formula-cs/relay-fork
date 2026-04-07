@@ -16,7 +16,7 @@ export const SUBTEAM_BUDGETS: Record<string, number> = {
 };
 
 // Email(s) authorized to approve overbudget orders.
-export const PM_EMAILS = ['athulraj123@tamu.edu'];
+export const PM_EMAILS = ['puravdatta@tamu.edu'];
 
 export function normalizeSubteam(subteam: string): string {
   const normalized = subteam.toUpperCase();
