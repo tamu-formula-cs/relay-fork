@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../lib/prisma';
 import { Prisma } from '@prisma/client';
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 15;
 
 const orderSelect = {
     id: true,

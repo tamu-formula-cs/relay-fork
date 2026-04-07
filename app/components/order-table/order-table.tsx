@@ -81,7 +81,7 @@ export interface SerializedItemsWithRelations {
     deliveryPhotoUrl: string | null;
 };
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 15;
 
 const fetcher = async (url: string) => {
     const res = await fetch(url);
