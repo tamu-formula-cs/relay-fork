@@ -13,7 +13,7 @@ export async function checkBudgetExceeded(
   const orders = await prisma.order.findMany({
     where: {
       status: {
-        notIn: ['ARCHIVED', 'AWAITING_APPROVAL'],
+        notIn: ['AWAITING_APPROVAL'],
       },
     },
     select: {
