@@ -16,6 +16,7 @@ async function saveTokenToBlob(token: object) {
         // Convert token object to a string for upload
         const blob = await put("token", JSON.stringify(token), {
             access: 'public',
+            allowOverwrite: true,
         });
 
         if (!blob.url) {
