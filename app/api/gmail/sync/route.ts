@@ -240,21 +240,17 @@ export async function POST(req: NextRequest) {
     const emails = await fetchNewMessages(auth, syncRecord.lastHistoryId);
     const latestHistoryId = await getLatestHistoryId(auth);
 
-    let processed = 0;
-    let skipped = 0;
-
-    for (const email of emails) {
-      // Idempotency: skip if already processed
+    async function processEmail(email: EmailData): Promise<{ processed: number; skipped: number }> {
       const existing = await prisma.order.findUnique({
         where: { gmailMessageId: email.messageId },
       });
-      if (existing) { skipped++; continue; }
+      if (existing) return { processed: 0, skipped: 1 };
 
       const details = await extractOrderDetails(
         `Subject: ${email.subject}\nFrom: ${email.sender}\n\n${email.body}`
       );
 
-      if (!details) { skipped++; continue; }
+      if (!details) return { processed: 0, skipped: 1 };
 
       if (details.meenId) {
         const order = await prisma.order.findFirst({
@@ -263,22 +259,25 @@ export async function POST(req: NextRequest) {
 
         if (order) {
           const updateData: Record<string, unknown> = { gmailMessageId: email.messageId };
-
           if (details.carrier) updateData.carrier = details.carrier;
           if (details.trackingNumber) updateData.trackingId = details.trackingNumber;
           if (details.orderStatus && VALID_ORDER_STATUSES.has(details.orderStatus)) {
             updateData.status = details.orderStatus;
           }
-
           await prisma.order.update({ where: { id: order.id }, data: updateData });
-          processed++;
-          continue;
+          return { processed: 1, skipped: 0 };
         }
       }
 
-      skipped++;
-
+      return { processed: 0, skipped: 1 };
     }
+
+    const results = await Promise.all(emails.map(processEmail));
+
+    const { processed, skipped } = results.reduce(
+      (acc, r) => ({ processed: acc.processed + r.processed, skipped: acc.skipped + r.skipped }),
+      { processed: 0, skipped: 0 }
+    );
 
     // Update checkpoint only after full success
     await prisma.gmailSync.update({
