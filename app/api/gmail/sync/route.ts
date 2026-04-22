@@ -133,7 +133,7 @@ async function extractOrderDetails(query: string): Promise<OrderDetails | null> 
   ### Required Fields:
 
   1. **meenId**:
-  - Look for an exact match for the pattern **"MEEN: [3 digit number]"** (e.g., MEEN: 123) and only return the 3 digit number (not the word MEEN).
+  - Look for an exact match for the pattern **"MEEN: [4 digit number]"** (e.g., MEEN: 1234) and only return the 4 digit number (not the word MEEN).
   - If no MEEN ID follows this pattern or is not explicitly mentioned, return **null**.
 
   2. **Carrier**:
