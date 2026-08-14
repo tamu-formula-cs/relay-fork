@@ -13,6 +13,7 @@ export const SUBTEAM_BUDGETS: Record<string, number> = {
   FACIL: 4500,
   FLEET: 2500,
   MKTG: 1000,
+  VD: 5000,
 };
 
 // Email(s) authorized to approve overbudget orders.
@@ -33,6 +34,8 @@ export function normalizeSubteam(subteam: string): string {
     'FACILITIES/INFRASTRUCTURE': 'FACIL',
     'FLEET MAINTENANCE': 'FLEET',
     MARKETING: 'MKTG',
+    'VEHICLE DYNAMICS': 'VD',
+    VD: 'VD',
   };
   return mapping[normalized] || normalized;
 }

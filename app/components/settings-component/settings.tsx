@@ -52,7 +52,8 @@ const subteamMapping: { [key: string]: string } = {
     OPS: 'Operations',
     FACIL: 'Facilities/Infrastructure',
     FLEET: 'Fleet Maintenance',
-    MKTG: 'Marketing'
+    MKTG: 'Marketing',
+    VD: 'Vehicle Dynamics'
 };
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -98,6 +99,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
         FACIL: 0,
         FLEET: 0,
         MKTG: 0,
+        VD: 0,
         ...(order?.costBreakdown || {}),
     };
 

@@ -75,7 +75,7 @@ export async function PUT(
         }
 
         // Step 2.5: Generate an Internal SKU if item status moved to picked up
-        const subteams = ['General', 'AERO', 'CHS', 'SUS', 'BAT', 'ECE', 'PT', 'SW', 'DBMS', 'OPS', 'FACIL', 'FLEET', 'MKTG']
+        const subteams = ['General', 'AERO', 'CHS', 'SUS', 'BAT', 'ECE', 'PT', 'SW', 'DBMS', 'OPS', 'FACIL', 'FLEET', 'MKTG', 'VD']
         const costBreakdown = order.costBreakdown;
 
         if (!internalSKU && status === ItemStatus.PICKED_UP && costBreakdown) {

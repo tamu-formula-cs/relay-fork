@@ -57,6 +57,7 @@ interface CostBreakdown {
   FACIL: number;
   FLEET: number;
   MKTG: number;
+  VD: number;
 }
 
 interface Order {
@@ -123,6 +124,8 @@ const FinanceDashboard: React.FC = () => {
       'FACILITIES/INFRASTRUCTURE': 'FACIL',
       'FLEET MAINTENANCE': 'FLEET',
       'MARKETING': 'MKTG',
+      'VEHICLE DYNAMICS': 'VD',
+      'VD': 'VD',
     };
     return mapping[normalized] || normalized;
   };
@@ -140,12 +143,13 @@ const FinanceDashboard: React.FC = () => {
     FACIL: 4500,
     FLEET: 2500,
     MKTG: 1000,
+    VD: 5000,
   };
 
   const overallBudget = 110000;
 
-  const startDate = new Date('2024-09-01');
-  const endDate = new Date('2026-05-31');
+  const startDate = new Date('2026-06-01');
+  const endDate = new Date('2027-05-31');
   const currentDate = new Date();
   const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   const daysPassed = Math.ceil((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));

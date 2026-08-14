@@ -29,6 +29,7 @@ interface OrderData {
         FACIL: number;
         FLEET: number;
         MKTG: number;
+        VD: number;
     };
     supportingDocs: { name: string; url: string }[];
     deliveryLocation: string;
@@ -57,7 +58,8 @@ export default function OrderForm({ onClose }: OrderFormProps) {
             OPS: 0,
             FACIL: 0,
             FLEET: 0,
-            MKTG: 0
+            MKTG: 0,
+            VD: 0,
         },
         supportingDocs: [],
         deliveryLocation: '',
@@ -466,18 +468,21 @@ function CostBreakdownScreen({ costBreakdown, onCostChange, onNext, onBack, onCl
                 <div className={styles.formBody}>
                     <p className={styles.formParagraph}>Cost Breakdown (Must add up to 100%)</p>
                     <div className={styles.costBreakdownRow}>
-                        {['AERO', 'BAT', 'CHS', 'DBMS', 'ECE', 'PT', 'SUS', 'SW', 'OPS', 'FACIL', 'FLEET', 'MKTG'].map((subteam) => (
-                            <div key={subteam} className={styles.inputGroup}>
-                                <label>Order Cost Percentage ({subteam})</label>
-                                <input
-                                    type="number"
-                                    name={subteam}
-                                    placeholder="0%"
-                                    value={costBreakdown[subteam] === 0 ? '' : costBreakdown[subteam]}
-                                    onChange={onCostChange}
-                                />
-                            </div>
-                        ))}
+                        {['AERO', 'BAT', 'CHS', 'DBMS', 'ECE', 'PT', 'SUS', 'SW', 'OPS', 'FACIL', 'FLEET', 'MKTG', 'VD'].map((subteam) => {
+                            const currentValue = costBreakdown[subteam] ?? 0;
+                            return (
+                                <div key={subteam} className={styles.inputGroup}>
+                                    <label>Order Cost Percentage ({subteam})</label>
+                                    <input
+                                        type="number"
+                                        name={subteam}
+                                        placeholder="0%"
+                                        value={currentValue === 0 ? '' : currentValue}
+                                        onChange={onCostChange}
+                                    />
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
                 <div className={styles.buttonGroup}>
@@ -1005,7 +1010,7 @@ function OverBudgetScreen({ subteams, onClose }: { subteams: string[]; onClose: 
                     </p>
                     <p className={styles.overbudgetSubtext}>
                         Your order has been submitted but needs PM approval before it can go through.
-                        Check the <strong>Approvals</strong> tab to track its status. <br/><br/>Alternatively, venmo Athul $5 and I've got you.
+                        Check the <strong>Approvals</strong> tab to track its status. <br/><br/>Alternatively, venmo Teymur $5 and I've got you.
                     </p>
                 </div>
                 <div className={styles.buttonGroup}>
