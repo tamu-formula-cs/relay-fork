@@ -1,7 +1,7 @@
 // Server-only budget utilities — imports Prisma, do NOT use from client components.
 
 import prisma from './prisma';
-import { SUBTEAM_BUDGETS, normalizeSubteam } from './budget-config';
+import { BUDGET_START_DATE, SUBTEAM_BUDGETS, normalizeSubteam } from './budget-config';
 
 // Re-export client-safe symbols for convenience in server code.
 export { SUBTEAM_BUDGETS, normalizeSubteam, isPM, PM_EMAILS } from './budget-config';
@@ -12,6 +12,9 @@ export async function checkBudgetExceeded(
 ): Promise<{ exceeded: boolean; subteams: string[] }> {
   const orders = await prisma.order.findMany({
     where: {
+      createdAt: {
+        gte: new Date(BUDGET_START_DATE),
+      },
       status: {
         notIn: ['AWAITING_APPROVAL'],
       },

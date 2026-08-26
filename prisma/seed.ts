@@ -1,12 +1,12 @@
 import { PrismaClient, Role, OrderStatus, ItemStatus } from '@prisma/client';
-// import 'dotenv/config';
+import 'dotenv/config';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Helper function to create random dates between August and May
+  // Generate test orders before and after the AME27 budget start date.
   function getRandomDate() {
-    const start = new Date('2022-08-01');
-    const end = new Date('2023-05-31');
+    const start = new Date('2025-01-01T00:00:00Z');
+    const end = new Date('2026-12-31T23:59:59Z');
     return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
   }
 
@@ -15,6 +15,7 @@ async function main() {
 
   // Vendors
   const vendors = ['Vendor A', 'Vendor B', 'Vendor C', 'Vendor D'];
+  const seedRunId = Date.now();
 
   // Create Users
   const users = await Promise.all(
@@ -34,7 +35,7 @@ async function main() {
     )
   );
 
-  // Generate orders across time
+  // Generate orders across 2025 and 2026 for budget-period testing.
   for (let i = 0; i < 50; i++) {
     const user = users[Math.floor(Math.random() * users.length)];
     const vendor = vendors[Math.floor(Math.random() * vendors.length)];
@@ -43,7 +44,7 @@ async function main() {
 
     await prisma.order.create({
       data: {
-        internalOrderId: `ORD-${1000 + i}`,
+        internalOrderId: `SEED-${seedRunId}-ORD-${i}`,
         name: `Order ${i}`,
         userId: user.id,
         subteam: user.subteam,
@@ -58,7 +59,7 @@ async function main() {
         items: {
           create: [
             {
-              internalItemId: `ITEM-${2000 + i}`,
+              internalItemId: `SEED-${seedRunId}-ITEM-${i}`,
               name: `Item ${i}`,
               partNumber: `PN-${i}`,
               notes: `Notes for item ${i}`,

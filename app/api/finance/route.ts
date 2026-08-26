@@ -2,13 +2,14 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import prisma from '../../lib/prisma';
+import { BUDGET_START_DATE } from '../../lib/budget-config';
 
 export async function GET() {
   try {
     const orders = await prisma.order.findMany({
       where: {
         createdAt: {
-          gte: new Date('2025-07-01T00:00:00Z'),
+            gte: new Date(BUDGET_START_DATE),
         },
         NOT: {
           status: 'AWAITING_APPROVAL',

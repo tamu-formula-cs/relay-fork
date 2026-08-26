@@ -1,19 +1,21 @@
 // Client-safe budget constants — no server imports here.
 
+export const BUDGET_START_DATE = '2026-06-01T00:00:00Z';
+
 export const SUBTEAM_BUDGETS: Record<string, number> = {
-  AERO: 8915,
-  CHS: 4000,
-  SUS: 18950,
-  BAT: 17500,
-  ECE: 7130,
-  PT: 21274,
-  SW: 500,
-  DBMS: 2500,
-  OPS: 10000,
-  FACIL: 4500,
-  FLEET: 2500,
-  MKTG: 1000,
-  VD: 5000,
+  AERO: 6120,
+  CHS: 5150,
+  SUS: 19100,
+  BAT: 19500,
+  ECE: 11260,
+  PT: 31200.99,
+  SW: 800,
+  DBMS: 3500,
+  OPS: 29500,
+  FACIL: 0,
+  FLEET: 2000,
+  MKTG: 1100,
+  VD: 7250,
 };
 
 // Email(s) authorized to approve overbudget orders.
