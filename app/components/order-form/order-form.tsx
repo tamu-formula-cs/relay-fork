@@ -380,6 +380,8 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
                                 <option value=''>N/A</option>
                                 <option value='Instrumentation'>Instrumentation</option>
                                 <option value='FEDC'>FEDC</option>
+                                <option value='USB'>USB</option>
+                                <option value='Thompson'>Thompson</option>
                                 <option value='Other'>Other</option>
                             </select>
                         </div>
