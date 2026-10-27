@@ -90,22 +90,6 @@ const fetcher = async (url: string) => {
 
 const OrderTable: React.FC = () => {
 
-    useEffect(() => {
-        const eventSource = new EventSource('/api/notifications');
-        eventSource.onmessage = () => {
-            mutate((key: string) => typeof key === 'string' && key.startsWith('/api/orders'));
-            mutate('/api/finance');
-        };
-        eventSource.onerror = (error) => {
-            console.error('EventSource error:', error);
-            eventSource.close();
-        };
-
-        return () => {
-            eventSource.close();
-        };
-    }, [])
-
     const [expandedOrderIds, setExpandedOrderIds] = useState<number[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
