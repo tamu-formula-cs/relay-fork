@@ -11,7 +11,7 @@ export async function POST(
     try {
         await prisma.order.update({
             where: { id: orderId },
-            data: { status: OrderStatus.ARCHIVED },
+            data: { status: OrderStatus.EV_ARCHIVED },
         });
         
         await prisma.item.updateMany({

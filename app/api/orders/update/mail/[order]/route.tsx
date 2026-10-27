@@ -13,6 +13,15 @@ const orderStatusIndices: { [key in OrderStatus]: number } = {
   PARTIAL: 6,
   DELIVERED: 7,
   ARCHIVED: 8,
+  AWAITING_RAVI_APPROVAL: 10,
+  HOLD: 11,
+  MEEN_RECEIVED: 12,
+  MEEN_PLACED: 13,
+  SUPPLIER_SHIPPED: 14,
+  EV_AWAITING_PICKUP: 15,
+  PARTIAL_DELIVERY: 16,
+  MEEN_DELIVERED: 17,
+  EV_ARCHIVED: 18,
 };
 
 const itemStatusIndices: { [key in ItemStatus]: number } = {

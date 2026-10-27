@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    if (order.status !== OrderStatus.AWAITING_APPROVAL) {
+    if (order.status !== OrderStatus.AWAITING_APPROVAL && order.status !== OrderStatus.AWAITING_RAVI_APPROVAL) {
       return NextResponse.json(
         { error: 'Order is not pending approval' },
         { status: 400 }

@@ -12,7 +12,7 @@ export async function GET() {
             gte: new Date(BUDGET_START_DATE),
         },
         NOT: {
-          status: 'AWAITING_APPROVAL',
+          status: { in: ['AWAITING_APPROVAL', 'AWAITING_RAVI_APPROVAL'] },
         },
       },
       select: {

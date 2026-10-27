@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { PrismaClient, Role, OrderStatus, ItemStatus } from '@prisma/client';
 import 'dotenv/config';
 const prisma = new PrismaClient();

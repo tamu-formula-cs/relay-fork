@@ -214,6 +214,15 @@ export async function notifyOrderStatusChange(
     PARTIAL: 'has been partially delivered',
     DELIVERED: 'has been delivered',
     ARCHIVED: 'has been archived',
+    AWAITING_RAVI_APPROVAL: 'is awaiting Dr. Ravi\'s approval',
+    HOLD: 'is on hold',
+    MEEN_RECEIVED: 'has been received by MEEN',
+    MEEN_PLACED: 'has been placed by MEEN',
+    SUPPLIER_SHIPPED: 'has been shipped by the supplier',
+    EV_AWAITING_PICKUP: 'is awaiting pickup',
+    PARTIAL_DELIVERY: 'has been partially delivered',
+    MEEN_DELIVERED: 'has been delivered by MEEN',
+    EV_ARCHIVED: 'has been archived',
   };
 
   await sendPushNotification(userIds, {

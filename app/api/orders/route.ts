@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
         const search = (searchParams.get('search') || '').trim();
 
         const baseWhere: Prisma.OrderWhereInput = {
-            NOT: { status: { in: ['ARCHIVED', 'AWAITING_APPROVAL'] } },
+            NOT: { status: { in: ['ARCHIVED', 'EV_ARCHIVED', 'AWAITING_APPROVAL', 'AWAITING_RAVI_APPROVAL'] } },
         };
 
         const where: Prisma.OrderWhereInput = search

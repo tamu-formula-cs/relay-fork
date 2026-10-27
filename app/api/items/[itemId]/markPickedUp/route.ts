@@ -30,7 +30,7 @@ export async function POST(
             if (orderId !== null) {
                 await prisma.order.update({
                     where: { id: orderId },
-                    data: { status: OrderStatus.ARCHIVED },
+                    data: { status: OrderStatus.EV_ARCHIVED },
                 });
             }
         }
