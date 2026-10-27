@@ -7,6 +7,7 @@ import { Bar, Pie } from 'react-chartjs-2';
 import 'chart.js/auto';
 import { Item } from '@prisma/client';
 import * as XLSX from 'xlsx';
+import { BUDGET_START_DATE, SUBTEAM_BUDGETS } from '../../lib/budget-config';
 
 // Enums based on your schema
 enum Role {
@@ -58,6 +59,7 @@ interface CostBreakdown {
   FACIL: number;
   FLEET: number;
   MKTG: number;
+  VD: number;
 }
 
 interface Order {
@@ -124,29 +126,18 @@ const FinanceDashboard: React.FC = () => {
       'FACILITIES/INFRASTRUCTURE': 'FACIL',
       'FLEET MAINTENANCE': 'FLEET',
       'MARKETING': 'MKTG',
+      'VEHICLE DYNAMICS': 'VD',
+      'VD': 'VD',
     };
     return mapping[normalized] || normalized;
   };
 
-  const subteamBudgets: Record<string, number> = {
-    AERO: 8915,
-    CHS: 4000,
-    SUS: 18950,
-    BAT: 17500,
-    ECE: 7130,
-    PT: 21274,
-    SW: 500,
-    DBMS: 2500,
-    OPS: 10000,
-    FACIL: 4500,
-    FLEET: 2500,
-    MKTG: 1000,
-  };
+  const subteamBudgets = SUBTEAM_BUDGETS;
 
-  const overallBudget = 110000;
+  const overallBudget = 136480.99;
 
-  const startDate = new Date('2024-09-01');
-  const endDate = new Date('2026-05-31');
+  const startDate = new Date(BUDGET_START_DATE);
+  const endDate = new Date('2027-05-31');
   const currentDate = new Date();
   const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   const daysPassed = Math.ceil((currentDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -219,8 +210,10 @@ const FinanceDashboard: React.FC = () => {
     {} as Record<string, number>
   );
 
-  // Months from August to May
+  // Months in the AME27 budget period, from June to May
   const months = [
+    'Jun',
+    'Jul',
     'Aug',
     'Sep',
     'Oct',

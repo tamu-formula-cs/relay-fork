@@ -40,19 +40,20 @@ var client_1 = require("@prisma/client");
 var prisma = new client_1.PrismaClient();
 function main() {
     return __awaiter(this, void 0, void 0, function () {
-        // Helper function to create random dates between August and May
+        // Generate test orders before and after the AME27 budget start date.
         function getRandomDate() {
-            var start = new Date('2022-08-01');
-            var end = new Date('2023-05-31');
+            var start = new Date('2025-01-01T00:00:00Z');
+            var end = new Date('2026-12-31T23:59:59Z');
             return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
         }
-        var subteams, vendors, users, i, user, vendor, totalCost, createdAt;
+        var subteams, vendors, seedRunId, users, i, user, vendor, totalCost, createdAt;
         var _a;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     subteams = ['AERO', 'CHS', 'SUS', 'BAT', 'ECE', 'PT'];
                     vendors = ['Vendor A', 'Vendor B', 'Vendor C', 'Vendor D'];
+                    seedRunId = Date.now();
                     return [4 /*yield*/, Promise.all(subteams.map(function (subteam, index) {
                             return prisma.user.upsert({
                                 where: { email: "user".concat(index, "@example.com") },
@@ -79,7 +80,7 @@ function main() {
                     createdAt = getRandomDate();
                     return [4 /*yield*/, prisma.order.create({
                             data: {
-                                internalOrderId: "ORD-".concat(1000 + i),
+                                internalOrderId: "SEED-".concat(seedRunId, "-ORD-").concat(i),
                                 name: "Order ".concat(i),
                                 userId: user.id,
                                 subteam: user.subteam,
@@ -94,7 +95,7 @@ function main() {
                                 items: {
                                     create: [
                                         {
-                                            internalItemId: "ITEM-".concat(2000 + i),
+                                                internalItemId: "SEED-".concat(seedRunId, "-ITEM-").concat(i),
                                             name: "Item ".concat(i),
                                             partNumber: "PN-".concat(i),
                                             notes: "Notes for item ".concat(i),

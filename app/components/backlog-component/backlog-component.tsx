@@ -35,6 +35,7 @@ const subteamMapping: { [key: string]: string } = {
     FACIL: 'Facilities/Infrastructure',
     FLEET: 'Fleet Maintenance',
     MKTG: 'Marketing',
+    VD: 'Vehicle Dynamics',
 };
 
 const BacklogComponent: React.FC = () => {

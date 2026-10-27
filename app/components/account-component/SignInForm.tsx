@@ -25,7 +25,7 @@ const SignInForm = () => {
                     <>
                         <h1 className={styles.welcomeText}>Access Denied</h1>
                         <p className={styles.subheading}>
-                            Your account does not have access to OMS. Please contact athul and venmo him $5 to get added.
+                            Your account does not have access to OMS. Please contact Teymur and venmo him $5 to get added.
                         </p>
                         <div className={styles.inputContainer}>
                             <button type="button" onClick={handleGoogleSignIn} className={styles.secondaryButton}>
