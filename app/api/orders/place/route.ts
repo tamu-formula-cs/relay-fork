@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
             ? await checkBudgetExceeded(costBreakdown, parsedCost)
             : { exceeded: false, subteams: [] };
         const orderStatus = budgetCheck.exceeded
-            ? OrderStatus.AWAITING_APPROVAL
+            ? OrderStatus.AWAITING_RAVI_APPROVAL
             : OrderStatus.TO_ORDER;
 
         try {
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
             ? await checkBudgetExceeded(costBreakdown, orderCost)
             : { exceeded: false, subteams: [] };
         const orderStatus = budgetCheck.exceeded
-            ? OrderStatus.AWAITING_APPROVAL
+            ? OrderStatus.AWAITING_RAVI_APPROVAL
             : OrderStatus.TO_ORDER;
 
         // Create the order with a single item

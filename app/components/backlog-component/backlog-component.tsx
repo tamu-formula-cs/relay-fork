@@ -38,11 +38,13 @@ const subteamMapping: { [key: string]: string } = {
 };
 
 const BacklogComponent: React.FC = () => {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const [isAdmin, setIsAdmin] = useState(false);
     const [isAdminLoading, setIsAdminLoading] = useState(true);
 
     useEffect(() => {
+        if (status === 'loading') return;
+
         if (!session) {
             setIsAdmin(false);
             setIsAdminLoading(false);
@@ -53,13 +55,12 @@ const BacklogComponent: React.FC = () => {
             .then(setIsAdmin)
             .catch(() => setIsAdmin(false))
             .finally(() => setIsAdminLoading(false));
-    }, [session]);
+    }, [session, status]);
 
     useEffect(() => {
-        if (!isAdmin) {
-            window.location.href = '/';
-        }
-    }, [isAdmin]);
+        if (isAdminLoading || isAdmin) return;
+        window.location.href = '/';
+    }, [isAdmin, isAdminLoading]);
     
     const { data, error } = useSWR('/api/orders?limit=500', fetcher, { refreshInterval: 60000 });
     const { toast } = useToast();
@@ -76,9 +77,9 @@ const BacklogComponent: React.FC = () => {
     // Orders to be Picked Up
     const ordersWithDeliveredItems = useMemo(() => {
         // Only include orders that are not archived
-        const nonArchivedOrders = orders.filter(order => order.status !== 'ARCHIVED');
+        const nonArchivedOrders = orders.filter(order => order.status !== 'ARCHIVED' && order.status !== 'EV_ARCHIVED');
         return nonArchivedOrders.filter(order => 
-            order.status === 'DELIVERED' || 
+            order.status === 'EV_AWAITING_PICKUP' || 
             order.items.some(item => item.status === 'DELIVERED')
         );
     }, [orders]);
@@ -613,7 +614,7 @@ const BacklogComponent: React.FC = () => {
                                                 : order.status === OrderStatus.PLACED ? styles.orderStatusPlaced
                                                 : order.status === OrderStatus.PROCESSED ? styles.orderStatusProcessed
                                                 : order.status === OrderStatus.PARTIAL ? styles.orderStatusPartial
-                                                : order.status === OrderStatus.DELIVERED ? styles.orderStatusDelivered
+                                                : order.status === OrderStatus.DELIVERED || order.status === OrderStatus.EV_AWAITING_PICKUP ? styles.orderStatusDelivered
                                                 : styles.orderStatusShipped
                                             } ${styles.statusColumn}`}
                                         >
@@ -682,7 +683,7 @@ const BacklogComponent: React.FC = () => {
                                 </div>
                                 <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
                                     <span className={`${styles.mobileCardStatus} ${
-                                        order.status === OrderStatus.DELIVERED ? styles.orderStatusDelivered
+                                        order.status === OrderStatus.DELIVERED || order.status === OrderStatus.EV_AWAITING_PICKUP ? styles.orderStatusDelivered
                                         : order.status === OrderStatus.PARTIAL ? styles.orderStatusPartial
                                         : styles.orderStatusShipped
                                     }`}>{order.status.replace(/_/g, ' ')}</span>

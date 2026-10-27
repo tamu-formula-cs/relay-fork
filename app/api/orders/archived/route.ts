@@ -7,7 +7,7 @@ export async function GET() {
     try {
         const orders = await prisma.order.findMany({
             where: {
-                status: 'ARCHIVED',
+                status: { in: ['ARCHIVED', 'EV_ARCHIVED'] },
             },
             select: {
                 id: true,

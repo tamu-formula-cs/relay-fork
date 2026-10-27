@@ -39,6 +39,8 @@ next-env.d.ts
 
 credentials.json
 token.json
+policy.yaml
 
 # other
 .cjs
+.cursor

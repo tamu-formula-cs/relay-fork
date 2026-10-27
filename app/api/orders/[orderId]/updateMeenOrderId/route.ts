@@ -19,7 +19,7 @@ export async function POST(
         where: { id: orderId },
         data: { 
             meenOrderId,
-            status: OrderStatus.PLACED
+            status: OrderStatus.MEEN_RECEIVED
          },
         });
         return NextResponse.json({ message: 'Order updated successfully' });

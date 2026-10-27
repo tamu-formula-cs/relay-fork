@@ -224,7 +224,7 @@ export async function POST(request: NextRequest) {
             ? await checkBudgetExceeded(costBreakdown, estimatedCost)
             : { exceeded: false, subteams: [] };
         const orderStatus = budgetCheck.exceeded
-            ? OrderStatus.AWAITING_APPROVAL
+            ? OrderStatus.AWAITING_RAVI_APPROVAL
             : OrderStatus.TO_ORDER;
 
         // Execute database operations in a transaction

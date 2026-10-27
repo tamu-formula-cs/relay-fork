@@ -30,7 +30,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [isLoadingSidebar, setIsLoadingSidebar] = useState(true);
   const [showSignOutModal, setShowSignOutModal] = useState(false);
 
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAdminLoading, setIsAdminLoading] = useState(true);
 
@@ -81,12 +81,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [windowWidth]);
 
   useEffect(() => {
+    if (status === 'loading') return;
     if (!session) {
       router.push('/account');
     } else if (session.user?.needsRegistration) {
       router.push('/new-user');
     }
-  }, [session, router]);
+  }, [session, status, router]);
 
   // Render nothing or a loading indicator while checking auth status or loading sidebar state
   if (isLoadingSidebar) {

@@ -24,6 +24,7 @@ enum OrderStatus {
   PARTIAL = 'PARTIAL',
   DELIVERED = 'DELIVERED',
   ARCHIVED = 'ARCHIVED',
+  EV_ARCHIVED = 'EV_ARCHIVED',
 }
 
 // Interfaces based on your schema
@@ -294,7 +295,7 @@ const FinanceDashboard: React.FC = () => {
 
   // 3. Active Orders (Not Archived)
   const activeOrders = orders.filter(
-    (order: Order) => order.status !== OrderStatus.ARCHIVED
+    (order: Order) => order.status !== OrderStatus.ARCHIVED && order.status !== OrderStatus.EV_ARCHIVED
   );
   const activeOrderValue = activeOrders.reduce(
     (acc: number, order: Order) => acc + order.totalCost,
@@ -326,7 +327,7 @@ const FinanceDashboard: React.FC = () => {
   // Debug logging
   console.log("Finance Dashboard Debug:");
   console.log("Total orders:", orders.length);
-  console.log("Active orders:", orders.filter(o => o.status !== OrderStatus.ARCHIVED).length);
+  console.log("Active orders:", orders.filter(o => o.status !== OrderStatus.ARCHIVED && o.status !== OrderStatus.EV_ARCHIVED).length);
   console.log("Subteam spending:", subteamSpending);
   console.log("Total spent:", totalSpent);
   console.log("Budget data:", subteamBudgetData);

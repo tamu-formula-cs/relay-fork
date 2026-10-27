@@ -221,7 +221,7 @@ const ArchiveTable: React.FC = () => {
                                     </td>
                                     <td
                                         className={`${styles.tdText} ${
-                                            order.status === OrderStatus.ARCHIVED
+                                            order.status === OrderStatus.ARCHIVED || order.status === OrderStatus.EV_ARCHIVED
                                                 ? styles.orderStatusArchived
                                                 : styles.orderStatusDefault
                                         }`}
@@ -316,7 +316,7 @@ const ArchiveTable: React.FC = () => {
                         </div>
                         <div className={styles.mobileCardFooter}>
                             <span className={`${styles.mobileCardStatus} ${
-                                order.status === OrderStatus.ARCHIVED ? styles.orderStatusArchived : styles.orderStatusDefault
+                                order.status === OrderStatus.ARCHIVED || order.status === OrderStatus.EV_ARCHIVED ? styles.orderStatusArchived : styles.orderStatusDefault
                             }`}>{order.status.replace(/_/g, ' ')}</span>
                             {order.costBreakdown && (
                                 <span className={styles.mobileCardSubteam}>

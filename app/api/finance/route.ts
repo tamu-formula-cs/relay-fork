@@ -11,7 +11,7 @@ export async function GET() {
           gte: new Date('2025-07-01T00:00:00Z'),
         },
         NOT: {
-          status: 'AWAITING_APPROVAL',
+          status: { in: ['AWAITING_APPROVAL', 'AWAITING_RAVI_APPROVAL'] },
         },
       },
       select: {
