@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const orders = await prisma.order.findMany({
       where: {
-        status: { in: ['AWAITING_APPROVAL', 'AWAITING_RAVI_APPROVAL'] },
+        status: 'AWAITING_APPROVAL',
       },
       select: {
         id: true,
