@@ -1,11 +1,52 @@
 import { useState, useRef } from 'react';
 import styles from './order-form.module.css';
-import CloseIcon from "../../../assets/close.svg"
-import Image from 'next/image';
 import { mutate } from 'swr';
 import { useToast } from '../toast/use-toast';
 import { upload } from '@vercel/blob/client';
 import { useSession } from 'next-auth/react';
+import { FileSpreadsheet, FileText, Link2, ListPlus, Package, Plus, Upload, X } from 'lucide-react';
+
+const STEPS = ['Order details', 'Cost split', 'How to submit', 'Items'];
+
+const money = (n: number) => `$${(Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+interface ModalProps {
+    title: string;
+    step?: number;
+    size?: 'small' | 'wide';
+    onClose: () => void;
+    footer?: React.ReactNode;
+    children: React.ReactNode;
+}
+
+// No close on overlay click or Escape: an accidental click would throw away a half-filled order.
+function Modal({ title, step, size, onClose, footer, children }: ModalProps) {
+    const sizeClass = size === 'small' ? styles.formContainerSmall : size === 'wide' ? styles.formContainerWide : '';
+    return (
+        <div className={styles.formBG}>
+            <div className={`${styles.formContainer} ${sizeClass}`} role="dialog" aria-modal="true" aria-labelledby="order-form-title">
+                <header className={styles.formHeader}>
+                    <div className={styles.titleBlock}>
+                        <h2 id="order-form-title" className={styles.formTitle}>{title}</h2>
+                        {step !== undefined && (
+                            <p className={styles.meta}>Step {step + 1} of {STEPS.length} · {STEPS[step]}</p>
+                        )}
+                    </div>
+                    <button className={styles.iconButton} onClick={onClose} aria-label="Close" title="Close">
+                        <X size={16} aria-hidden />
+                    </button>
+                </header>
+                {step !== undefined && (
+                    <div className={styles.progress} role="progressbar" aria-valuemin={1} aria-valuemax={STEPS.length} aria-valuenow={step + 1}>
+                        <span style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} />
+                    </div>
+                )}
+                <div className={styles.formBody}>{children}</div>
+                {footer && <footer className={styles.buttonGroup}>{footer}</footer>}
+            </div>
+        </div>
+    );
+}
 
 interface OrderFormProps {
     onClose: () => void;
@@ -166,6 +207,7 @@ export default function OrderForm({ onClose }: OrderFormProps) {
         <CostBreakdownScreen
             key="cost-breakdown"
             costBreakdown={orderData.costBreakdown}
+            estimatedCost={Number(orderData.estimatedCost)}
             onCostChange={handleCostBreakdownChange}
             onNext={handleNext}
             onBack={handleBack}
@@ -309,138 +351,153 @@ function GeneralInfoScreen({ orderData, onInputChange, onNext, onClose, setOrder
 
 
     return (
-        <div className={styles.formBG}>
-            <div className={styles.formContainer}>
-                <div className={styles.formHeader}>
-                    <h1 className={styles.formTitle}>Order Form</h1>
-                    <button className={styles.closeButton} onClick={onClose}>
-                        <Image src={CloseIcon.src} height={10} width={10} alt='close' />
-                    </button>
+        <Modal
+            title="Place order"
+            step={0}
+            onClose={onClose}
+            footer={
+                <div className={styles.footerEnd}>
+                    <button className={`${styles.button} ${styles.cancelButton}`} onClick={onClose}>Cancel</button>
+                    <button className={`${styles.button} ${styles.primaryButton}`} onClick={handleNextClick}>Next</button>
                 </div>
-                <div className={styles.formBody}>
-                    <p className={styles.formParagraph}>General Info</p>
-                    <div className={styles.generalRowOne}>
-                        <div className={styles.inputGroup}>
-                            <label>Order Name (Main Item)*</label>
-                            <input
-                                type="text"
-                                name="orderName"
-                                placeholder="Order Name"
-                                value={orderData.orderName}
-                                onChange={onInputChange}
-                            />
-                        </div>
-                        <div className={styles.inputGroup}>
-                            <label>Vendor Name*</label>
-                            <input
-                                type="text"
-                                name="vendor"
-                                placeholder="Vendor Name"
-                                value={orderData.vendor}
-                                onChange={onInputChange}
-                            />
-                        </div>
-                    </div>
-                    <div className={styles.generalRowTwo}>
-                        <div className={styles.inputGroup}>
-                            <label>Estimated Total Cost*</label>
-                            <input
-                                type="number"
-                                name="estimatedCost"
-                                placeholder="Estimated Cost"
-                                value={orderData.estimatedCost}
-                                onChange={onInputChange}
-                            />
-                        </div>
-                        <div className={styles.inputGroup}>
-                            <label>Notes (optional)</label>
-                            <textarea
-                                name="notes"
-                                placeholder="Notes"
-                                value={orderData.notes}
-                                onChange={onInputChange}
-                                className={styles.textarea}
-                            />
-                        </div>
-                    </div>
-                    <div className={styles.generalRowThree}>
-                        <div className={styles.inputGroup}>
-                            <label>Delivery Location*</label>
-                            <select name="deliveryLocation"
-                                value={showCustomDelivery ? 'Other' : orderData.deliveryLocation}
-                                onChange={(e) => {
-                                    handleCustomDelivery(e);
-                                    if (e.target.value === 'Other') {
-                                        orderData.deliveryLocation = '';
-                                    } else {
-                                        onInputChange(e);
-                                    }
-                                }}
-                            >
-                                <option value=''>N/A</option>
-                                <option value='Instrumentation'>Instrumentation</option>
-                                <option value='FEDC'>FEDC</option>
-                                <option value='USB'>USB</option>
-                                <option value='Thompson'>Thompson</option>
-                                <option value='Other'>Other</option>
-                            </select>
-                        </div>
-                        {showCustomDelivery &&
-                            <div className={styles.inputGroup}>
-                                <label>Enter Custom Delivery Location*</label>
-                                <input
-                                    type="text"
-                                    name="deliveryLocation"
-                                    placeholder="Enter Delivery Location"
-                                    value={customDelivery}
-                                    onChange={(e) => setCustomDelivery(e.target.value)}
-                                />
-                            </div>
-                        }
-                    </div>
-                    <div className={styles.uploadedFilesContainer}>
-                        {uploadedFiles.map((file, index) => (
-                            <div key={index} className={styles.uploadedFile}>
-                                <span className={styles.fileIcon}>📄</span>
-                                <a href={file.url} target="_blank" rel="noopener noreferrer" className={styles.fileLink}>
-                                    {file.name}
-                                </a>
-                            </div>
-                        ))}
-                    </div>
-                    
-                </div>
-                <div className={styles.buttonGroup}>
-                    <div className={styles.uploadButtonContainer}>
-                        <button className={`${styles.backButton} ${styles.uploadButton}`} onClick={() => fileInputRef.current?.click()}>
-                            Upload PDF
-                        </button>
+            }
+        >
+            <section className={styles.section}>
+                <div className={styles.fieldGrid}>
+                    <div className={styles.field}>
+                        <label htmlFor="of-name">Order name <span className={styles.required}>*</span></label>
                         <input
-                            type="file"
-                            accept="application/pdf"
-                            ref={fileInputRef}
-                            className={styles.fileInput}
-                            onChange={handleFileUpload}
+                            id="of-name"
+                            type="text"
+                            name="orderName"
+                            placeholder="The main item, e.g. 4130 steel tube"
+                            value={orderData.orderName}
+                            onChange={onInputChange}
                         />
                     </div>
-                    <button className={styles.nextButton} onClick={handleNextClick}>
-                        Next Step
-                    </button>
+                    <div className={styles.field}>
+                        <label htmlFor="of-vendor">Vendor <span className={styles.required}>*</span></label>
+                        <input
+                            id="of-vendor"
+                            type="text"
+                            name="vendor"
+                            placeholder="e.g. McMaster-Carr"
+                            value={orderData.vendor}
+                            onChange={onInputChange}
+                        />
+                    </div>
+                    <div className={styles.field}>
+                        <label htmlFor="of-cost">Estimated total cost <span className={styles.required}>*</span></label>
+                        <div className={styles.affix}>
+                            <span aria-hidden>$</span>
+                            <input
+                                id="of-cost"
+                                type="number"
+                                step="0.01"
+                                min={0}
+                                name="estimatedCost"
+                                placeholder="0.00"
+                                value={orderData.estimatedCost || ''}
+                                onChange={onInputChange}
+                            />
+                        </div>
+                    </div>
+                    <div className={styles.field}>
+                        <label htmlFor="of-delivery">Deliver to <span className={styles.required}>*</span></label>
+                        <select
+                            id="of-delivery"
+                            name="deliveryLocation"
+                            value={showCustomDelivery ? 'Other' : orderData.deliveryLocation}
+                            onChange={(e) => {
+                                handleCustomDelivery(e);
+                                if (e.target.value === 'Other') {
+                                    orderData.deliveryLocation = '';
+                                } else {
+                                    onInputChange(e);
+                                }
+                            }}
+                        >
+                            <option value=''>Choose a location</option>
+                            <option value='Instrumentation'>Instrumentation</option>
+                            <option value='FEDC'>FEDC</option>
+                            <option value='USB'>USB</option>
+                            <option value='Thompson'>Thompson</option>
+                            <option value='Other'>Other…</option>
+                        </select>
+                    </div>
+                    {showCustomDelivery && (
+                        <div className={`${styles.field} ${styles.span2}`}>
+                            <label htmlFor="of-custom-delivery">Delivery location <span className={styles.required}>*</span></label>
+                            <input
+                                id="of-custom-delivery"
+                                type="text"
+                                name="deliveryLocation"
+                                placeholder="Building and room"
+                                value={customDelivery}
+                                onChange={(e) => setCustomDelivery(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+                    )}
+                    <div className={`${styles.field} ${styles.span2}`}>
+                        <label htmlFor="of-notes">Notes <span className={styles.optional}>optional</span></label>
+                        <textarea
+                            id="of-notes"
+                            name="notes"
+                            placeholder="Anything purchasing should know"
+                            value={orderData.notes}
+                            onChange={onInputChange}
+                            className={styles.textarea}
+                            rows={3}
+                        />
+                    </div>
                 </div>
-            </div>
-        </div>
+            </section>
+
+            <section className={styles.section}>
+                <div className={styles.sectionHeader}>
+                    <h3 className={styles.sectionTitle}>Supporting documents <span className={styles.optional}>optional</span></h3>
+                    <button className={`${styles.button} ${styles.ghostButton}`} onClick={() => fileInputRef.current?.click()}>
+                        <Upload size={14} aria-hidden />
+                        Upload PDF
+                    </button>
+                    <input
+                        type="file"
+                        accept="application/pdf"
+                        ref={fileInputRef}
+                        className={styles.fileInput}
+                        onChange={handleFileUpload}
+                    />
+                </div>
+                {uploadedFiles.length > 0 ? (
+                    <ul className={styles.fileList}>
+                        {uploadedFiles.map((file, index) => (
+                            <li key={index} className={styles.fileRow}>
+                                <a href={file.url} target="_blank" rel="noopener noreferrer" className={styles.fileLink} title={file.name}>
+                                    <FileText size={16} aria-hidden />
+                                    <span className={styles.fileName}>{file.name}</span>
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className={styles.emptyFiles}>Quotes or spec sheets as PDF, if purchasing needs them.</p>
+                )}
+            </section>
+        </Modal>
     );
 }
 
 interface CostBreakdownScreenProps {
     costBreakdown: Record<string, number>;
+    estimatedCost: number;
     onCostChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onNext: () => void;
     onBack: () => void;
     onClose: () => void;
 }
 
-function CostBreakdownScreen({ costBreakdown, onCostChange, onNext, onBack, onClose }: CostBreakdownScreenProps) {
+function CostBreakdownScreen({ costBreakdown, estimatedCost, onCostChange, onNext, onBack, onClose }: CostBreakdownScreenProps) {
     const totalPercentage = Object.values(costBreakdown).reduce((a, b) => (a as number) + (b as number), 0);
     const isNextDisabled = totalPercentage !== 100;
 
@@ -458,41 +515,60 @@ function CostBreakdownScreen({ costBreakdown, onCostChange, onNext, onBack, onCl
         }
     };
 
+    const remaining = 100 - totalPercentage;
+
     return (
-        <div className={styles.formBG}>
-            <div className={styles.formContainer}>
-                <div className={styles.formHeader}>
-                    <h1 className={styles.formTitle}>Order Form</h1>
-                    <button className={styles.closeButton} onClick={onClose}>
-                        <Image src={CloseIcon.src} height={10} width={10} alt='close' />
-                    </button>
+        <Modal
+            title="Place order"
+            step={1}
+            onClose={onClose}
+            footer={
+                <div className={styles.footerEnd}>
+                    <button className={`${styles.button} ${styles.cancelButton}`} onClick={onBack}>Back</button>
+                    <button className={`${styles.button} ${styles.primaryButton}`} onClick={handleNextClick}>Next</button>
                 </div>
-                <div className={styles.formBody}>
-                    <p className={styles.formParagraph}>Cost Breakdown (Must add up to 100%)</p>
-                    <div className={styles.costBreakdownRow}>
-                        {['AERO', 'BAT', 'CHS', 'DBMS', 'ECE', 'PT', 'SUS', 'SW', 'OPS', 'FACIL', 'FLEET', 'MKTG', 'VD'].map((subteam) => {
-                            const currentValue = costBreakdown[subteam] ?? 0;
-                            return (
-                                <div key={subteam} className={styles.inputGroup}>
-                                    <label>Order Cost Percentage ({subteam})</label>
+            }
+        >
+            <section className={styles.section}>
+                <div className={styles.sectionHeader}>
+                    <div>
+                        <h3 className={styles.sectionTitle}>Which subteams pay for this?</h3>
+                        <p className={styles.hint}>Split {money(estimatedCost)} by percentage. The split must total 100%.</p>
+                    </div>
+                    <span className={`${styles.total} ${totalPercentage === 100 ? styles.totalOk : styles.totalOff}`}>
+                        {totalPercentage === 100
+                            ? 'Total 100%'
+                            : remaining > 0 ? `${totalPercentage}% · ${remaining}% left` : `${totalPercentage}% · ${-remaining}% over`}
+                    </span>
+                </div>
+                <div className={styles.breakdownGrid}>
+                    {['AERO', 'BAT', 'CHS', 'DBMS', 'ECE', 'PT', 'SUS', 'SW', 'OPS', 'FACIL', 'FLEET', 'MKTG', 'VD'].map((subteam) => {
+                        const currentValue = costBreakdown[subteam] ?? 0;
+                        return (
+                            <label key={subteam} className={styles.breakdownItem}>
+                                <span>{subteam}</span>
+                                <span className={`${styles.affix} ${styles.affixEnd}`}>
                                     <input
                                         type="number"
+                                        min={0}
+                                        max={100}
                                         name={subteam}
-                                        placeholder="0%"
+                                        placeholder="0"
+                                        className={currentValue ? styles.filled : undefined}
                                         value={currentValue === 0 ? '' : currentValue}
                                         onChange={onCostChange}
                                     />
-                                </div>
-                            );
-                        })}
-                    </div>
+                                    <span aria-hidden>%</span>
+                                </span>
+                                <span className={styles.share}>
+                                    {currentValue ? money((estimatedCost * currentValue) / 100) : '—'}
+                                </span>
+                            </label>
+                        );
+                    })}
                 </div>
-                <div className={styles.buttonGroup}>
-                    <button className={styles.backButton} onClick={onBack}>Back</button>
-                    <button className={styles.nextButton} onClick={handleNextClick}>Next</button>
-                </div>
-            </div>
-        </div>
+            </section>
+        </Modal>
     );
 }
 
@@ -524,41 +600,43 @@ function Method({ handleSubmitCSV, onNextStep, onBack, onClose }: MethodProps) {
         }
     };
 
+    const methods = [
+        { label: 'Item list', hint: 'Enter each part on its own row (MEEN template)', icon: ListPlus, onClick: () => onNextStep(3) },
+        { label: 'Upload CSV', hint: 'A filled-in MEEN template exported as .csv', icon: FileSpreadsheet, onClick: () => fileInputRef.current?.click() },
+        { label: 'Cart link', hint: 'Paste a vendor cart that already has everything in it', icon: Link2, onClick: () => onNextStep(4) },
+        { label: 'Single item', hint: 'One part with a quantity and a price', icon: Package, onClick: () => onNextStep(5) },
+    ];
+
     return (
-        <div className={styles.formBG}>
-            <div className={`${styles.formContainer} ${styles.formContainerSmall}`}>
-                <div className={styles.formHeader}>
-                    <h1 className={styles.formTitle}>Order Form</h1>
-                    <button className={styles.closeButton} onClick={onClose}>
-                        <Image src={CloseIcon.src} height={10} width={10} alt='close' />
-                    </button>
-                </div>
-                <div className={styles.formBody}>
-                    <p className={styles.formParagraph}>How do you want to submit this order?</p>
-                    <div className={`${styles.buttonGroup} ${styles.methodButtonGroup}`}>
-                        <button className={styles.nextButton} onClick={() => onNextStep(3)}>Form</button>
-                        <button
-                            className={styles.nextButton}
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            CSV
+        <Modal
+            title="Place order"
+            step={2}
+            size="small"
+            onClose={onClose}
+            footer={<button className={`${styles.button} ${styles.cancelButton}`} onClick={onBack}>Back</button>}
+        >
+            <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>How do you want to add the items?</h3>
+                <div className={styles.methodList}>
+                    {methods.map(({ label, hint, icon: Icon, onClick }) => (
+                        <button key={label} className={styles.methodOption} onClick={onClick}>
+                            <Icon size={18} aria-hidden className={styles.methodIcon} />
+                            <span className={styles.methodText}>
+                                <span className={styles.methodLabel}>{label}</span>
+                                <span className={styles.methodHint}>{hint}</span>
+                            </span>
                         </button>
-                        <input
-                            type="file"
-                            accept=".csv"
-                            ref={fileInputRef}
-                            style={{ display: 'none' }}
-                            onChange={handleFileChange}
-                        />
-                        <button className={styles.nextButton} onClick={() => onNextStep(4)}>Cart Link</button>
-                        <button className={styles.nextButton} onClick={() => onNextStep(5)}>Single Item</button>
-                    </div>
+                    ))}
                 </div>
-                <div className={styles.buttonGroup}>
-                    <button className={styles.backButton} onClick={onBack}>Back</button>
-                </div>
-            </div>
-        </div>
+                <input
+                    type="file"
+                    accept=".csv"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={handleFileChange}
+                />
+            </section>
+        </Modal>
     );
 }
 
@@ -633,31 +711,33 @@ function CartLinkOrder({ orderData, onBack, onClose, onOverbudget }: CartLinkOrd
     };
 
     return (
-        <div className={styles.formBG}>
-            <div className={`${styles.formContainer} ${styles.formContainerSmall}`}>
-                <div className={styles.formHeader}>
-                    <h1 className={styles.formTitle}>Cart Link Order</h1>
-                    <button className={styles.closeButton} onClick={onClose}>
-                        <Image src={CloseIcon.src} height={10} width={10} alt='close' />
-                    </button>
+        <Modal
+            title="Place order"
+            step={3}
+            size="small"
+            onClose={onClose}
+            footer={
+                <div className={styles.footerEnd}>
+                    <button className={`${styles.button} ${styles.cancelButton}`} onClick={onBack}>Back</button>
+                    <button className={`${styles.button} ${styles.primaryButton}`} onClick={handleSubmit}>Submit order</button>
                 </div>
-                <div className={styles.formBody}>
-                    <div className={`${styles.inputGroup} ${styles.singleLink}`}>
-                        <label>Link to Shopping Cart*</label>
-                        <input
-                            type="text"
-                            placeholder="www.example.com"
-                            value={cartLink}
-                            onChange={(e) => setCartLink(e.target.value)}
-                        />
-                    </div>
+            }
+        >
+            <section className={styles.section}>
+                <div className={styles.field}>
+                    <label htmlFor="of-cart">Cart link <span className={styles.required}>*</span></label>
+                    <input
+                        id="of-cart"
+                        type="url"
+                        placeholder="https://www.mcmaster.com/order/…"
+                        value={cartLink}
+                        onChange={(e) => setCartLink(e.target.value)}
+                        autoFocus
+                    />
+                    <p className={styles.hint}>Make sure the cart is shareable, so purchasing can open it without your login.</p>
                 </div>
-                <div className={styles.buttonGroup}>
-                    <button className={styles.backButton} onClick={onBack}>Back</button>
-                    <button className={styles.nextButton} onClick={handleSubmit}>Submit</button>
-                </div>
-            </div>
-        </div>
+            </section>
+        </Modal>
     );
 }
 
@@ -746,49 +826,48 @@ function SingleItemOrder({ orderData, onBack, onClose, onOverbudget }: SingleIte
     };
 
     return (
-        <div className={styles.formBG}>
-            <div className={styles.formContainer}>
-                <div className={styles.formHeader}>
-                    <h1 className={styles.formTitle}>Single Item Order</h1>
-                    <button className={styles.closeButton} onClick={onClose}>
-                        <Image src={CloseIcon.src} height={10} width={10} alt='close' />
-                    </button>
-                </div>
-                <div className={styles.formBody}>
-                    <p className={styles.formParagraph}>Item info</p>
-                    <div className={styles.generalRowOne}>
-                        <div className={styles.inputGroup}>
-                            <label>Item Name*</label>
-                            <input type="text" placeholder="Item Name" value={name} onChange={(e) => setName(e.target.value)} />
-                        </div>
-                        <div className={styles.inputGroup}>
-                            <label>Part Number</label>
-                            <input type="text" placeholder="Part Number" value={partNumber} onChange={(e) => setPartNumber(e.target.value)} />
+        <Modal
+            title="Place order"
+            step={3}
+            onClose={onClose}
+            footer={
+                <>
+                    <span className={styles.footerTotal}>Total <strong>{money(cost * quantity)}</strong></span>
+                    <div className={styles.footerEnd}>
+                        <button className={`${styles.button} ${styles.cancelButton}`} onClick={onBack}>Back</button>
+                        <button className={`${styles.button} ${styles.primaryButton}`} onClick={handleSubmit}>Submit order</button>
+                    </div>
+                </>
+            }
+        >
+            <section className={styles.section}>
+                <div className={styles.fieldGrid}>
+                    <div className={styles.field}>
+                        <label htmlFor="si-name">Item name <span className={styles.required}>*</span></label>
+                        <input id="si-name" type="text" placeholder="e.g. 1/4-20 socket head screw" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+                    </div>
+                    <div className={styles.field}>
+                        <label htmlFor="si-part">Part number <span className={styles.optional}>optional</span></label>
+                        <input id="si-part" type="text" placeholder="e.g. 91251A537" value={partNumber} onChange={(e) => setPartNumber(e.target.value)} />
+                    </div>
+                    <div className={styles.field}>
+                        <label htmlFor="si-qty">Quantity <span className={styles.required}>*</span></label>
+                        <input id="si-qty" type="number" min={1} value={quantity || ''} onChange={(e) => setQuantity(Number(e.target.value))} />
+                    </div>
+                    <div className={styles.field}>
+                        <label htmlFor="si-cost">Cost per item <span className={styles.required}>*</span></label>
+                        <div className={styles.affix}>
+                            <span aria-hidden>$</span>
+                            <input id="si-cost" type="number" step="0.01" min={0} placeholder="0.00" value={cost || ''} onChange={(e) => setCost(Number(e.target.value))} />
                         </div>
                     </div>
-                    <div className={styles.generalRowTwo}>
-                        <div className={styles.inputGroup}>
-                            <label>Quantity*</label>
-                            <input type="number" placeholder="Quantity" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} />
-                        </div>
-                        <div className={styles.inputGroup}>
-                            <label>Cost (Per Item)*</label>
-                            <input type="number" placeholder="Cost" value={cost} onChange={(e) => setCost(Number(e.target.value))} />
-                        </div>
-                    </div>
-                    <div className={styles.generalRowThree}>
-                        <div className={styles.inputGroup}>
-                            <label>Link to Item</label>
-                            <input type="text" placeholder="Link to Item" value={link} onChange={(e) => setLink(e.target.value)} />
-                        </div>
+                    <div className={`${styles.field} ${styles.span2}`}>
+                        <label htmlFor="si-link">Link to item <span className={styles.optional}>optional</span></label>
+                        <input id="si-link" type="url" placeholder="https://" value={link} onChange={(e) => setLink(e.target.value)} />
                     </div>
                 </div>
-                <div className={styles.buttonGroup}>
-                    <button className={styles.backButton} onClick={onBack}>Back</button>
-                    <button className={styles.nextButton} onClick={handleSubmit}>Submit</button>
-                </div>
-            </div>
-        </div>
+            </section>
+        </Modal>
     );
 }
 
@@ -897,130 +976,136 @@ function TemplateEntryForm({ orderData, onBack, onClose, onOverbudget }: {
         }
     };
 
+    const orderTotal = rows.reduce((sum, r) => sum + (r.quantity || 0) * (r.cost || 0), 0);
+
     return (
-        <div className={styles.formBG}>
-            <div className={`${styles.formContainer} ${styles.formContainerWide}`}>
-                <div className={styles.formHeader}>
-                    <h1 className={styles.formTitle}>MEEN Template Form</h1>
-                    <button className={styles.closeButton} onClick={onClose}>X</button>
-                </div>
-                <div className={styles.formBody}>
-                    <div className={styles.tableContainer}>
-                        <div className={styles.tableHeader}>
-                            <span>Item Name</span>
-                            <span>Part Number</span>
-                            <span>Notes</span>
-                            <span>Quantity</span>
-                            <span>Cost per Item</span>
-                            <span>Total</span>
-                            <span>Link</span>
-                        </div>
-
-                        {rows.map((row, idx) => (
-                            <div key={idx} className={styles.tableRow}>
-                                <input
-                                    value={row.itemName}
-                                    onChange={(e) => updateRow(idx, "itemName", e.target.value)}
-                                />
-                                <input
-                                    value={row.partNumber}
-                                    onChange={(e) => updateRow(idx, "partNumber", e.target.value)}
-                                />
-                                <input
-                                    value={row.notes}
-                                    onChange={(e) => updateRow(idx, "notes", e.target.value)}
-                                />
-                                <input
-                                    type="number"
-                                    value={row.quantity ?? ""}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        updateRow(idx, "quantity", val === "" ? "" : Number(val));
-                                    }}
-                                />
-                                <input
-                                    type="number"
-                                    placeholder="Cost"
-                                    value={row.cost === undefined ? "" : row.cost}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        updateRow(idx, "cost", val === "" ? "" : Number(val));
-                                    }}
-                                />
-
-                                <span>{(row.quantity || 0) * (row.cost || 0)}</span>
-                                <input
-                                    value={row.link}
-                                    onChange={(e) => updateRow(idx, "link", e.target.value)}
-                                />
-                                <button
-                                    className={styles.removeButton}
-                                    onClick={() => {
-                                        if (rows.length > 1) {
-                                            setRows(rows.filter((_, i) => i !== idx));
-                                        }
-                                    }}
-                                    disabled={rows.length === 1}
-                                    title={rows.length === 1 ? "At least one row is required" : "Remove row"}
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                        ))}
+        <Modal
+            title="Place order"
+            step={3}
+            size="wide"
+            onClose={onClose}
+            footer={
+                <>
+                    <span className={styles.footerTotal}>
+                        {rows.length} {rows.length === 1 ? 'item' : 'items'} · Total <strong>{money(orderTotal)}</strong>
+                    </span>
+                    <div className={styles.footerEnd}>
+                        <button className={`${styles.button} ${styles.cancelButton}`} onClick={onBack}>Back</button>
+                        <button className={`${styles.button} ${styles.primaryButton}`} onClick={handleSubmit}>Submit order</button>
                     </div>
-                    <div className={styles.tableFooter}>
-                        <button className={styles.backButton} onClick={addRow}>+ Add Row</button>
-                        <div className={styles.orderTotal}>
-                            <span>Total Order Cost: $</span>
-                            {rows.reduce((sum, r) => sum + (r.quantity || 0) * (r.cost || 0), 0)}
-                        </div>
+                </>
+            }
+        >
+            <section className={styles.section}>
+                <div className={styles.tableContainer}>
+                    <div className={styles.tableHeader}>
+                        <span>Item name <span className={styles.required}>*</span></span>
+                        <span>Part number</span>
+                        <span>Notes</span>
+                        <span className={styles.numHead}>Qty <span className={styles.required}>*</span></span>
+                        <span className={styles.numHead}>Cost each <span className={styles.required}>*</span></span>
+                        <span className={styles.numHead}>Total</span>
+                        <span>Link</span>
+                        <span />
                     </div>
+
+                    {rows.map((row, idx) => (
+                        <div key={idx} className={styles.tableRow}>
+                            <input
+                                aria-label={`Item ${idx + 1} name`}
+                                value={row.itemName}
+                                onChange={(e) => updateRow(idx, "itemName", e.target.value)}
+                            />
+                            <input
+                                aria-label={`Item ${idx + 1} part number`}
+                                value={row.partNumber}
+                                onChange={(e) => updateRow(idx, "partNumber", e.target.value)}
+                            />
+                            <input
+                                aria-label={`Item ${idx + 1} notes`}
+                                value={row.notes}
+                                onChange={(e) => updateRow(idx, "notes", e.target.value)}
+                            />
+                            <input
+                                aria-label={`Item ${idx + 1} quantity`}
+                                type="number"
+                                min={1}
+                                className={styles.numInput}
+                                value={row.quantity ?? ""}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    updateRow(idx, "quantity", val === "" ? "" : Number(val));
+                                }}
+                            />
+                            <input
+                                aria-label={`Item ${idx + 1} cost each`}
+                                type="number"
+                                step="0.01"
+                                min={0}
+                                placeholder="0.00"
+                                className={styles.numInput}
+                                value={row.cost || ""}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    updateRow(idx, "cost", val === "" ? "" : Number(val));
+                                }}
+                            />
+                            <span className={styles.rowTotal}>{money((row.quantity || 0) * (row.cost || 0))}</span>
+                            <input
+                                aria-label={`Item ${idx + 1} link`}
+                                type="url"
+                                placeholder="https://"
+                                value={row.link}
+                                onChange={(e) => updateRow(idx, "link", e.target.value)}
+                            />
+                            <button
+                                className={styles.iconButton}
+                                onClick={() => {
+                                    if (rows.length > 1) {
+                                        setRows(rows.filter((_, i) => i !== idx));
+                                    }
+                                }}
+                                disabled={rows.length === 1}
+                                aria-label={`Remove item ${idx + 1}`}
+                                title={rows.length === 1 ? "At least one row is required" : "Remove row"}
+                            >
+                                <X size={14} aria-hidden />
+                            </button>
+                        </div>
+                    ))}
                 </div>
-                <div className={styles.buttonGroup}>
-                    <button className={styles.backButton} onClick={onBack}>Back</button>
-                    <button className={styles.nextButton} onClick={handleSubmit}>Submit</button>
-                </div>
-            </div>
-        </div>
+                <button className={`${styles.button} ${styles.ghostButton} ${styles.addRow}`} onClick={addRow}>
+                    <Plus size={14} aria-hidden />
+                    Add item
+                </button>
+            </section>
+        </Modal>
     );
 }
 
 function OverBudgetScreen({ subteams, onClose }: { subteams: string[]; onClose: () => void }) {
     return (
-        <div className={styles.formBG}>
-            <div className={`${styles.formContainer} ${styles.formContainerSmall}`}>
-                <div className={styles.formHeader}>
-                    <h1 className={styles.formTitle}>Budget Exceeded</h1>
-                    <button className={styles.closeButton} onClick={onClose}>
-                        <Image src={CloseIcon.src} height={10} width={10} alt='close' />
-                    </button>
+        <Modal
+            title="Order submitted for approval"
+            size="small"
+            onClose={onClose}
+            footer={
+                <div className={styles.footerEnd}>
+                    <button className={`${styles.button} ${styles.primaryButton}`} onClick={onClose}>Got it</button>
                 </div>
-                <div className={styles.overbudgetBody}>
-                    <div className={styles.overbudgetIcon}>
-                        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="28" cy="28" r="26" stroke="#E65100" strokeWidth="2" fill="#FFF8F0"/>
-                            <path d="M28 16L40 38H16L28 16Z" stroke="#E65100" strokeWidth="2" strokeLinejoin="round" fill="none"/>
-                            <path d="M28 24V30" stroke="#E65100" strokeWidth="2" strokeLinecap="round"/>
-                            <circle cx="28" cy="34" r="1.25" fill="#E65100"/>
-                        </svg>
-                    </div>
-                    <h2 className={styles.overbudgetTitle}>Whoa, over budget!</h2>
-                    <p className={styles.overbudgetText}>
-                        This order would push{' '}
-                        <strong>{subteams.join(', ')}</strong>{' '}
-                        past {subteams.length > 1 ? 'their budget limits' : 'its budget limit'} (or it already is...).
-                    </p>
-                    <p className={styles.overbudgetSubtext}>
-                        Your order has been submitted but needs PM approval before it can go through.
-                        Check the <strong>Approvals</strong> tab to track its status. <br/><br/>Alternatively, venmo Teymur $5 and I've got you.
-                    </p>
-                </div>
-                <div className={styles.buttonGroup}>
-                    <button className={styles.nextButton} onClick={onClose}>
-                        Got it
-                    </button>
-                </div>
-            </div>
-        </div>
+            }
+        >
+            <section className={styles.section}>
+                <p className={styles.notice}>
+                    This order would push <strong>{subteams.join(', ')}</strong> past{' '}
+                    {subteams.length > 1 ? 'their budget limits' : 'its budget limit'} (or it already is…).
+                </p>
+                <p className={styles.bodyText}>
+                    It has been submitted, but a PM needs to approve it before it goes through.
+                    Track it in the <strong>Approvals</strong> tab.
+                </p>
+                <p className={styles.hint}>Alternatively, venmo Teymur $5 and I&apos;ve got you.</p>
+            </section>
+        </Modal>
     );
 }

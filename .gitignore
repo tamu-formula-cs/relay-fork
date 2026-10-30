@@ -44,3 +44,7 @@ policy.yaml
 # other
 .cjs
 .cursor
+.agents
+.grok
+.taste-skill
+skills-lock.json

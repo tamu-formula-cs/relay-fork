@@ -20,6 +20,8 @@ h1.purchaseHeader{
 
 .tableTop{
     display: flex;
+    flex-wrap: wrap;
+    gap: 0 1rem;
     justify-content: space-between;
     align-items: center;
     width: 95%;
@@ -28,15 +30,13 @@ h1.purchaseHeader{
 
 .tableContainer {
     overflow-x: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
+    width: 95%;
     -webkit-overflow-scrolling: touch;
 }
 
 .tableBody {
-    width: 95%;
+    width: 100%;
+    min-width: 1200px;
     background-color: white;
     border: 1px solid #F2F2F2;
     border-radius: 10px;
@@ -81,7 +81,6 @@ h1.purchaseHeader{
 }
 
 button.orderButton{
-    margin-left: 1rem;
     background-color: #7044F2;
     color: white;
     border-radius: 10px;
@@ -118,7 +117,7 @@ button.orderButton:hover{
 }
 
 .tableBody .commentsColumn, .commentsColumnHeader {
-    width: 12%;
+    width: 11%;
     font-size: .9rem;
 }
 
@@ -142,115 +141,48 @@ button.orderButton:hover{
     color: #5D5D5D;
 }
 
-.orderStatusToOrder {
-    font-size: .9rem;
-    padding: 1rem;
-    text-align: center;
-    color: #DE3C4B;
-    border: 1px solid #DE3C4B;
-    background-color: rgba(222, 60, 75, 0.05);
-    border-radius: 5px;
+.statusColumn {
+    width: 11rem;
 }
 
-.orderStatusPlaced {
-    font-size: .9rem;
-    padding: 1rem;
+.statusPill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    line-height: 1.25;
+    white-space: normal;
     text-align: center;
-    color: #4489CF;
-    border: 1px solid #4489CF;
-    background-color: rgba(68, 137, 207, 0.05);
-    border-radius: 5px;
 }
 
-.orderStatusMeenHold {
-    font-size: .9rem;
-    padding: 1rem;
-    text-align: center;
-    color: #FFB400;
-    border: 1px solid #FFB400;
-    background-color: rgba(255, 180, 0, 0.05);
-    border-radius: 5px;
+.statusPill:has(.openURLIcon) {
+    cursor: pointer;
 }
 
-.orderStatusPartial {
-    font-size: .9rem;
-    padding: 1rem;
-    text-align: center;
-    color: #A790A5;
-    border: 1px solid #A790A5;
-    background-color: rgba(167, 144, 165, 0.05);
-    border-radius: 5px;
-}
-
-.orderStatusProcessed {
-    font-size: .9rem;
-    padding: 1rem;
-    text-align: center;
-    color: #CF44C1;
-    border: 1px solid #CF44C1;
-    background-color: rgba(207, 68, 193, 0.05);
-    border-radius: 5px;
-}
-
-.orderStatusDelivered{
-    color: #44CF6C;
-    border: 1px solid #44CF6C;
-    background-color: rgba(68, 207, 108, 0.05);
-    border-radius: 5px;
-    padding: 0.5rem;
-}
-
-.orderStatusShipped {
-    font-size: .9rem;
-    padding: 1rem;
-    text-align: center;
-    color: #EB8258;
-    border: 1px solid #EB8258;
-    background-color: rgba(198, 152, 134, 0.05);
-    border-radius: 5px;
-}
-
-.orderStatusAwaitingPickup {
-    font-size: .9rem;
-    padding: 1rem;
-    text-align: center;
-    color: #64C8FF;
-    border: 1px solid #64C8FF;
-    background-color: rgba(100, 200, 255, 0.05);
-    border-radius: 5px;
-}
-
-.orderStatusDefault {
-    font-size: .9rem;
-    padding: 1rem;
-    text-align: center;
-    color: #5D5D5D;
-    border: 1px solid #5D5D5D;
-    background-color: rgba(93, 93, 93, 0.05);
-    border-radius: 5px;
-}
+.orderStatusToOrder { color: #C62F3E; background-color: rgba(222, 60, 75, 0.1); }
+.orderStatusPlaced { color: #2F6FB0; background-color: rgba(68, 137, 207, 0.12); }
+.orderStatusMeenHold { color: #9A6500; background-color: rgba(255, 180, 0, 0.16); }
+.orderStatusPartial { color: #7D6680; background-color: rgba(167, 144, 165, 0.16); }
+.orderStatusProcessed { color: #A8339C; background-color: rgba(207, 68, 193, 0.1); }
+.orderStatusDelivered { color: #1E8445; background-color: rgba(68, 207, 108, 0.14); }
+.orderStatusShipped { color: #B8511F; background-color: rgba(235, 130, 88, 0.14); }
+.orderStatusAwaitingPickup { color: #1C76A8; background-color: rgba(100, 200, 255, 0.18); }
+.orderStatusDefault { color: #5D5D5D; background-color: rgba(93, 93, 93, 0.1); }
 
 .openURLIcon {
-    position: absolute;
-    right: 0rem;
-    margin-right: 12%;
-    stroke: #EB8258;
-    width: 0.7rem;
-    height: 0.7rem;
-}
-
-.itemStatusDelivered {
-    font-size: .9rem;
-    padding: 1rem;
-    text-align: center;
-    color: #44CF6C;
-    border: 1px solid #44CF6C;
-    background-color: rgba(68, 207, 108, 0.05);
-    border-radius: 5px;
+    flex-shrink: 0;
 }
 
 .tableSearch {
     display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
     justify-content: flex-end;
     margin-bottom: 10px;
 }
@@ -267,22 +199,24 @@ button.orderButton:hover{
 
 .expandedOrder {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 10px;
     padding: 10px;
 }
 
 .expandedOrderContent {
-    border: 1px solid #E8E8E8;
+    background-color: #F8F9FB;
     padding: 1rem;
-    width: 90%;
     border-radius: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    min-width: 0;
 }
 
 .expandedOrderContent h4{
+    white-space: nowrap;
+    overflow: hidden;
     text-overflow: ellipsis;
     font-weight: normal;
     text-decoration: underline;
@@ -291,6 +225,10 @@ button.orderButton:hover{
 
 .expandedOrderContent p{
     font-size: .9rem;
+}
+
+.itemLeftCol {
+    min-width: 0;
 }
 
 .itemLeftCol p{
@@ -302,11 +240,14 @@ button.orderButton:hover{
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    gap: 0.5rem;
+    flex-shrink: 0;
 }
 
 .checkMark {
-    color: green;
-    margin-left: 5px;
+    color: #1E8445;
+    margin-left: 4px;
+    vertical-align: -2px;
 }
 
 .settingsCellHeader {
@@ -362,10 +303,6 @@ button.orderButton:hover{
     width: 40px;
 }
 
-.priceColumn {
-    width: 12.5%;
-}
-
 .linkButton {
     background: none;
     border: none;
@@ -377,23 +314,16 @@ button.orderButton:hover{
     opacity: 0.7;
 }
 
-.checkMark {
-    color: green;
-    margin-left: 5px;
-    display: inline-block;
-    width: 1em;
+.idColumn {
+    width: 5.5rem;
 }
 
-.idColumn {
-    width: 5%;
+.datePlacedColumn {
+    width: 7.5rem;
 }
 
 .linkColumn {
-    width: 5%;
-}
-
-.nameColumn {
-    width: 12%;
+    width: 3.5rem;
 }
 
 .vendorColumn {
@@ -401,11 +331,15 @@ button.orderButton:hover{
 }
 
 .priceColumn {
-    width: 10%;
+    width: 7.5rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.subteamColumn {
+    width: 7rem;
 }
 
 .myOrdersButton {
-    margin-left: 1rem;
     background-color: #F8F9FB;
     color: #545360;
     border: 1px solid #d8d9de;
