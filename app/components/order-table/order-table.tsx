@@ -14,6 +14,8 @@ import ShareIcon from "../../../assets/share.svg";
 import Image from 'next/image';
 import useSWR, { mutate } from 'swr';
 import { useSession } from 'next-auth/react';
+import { Check } from 'lucide-react';
+import { useToast } from '../toast/use-toast';
 
 interface CostBreakdown {
     [key: string]: number;
@@ -83,6 +85,29 @@ export interface SerializedItemsWithRelations {
 
 const PAGE_SIZE = 15;
 
+const STATUS_CLASS: Partial<Record<OrderStatus, string>> = {
+    TO_ORDER: styles.orderStatusToOrder,
+    PLACED: styles.orderStatusPlaced, MEEN_PLACED: styles.orderStatusPlaced,
+    MEEN_HOLD: styles.orderStatusMeenHold, HOLD: styles.orderStatusMeenHold,
+    PROCESSED: styles.orderStatusProcessed, MEEN_RECEIVED: styles.orderStatusProcessed,
+    SHIPPED: styles.orderStatusShipped, SUPPLIER_SHIPPED: styles.orderStatusShipped,
+    AWAITING_PICKUP: styles.orderStatusAwaitingPickup, EV_AWAITING_PICKUP: styles.orderStatusAwaitingPickup,
+    PARTIAL: styles.orderStatusPartial, PARTIAL_DELIVERY: styles.orderStatusPartial,
+    DELIVERED: styles.orderStatusDelivered, MEEN_DELIVERED: styles.orderStatusDelivered,
+};
+
+const ITEM_STATUS_CLASS: Partial<Record<ItemStatus, string>> = {
+    TO_ORDER: styles.orderStatusToOrder,
+    PLACED: styles.orderStatusPlaced,
+    PROCESSED: styles.orderStatusProcessed,
+    DELIVERED: styles.orderStatusDelivered,
+    PICKED_UP: styles.orderStatusDelivered,
+};
+
+const statusClass = (status: OrderStatus) => STATUS_CLASS[status] ?? styles.orderStatusDefault;
+const itemStatusClass = (status: ItemStatus) => ITEM_STATUS_CLASS[status] ?? styles.orderStatusShipped;
+const statusLabel = (status: string) => status.replace(/_/g, ' ');
+
 const fetcher = async (url: string) => {
     const res = await fetch(url);
     return res.json();
@@ -106,6 +131,7 @@ const OrderTable: React.FC = () => {
     const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
     const { data: session } = useSession();
+    const { toast } = useToast();
     const currentUserSubteam = session?.user?.subteam ?? "";
 
     // Debounce search input
@@ -284,7 +310,7 @@ const OrderTable: React.FC = () => {
         const shareUrl = `${window.location.origin}/order/${orderId}`;
 
         navigator.clipboard.writeText(shareUrl).then(() => {
-            alert('Order link copied to clipboard!');
+            toast({ title: 'Link copied', description: 'Order link copied to clipboard.', variant: 'affirmation' });
         }).catch(() => {
             prompt('Copy this link to share:', shareUrl);
         });
@@ -422,16 +448,18 @@ const OrderTable: React.FC = () => {
                                     <td className={`${styles.tdText} ${styles.textColumn}`}>
                                         {new Date(order.createdAt).toLocaleDateString()}
                                     </td>
-                                    <td className={`${styles.tdText} ${styles.nameColumn} ${styles.nameColumn}`}>
+                                    <td className={`${styles.tdText} ${styles.nameColumn}`} title={order.name}>
                                         {order.name}
                                     </td>
-                                    <td className={`${styles.tdText} ${styles.textColumn} ${styles.vendorColumn}`}>
+                                    <td className={`${styles.tdText} ${styles.textColumn} ${styles.vendorColumn}`} title={order.vendor}>
                                         {order.vendor}
                                     </td>
                                     <td className={`${styles.tdText} ${styles.textColumn}`}>
                                         {order.url ? (
                                             <button
                                                 className={styles.linkButton}
+                                                aria-label="Open order link"
+                                                title={order.url}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     window.open(order.url!, '_blank');
@@ -449,43 +477,27 @@ const OrderTable: React.FC = () => {
                                         )}
                                     </td>
                                     <td className={`${styles.tdText} ${styles.textColumn} ${styles.priceColumn}`}>
-                                        ${order.totalCost.toFixed(2)}{' '}
+                                        ${order.totalCost.toFixed(2)}
                                         {order.costVerified && (
-                                            <span className={styles.checkMark}>✓</span>
+                                            <Check className={styles.checkMark} size={14} aria-label="Price verified" />
                                         )}
                                     </td>
-                                    <td
-                                        className={`${styles.tdText} ${
-                                            order.status === OrderStatus.TO_ORDER
-                                                ? styles.orderStatusToOrder
-                                                : order.status === OrderStatus.PLACED
-                                                ? styles.orderStatusPlaced
-                                                : order.status === OrderStatus.MEEN_HOLD
-                                                ? styles.orderStatusMeenHold
-                                                : order.status === OrderStatus.PROCESSED
-                                                ? styles.orderStatusProcessed
-                                                : order.status === OrderStatus.SHIPPED
-                                                ? styles.orderStatusShipped
-                                                : order.status === OrderStatus.AWAITING_PICKUP
-                                                ? styles.orderStatusAwaitingPickup
-                                                : order.status === OrderStatus.DELIVERED
-                                                ? styles.orderStatusDelivered
-                                                : order.status === OrderStatus.PARTIAL
-                                                ? styles.orderStatusPartial
-                                                : styles.orderStatusDefault
-                                        }`}
-                                        onClick={(event)=>handleStatusClick(event, order)}
-                                    >
-                                        {order.status.toUpperCase()}
-                                        {order.status === OrderStatus.SHIPPED && order.trackingId && order.carrier &&
-                                            <Image
-                                            src={OpenURLIcon.src}
-                                            height={14}
-                                            width={14}
-                                            alt="Open URL Icon"
-                                            className={`${styles.openURLIcon}`}
-                                            />
-                                        }
+                                    <td className={`${styles.tdText} ${styles.statusColumn}`}>
+                                        <span
+                                            className={`${styles.statusPill} ${statusClass(order.status)}`}
+                                            onClick={(event) => handleStatusClick(event, order)}
+                                        >
+                                            {statusLabel(order.status)}
+                                            {order.status === OrderStatus.SHIPPED && order.trackingId && order.carrier &&
+                                                <Image
+                                                src={OpenURLIcon.src}
+                                                height={12}
+                                                width={12}
+                                                alt="Track package"
+                                                className={styles.openURLIcon}
+                                                />
+                                            }
+                                        </span>
                                     </td>
                                     <td className={`${styles.tdText} ${styles.costBreakdownColumn}`}>
                                         {order.costBreakdown ? (
@@ -502,7 +514,7 @@ const OrderTable: React.FC = () => {
                                             'N/A'
                                         )}
                                     </td>
-                                    <td className={`${styles.tdText} ${styles.commentsColumn}`}>
+                                    <td className={`${styles.tdText} ${styles.commentsColumn}`} title={order.comments ?? undefined}>
                                         {order.comments || 'N/A'}
                                     </td>
                                     <td
@@ -511,6 +523,8 @@ const OrderTable: React.FC = () => {
                                     >
                                         <button
                                             className={styles.settingsButton}
+                                            aria-label="Order settings"
+                                            title="Order settings"
                                             onClick={() => handleSettingsClick(order)}
                                         >
                                             <Image
@@ -529,6 +543,7 @@ const OrderTable: React.FC = () => {
                                             className={styles.shareButton}
                                             onClick={(e) => handleShareOrder(e, order.id)}
                                             title="Share order link"
+                                            aria-label="Share order link"
                                         >
                                             <Image
                                                 src={ShareIcon.src}
@@ -549,32 +564,17 @@ const OrderTable: React.FC = () => {
                                                         className={styles.expandedOrderContent}
                                                     >
                                                         <div className={styles.itemLeftCol}>
-                                                            <h4>
-                                                                {item.name.length > 21
-                                                                    ? item.name.slice(0, 21) + '...'
-                                                                    : item.name}
-                                                            </h4>
+                                                            <h4 title={item.name}>{item.name}</h4>
                                                             <p>{item.vendor}</p>
                                                             <p>${item.price.toFixed(2)}</p>
                                                         </div>
                                                         <div className={styles.itemRightCol}>
-                                                            <p
-                                                                className={`${styles.itemStatusText} ${
-                                                                    item.status === ItemStatus.TO_ORDER
-                                                                        ? styles.orderStatusToOrder
-                                                                        : item.status === ItemStatus.PLACED
-                                                                        ? styles.orderStatusPlaced
-                                                                        : item.status === ItemStatus.PROCESSED
-                                                                        ? styles.orderStatusProcessed
-                                                                        : item.status === ItemStatus.DELIVERED
-                                                                        ? styles.itemStatusDelivered
-                                                                        : styles.orderStatusShipped
-                                                                } ${styles.itemStatus}`}
-                                                            >
-                                                                {item.status.toUpperCase()}
-                                                            </p>
+                                                            <span className={`${styles.statusPill} ${styles.itemStatusText} ${itemStatusClass(item.status)}`}>
+                                                                {statusLabel(item.status)}
+                                                            </span>
                                                             <button
                                                                 className={styles.itemSettingsButton}
+                                                                aria-label="Item settings"
                                                                 onClick={() => handleSettingsClick(order, item)}
                                                             >
                                                                 <Image src={Settings.src} height={15} width={15} alt="settings" />
@@ -610,12 +610,14 @@ const OrderTable: React.FC = () => {
                             <div className={styles.mobileCardActions} onClick={(e) => e.stopPropagation()}>
                                 <button
                                     className={styles.settingsButton}
+                                    aria-label="Order settings"
                                     onClick={() => handleSettingsClick(order)}
                                 >
                                     <Image src={Settings.src} height={16} width={16} alt="settings" />
                                 </button>
                                 <button
                                     className={styles.shareButton}
+                                    aria-label="Share order link"
                                     onClick={(e) => handleShareOrder(e, order.id)}
                                 >
                                     <Image src={ShareIcon.src} height={16} width={16} alt="share" />
@@ -625,26 +627,16 @@ const OrderTable: React.FC = () => {
                         <div className={styles.mobileCardMeta}>
                             <span>{order.vendor}</span>
                             <span className={styles.mobileCardDot}></span>
-                            <span>${order.totalCost.toFixed(2)}{order.costVerified && <span className={styles.checkMark}>✓</span>}</span>
+                            <span>${order.totalCost.toFixed(2)}{order.costVerified && <Check className={styles.checkMark} size={13} aria-label="Price verified" />}</span>
                             <span className={styles.mobileCardDot}></span>
                             <span>{new Date(order.createdAt).toLocaleDateString()}</span>
                         </div>
                         <div className={styles.mobileCardFooter}>
                             <span
-                                className={`${styles.mobileCardStatus} ${
-                                    order.status === OrderStatus.TO_ORDER ? styles.orderStatusToOrder
-                                    : order.status === OrderStatus.PLACED ? styles.orderStatusPlaced
-                                    : order.status === OrderStatus.MEEN_HOLD ? styles.orderStatusMeenHold
-                                    : order.status === OrderStatus.PROCESSED ? styles.orderStatusProcessed
-                                    : order.status === OrderStatus.SHIPPED ? styles.orderStatusShipped
-                                    : order.status === OrderStatus.AWAITING_PICKUP ? styles.orderStatusAwaitingPickup
-                                    : order.status === OrderStatus.DELIVERED ? styles.orderStatusDelivered
-                                    : order.status === OrderStatus.PARTIAL ? styles.orderStatusPartial
-                                    : styles.orderStatusDefault
-                                }`}
+                                className={`${styles.mobileCardStatus} ${statusClass(order.status)}`}
                                 onClick={(event) => handleStatusClick(event, order)}
                             >
-                                {order.status.replace(/_/g, ' ')}
+                                {statusLabel(order.status)}
                             </span>
                             {order.costBreakdown && (
                                 <span className={styles.mobileCardSubteam}>
@@ -679,18 +671,13 @@ const OrderTable: React.FC = () => {
                                         </div>
                                         <div className={styles.mobileCardItemRight}>
                                             <span
-                                                className={`${styles.mobileCardItemStatus} ${
-                                                    item.status === ItemStatus.TO_ORDER ? styles.orderStatusToOrder
-                                                    : item.status === ItemStatus.PLACED ? styles.orderStatusPlaced
-                                                    : item.status === ItemStatus.PROCESSED ? styles.orderStatusProcessed
-                                                    : item.status === ItemStatus.DELIVERED ? styles.itemStatusDelivered
-                                                    : styles.orderStatusShipped
-                                                }`}
+                                                className={`${styles.mobileCardItemStatus} ${itemStatusClass(item.status)}`}
                                             >
-                                                {item.status.replace(/_/g, ' ')}
+                                                {statusLabel(item.status)}
                                             </span>
                                             <button
                                                 className={styles.itemSettingsButton}
+                                                aria-label="Item settings"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleSettingsClick(order, item);
@@ -709,7 +696,7 @@ const OrderTable: React.FC = () => {
             {loadMoreButton}
             {!isLoading && displayOrders.length === 0 && (
             <div className={styles.emptyState}>
-                <p>No active orders at the moment. 🎉</p>
+                <p>No active orders at the moment.</p>
                 <p>Looks like everything is all set!</p>
                 <Image
                     src={EmptyIcon.src}

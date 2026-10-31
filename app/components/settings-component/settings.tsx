@@ -2,13 +2,11 @@ import React, { useRef, useState, useEffect } from 'react';
 import styles from './settings-menu.module.css';
 import { OrderStatus, ItemStatus, Item } from '@prisma/client';
 import { useToast } from '../toast/use-toast';
-import CloseIcon from "../../../assets/close.svg";
-import Image from 'next/image';
 import useSWR from 'swr';
 import { SerializedOrderWithRelations } from '../order-table/order-table';
 import { useSession } from 'next-auth/react';
-import DownloadIcon from "../../../assets/file_download.svg"
 import * as XLSX from 'xlsx';
+import { Download, FileText, Trash2, Upload, X } from 'lucide-react';
 import { checkAdmin, checkLead } from '../../lib/checkAdmin';
 
 interface SettingsMenuProps {
@@ -57,6 +55,9 @@ const subteamMapping: { [key: string]: string } = {
 };
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+const money = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const statusLabel = (status: string) => status.replace(/_/g, ' ');
 
 const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpdateOrder }) => {
     const { data: session } = useSession();
@@ -118,6 +119,15 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { toast } = useToast();
     const [comments, setComments] = useState(order?.comments || '');
+
+    useEffect(() => {
+        const onKeyDown = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+        document.addEventListener('keydown', onKeyDown);
+        return () => document.removeEventListener('keydown', onKeyDown);
+    }, [onClose]);
+
+    // mousedown, not click, so a text-selection drag that ends on the overlay doesn't close the modal
+    const handleOverlayMouseDown = (e: React.MouseEvent) => e.target === e.currentTarget && onClose();
 
     const [carrier, setCarrier] = useState<string>(order?.carrier || '');
     const [trackingId, setTrackingId] = useState<string>(order?.trackingId || '');
@@ -400,289 +410,256 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ order, item, onClose, onUpd
         }
     };
 
-    // Show a loading state while the admin check is in-flight
-    if (isAdminLoading) {
-        return (
-            <div className={styles.overlay}>
-                <div className={styles.settingsMenu}>
-                    <p>Loading...</p>
-                </div>
-            </div>
-        );
-    }
+    const breakdownTotal = Object.values(costBreakdown).reduce((a, b) => a + b, 0);
+    const fileName = (url: string) => decodeURIComponent(url.split('/').pop() || url);
+    const canComment = !!order && (canEdit || session?.user.subteam === order.subteam);
+    const showDelete = !!order && !item && (canEdit || canDeleteOrder);
+
+    const title = item ? item.name : order?.name;
+    const meta = item
+        ? [item.vendor, item.quantity ? `Qty ${item.quantity}` : null, item.price != null ? money(item.price) : null]
+        : order
+            ? [order.meenOrderId ? `#${order.meenOrderId}` : null, order.user.name, order.subteam, order.deliveryLocation, new Date(order.createdAt).toLocaleDateString(), money(order.totalCost)]
+            : [];
 
     return (
-        <div className={styles.overlay}>
-            <div className={styles.settingsMenu}>
-                <div className={styles.formHeader}>
-                    <h3 className={styles.formTitle}>Settings</h3>
-                    <div className={styles.settingsButtonGroup}>
-                        {order && !order.url && order.items && order.items.length > 0 && (
-                            <button className={styles.downloadButton} onClick={handleDownloadExcel}>
-                                <Image src={DownloadIcon.src} height={10} width={10} alt='download' />
+        <div className={styles.overlay} onMouseDown={handleOverlayMouseDown}>
+            <div className={styles.settingsMenu} role="dialog" aria-modal="true" aria-labelledby="settings-title">
+                <header className={styles.formHeader}>
+                    <div className={styles.titleBlock}>
+                        <h2 id="settings-title" className={styles.formTitle} title={title}>{title}</h2>
+                        <p className={styles.meta}>{meta.filter(Boolean).join(' · ')}</p>
+                    </div>
+                    <div className={styles.headerActions}>
+                        {order && !item && !order.url && order.items && order.items.length > 0 && (
+                            <button className={styles.iconButton} onClick={handleDownloadExcel} aria-label="Download items as Excel" title="Download items as Excel">
+                                <Download size={16} aria-hidden />
                             </button>
                         )}
-                        <button className={styles.closeButton} onClick={onClose}>
-                            <Image src={CloseIcon.src} height={10} width={10} alt='close' />
+                        <button className={styles.iconButton} onClick={onClose} aria-label="Close" title="Close">
+                            <X size={16} aria-hidden />
                         </button>
                     </div>
-                </div>
+                </header>
 
-                <div className={styles.contentContainer}>
-                    {!item && order && (
-                        <div className={styles.infoSection}>
-                            <h4 className={`${styles.infoLabel} ${styles.orderName}`}>Order Name:</h4>
-                            <p className={styles.infoText}>{order.name}</p>
-
-                            <h4 className={styles.infoLabel}>Placed By:</h4>
-                            <p className={styles.infoText}>{order.user.name}</p>
-
-                            <h4 className={styles.infoLabel}>Deliver to:</h4>
-                            <p className={styles.infoText}>{order.deliveryLocation}</p>
-
+                <div className={styles.body}>
+                    {isAdminLoading ? (
+                        <p className={styles.muted}>Loading…</p>
+                    ) : item ? (
+                        <section className={styles.section}>
+                            <dl className={styles.details}>
+                                <dt>Part number</dt>
+                                <dd>{item.partNumber || <span className={styles.dash}>—</span>}</dd>
+                                <dt>Link</dt>
+                                <dd>
+                                    {item.link ? (
+                                        <a href={item.link} target="_blank" rel="noopener noreferrer" className={styles.itemLink}>
+                                            {item.link}
+                                        </a>
+                                    ) : <span className={styles.dash}>—</span>}
+                                </dd>
+                                <dt>Quantity</dt>
+                                <dd className={styles.num}>{item.quantity ?? <span className={styles.dash}>—</span>}</dd>
+                                {item.notes && (
+                                    <>
+                                        <dt>Notes</dt>
+                                        <dd>{item.notes}</dd>
+                                    </>
+                                )}
+                            </dl>
                             {canEdit && (
-                                <>
-                                    <h4 className={styles.infoLabel}>Cost Breakdown:</h4>
-                                    <div className={styles.costBreakdownList}>
-                                        {Object.keys(subteamMapping).map((subteam) => (
-                                            <div key={subteam} className={styles.breakdownItem}>
-                                                <label className={styles.breakdownLabel}>{subteam}:</label>
-                                                <input
-                                                    type="number"
-                                                    className={styles.breakdownInput}
-                                                    value={costBreakdown[subteam]}
-                                                    onChange={(e) => {
-                                                        const value = parseFloat(e.target.value) || 0;
-                                                        setCostBreakdown((prev) => ({
-                                                            ...prev,
-                                                            [subteam]: value,
-                                                        }));
-                                                    }}
-                                                />
-                                            </div>
+                                <div className={styles.field}>
+                                    <label htmlFor="item-status">Status</label>
+                                    <select id="item-status" value={itemStatus} onChange={handleItemStatusChange}>
+                                        {Object.values(ItemStatus).map((option) => (
+                                            <option key={option} value={option}>{statusLabel(option)}</option>
                                         ))}
-                                    </div>
-                                </>
-                            )}
-
-                            {supportingDocs && supportingDocs.length > 0 && (
-                                <div className={styles.docSection}>
-                                    <h4 className={styles.infoLabel}>Supporting Documents:</h4>
-                                    <div className={styles.docsContainer}>
-                                        {supportingDocs.map((doc: Document, index: number) => (
-                                            <a
-                                                key={index}
-                                                href={doc.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className={styles.docLink}
-                                            >
-                                                <span className={styles.docIcon}>📄</span>
-                                                <span className={styles.docName}>{doc.url.split('/').pop()}</span>
-                                            </a>
-                                        ))}
-                                    </div>
+                                    </select>
                                 </div>
                             )}
+                        </section>
+                    ) : order && (
+                        <>
+                            {canEdit ? (
+                                <section className={styles.section}>
+                                    <h3 className={styles.sectionTitle}>Order details</h3>
+                                    <div className={styles.fieldGrid}>
+                                        <div className={styles.field}>
+                                            <label htmlFor="order-status">Status</label>
+                                            <select id="order-status" value={orderStatus} onChange={handleOrderStatusChange}>
+                                                {Object.values(OrderStatus)
+                                                    .filter((s) => s !== OrderStatus.AWAITING_APPROVAL)
+                                                    .map((option) => (
+                                                        <option key={option} value={option}>{statusLabel(option)}</option>
+                                                    ))}
+                                            </select>
+                                        </div>
+                                        <div className={styles.field}>
+                                            <label htmlFor="meen-id">MEEN order ID</label>
+                                            <input id="meen-id" type="text" value={meenOrderId} onChange={(e) => setMeenOrderId(e.target.value)} />
+                                        </div>
+                                        <div className={styles.field}>
+                                            <div className={styles.labelRow}>
+                                                <label htmlFor="order-price">Price</label>
+                                                <label className={styles.checkboxLabel}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isPriceVerified}
+                                                        onChange={(e) => setIsPriceVerified(e.target.checked)}
+                                                    />
+                                                    Verified
+                                                </label>
+                                            </div>
+                                            <div className={styles.affix}>
+                                                <span aria-hidden>$</span>
+                                                <input id="order-price" type="number" step="0.01" value={price} onChange={handlePriceChange} />
+                                            </div>
+                                        </div>
+                                        <div className={styles.field}>
+                                            <label htmlFor="carrier">Carrier</label>
+                                            <select id="carrier" value={carrier} onChange={handleCarrierChange}>
+                                                <option value="">No carrier</option>
+                                                <option value="UPS">UPS</option>
+                                                <option value="FEDEX">FedEx</option>
+                                            </select>
+                                        </div>
+                                        <div className={`${styles.field} ${styles.span2}`}>
+                                            <label htmlFor="tracking-id">Tracking ID</label>
+                                            <input id="tracking-id" type="text" value={trackingId} onChange={handleTrackingIdChange} placeholder={carrier ? '' : 'Pick a carrier first'} />
+                                        </div>
+                                    </div>
+                                </section>
+                            ) : (
+                                <section className={styles.section}>
+                                    <dl className={styles.details}>
+                                        <dt>Status</dt>
+                                        <dd>{statusLabel(order.status)}</dd>
+                                        <dt>Tracking</dt>
+                                        <dd>{order.trackingId ? `${order.carrier ?? ''} ${order.trackingId}`.trim() : <span className={styles.dash}>—</span>}</dd>
+                                    </dl>
+                                </section>
+                            )}
 
-                            {(canEdit || session?.user.subteam === order.subteam) && (
-                                <div className={styles.commentSection}>
-                                    <h4 className={styles.infoLabel}>Comments:</h4>
+                            {canEdit && (
+                                <section className={styles.section}>
+                                    <div className={styles.sectionHeader}>
+                                        <h3 className={styles.sectionTitle}>Cost breakdown</h3>
+                                        <span className={`${styles.total} ${breakdownTotal === 100 ? styles.totalOk : styles.totalOff}`}>
+                                            {breakdownTotal === 100 ? 'Total 100%' : `Total ${breakdownTotal}% · must be 100%`}
+                                        </span>
+                                    </div>
+                                    <div className={styles.breakdownGrid}>
+                                        {Object.keys(subteamMapping).map((subteam) => (
+                                            <label key={subteam} className={styles.breakdownItem} title={subteamMapping[subteam]}>
+                                                <span>{subteam}</span>
+                                                <span className={`${styles.affix} ${styles.affixEnd}`}>
+                                                    <input
+                                                        type="number"
+                                                        min={0}
+                                                        max={100}
+                                                        className={costBreakdown[subteam] ? styles.filled : undefined}
+                                                        value={costBreakdown[subteam]}
+                                                        onFocus={(e) => e.target.select()}
+                                                        onChange={(e) => {
+                                                            const value = parseFloat(e.target.value) || 0;
+                                                            setCostBreakdown((prev) => ({ ...prev, [subteam]: value }));
+                                                        }}
+                                                    />
+                                                    <span aria-hidden>%</span>
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
+
+                            {canComment && (
+                                <section className={styles.section}>
+                                    <label htmlFor="order-comments" className={styles.sectionTitle}>Comments</label>
                                     <textarea
+                                        id="order-comments"
                                         value={comments}
                                         onChange={(e) => setComments(e.target.value)}
                                         className={styles.textarea}
-                                        rows={4}
+                                        placeholder="Notes for the team, e.g. quantity or delivery details"
+                                        rows={3}
                                     />
-                                </div>
+                                </section>
                             )}
-                        </div>
-                    )}
 
-                    <div className={styles.settingsGroup}>
-                        {item && (
-                            <>
-                                <div className={styles.inputGroup}>
-                                    <label>Item Name:</label>
-                                    <p className={styles.infoText}>{item.name}</p>
-                                </div>
-                                <div className={styles.inputGroup}>
-                                    <label>Part Number:</label>
-                                    <p className={styles.infoText}>{item.partNumber || 'N/A'}</p>
-                                </div>
-                                <div className={styles.inputGroup}>
-                                    <label>URL:</label>
-                                    {item.link ? (
-                                        <a
-                                            href={item.link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={styles.itemLink}
-                                        >
-                                            {item.link}
-                                        </a>
-                                    ) : (
-                                        <p className={styles.infoText}>N/A</p>
-                                    )}
-                                </div>
-                                <div className={styles.inputGroup}>
-                                    <label>Quantity:</label>
-                                    <p className={styles.infoText}>{item.quantity || 'N/A'}</p>
-                                </div>
-                                {item.notes && (
-                                    <div className={styles.inputGroup}>
-                                        <label>Notes:</label>
-                                        <p className={styles.infoText}>{item.notes}</p>
+                            {(canEdit || (supportingDocs && supportingDocs.length > 0)) && (
+                                <section className={styles.section}>
+                                    <div className={styles.sectionHeader}>
+                                        <h3 className={styles.sectionTitle}>Files</h3>
+                                        {canEdit && (
+                                            <>
+                                                <button onClick={handleAddReceipt} className={`${styles.button} ${styles.ghostButton}`}>
+                                                    <Upload size={14} aria-hidden />
+                                                    Add receipt
+                                                </button>
+                                                <input
+                                                    type="file"
+                                                    multiple
+                                                    accept="application/pdf"
+                                                    ref={fileInputRef}
+                                                    style={{ display: 'none' }}
+                                                    onChange={handleFileUpload}
+                                                />
+                                            </>
+                                        )}
                                     </div>
-                                )}
-                                {canEdit && (
-                                    <div className={styles.inputGroup}>
-                                        <label>Status:</label>
-                                        <select value={itemStatus} onChange={handleItemStatusChange}>
-                                            {Object.values(ItemStatus).map((option) => (
-                                                <option key={option} value={option}>
-                                                    {option.toUpperCase()}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                )}
-                            </>
-                        )}
-
-                        {order && canEdit && (
-                            <>
-                                <div className={styles.inputGroup}>
-                                    <label>Status:</label>
-                                    <select value={orderStatus} onChange={handleOrderStatusChange}>
-                                        {Object.values(OrderStatus)
-                                            .filter((s) => s !== OrderStatus.AWAITING_APPROVAL)
-                                            .map((option) => (
-                                            <option key={option} value={option}>
-                                                {option.toUpperCase()}
-                                            </option>
+                                    <ul className={styles.fileList}>
+                                        {supportingDocs?.map((doc) => (
+                                            <li key={`doc-${doc.id}`} className={styles.fileRow}>
+                                                <a href={doc.url} target="_blank" rel="noopener noreferrer" className={styles.docLink} title={fileName(doc.url)}>
+                                                    <FileText size={16} aria-hidden />
+                                                    <span className={styles.docName}>{fileName(doc.url)}</span>
+                                                </a>
+                                                <span className={styles.fileKind}>Supporting doc</span>
+                                            </li>
                                         ))}
-                                    </select>
-                                </div>
-                                <div className={styles.inputGroup}>
-                                    <label>MEEN Order ID:</label>
-                                    <input
-                                        type="text"
-                                        value={meenOrderId}
-                                        onChange={(e) => setMeenOrderId(e.target.value)}
-                                        className={styles.textInput}
-                                    />
-                                </div>
-                                <div className={styles.inputGroup}>
-                                    <label>Price:</label>
-                                    <div className={styles.priceContainer}>
-                                        <input
-                                            type="number"
-                                            value={price}
-                                            onChange={handlePriceChange}
-                                            className={styles.numberInput}
-                                        />
-                                        <label className={styles.checkboxLabel}>
-                                            Verify Price
-                                            <input
-                                                type="checkbox"
-                                                checked={isPriceVerified}
-                                                onChange={(e) => setIsPriceVerified(e.target.checked)}
-                                                className={styles.checkboxInput}
-                                            />
-                                        </label>
-                                    </div>
-                                </div>
-                                <div className={styles.inputGroup}>
-                                    <label>Carrier:</label>
-                                    <select value={carrier} onChange={handleCarrierChange}>
-                                        <option value="">Select Carrier</option>
-                                        <option value="UPS">UPS</option>
-                                        <option value="FEDEX">FEDEX</option>
-                                    </select>
-                                </div>
-                                <div className={styles.inputGroup}>
-                                    <label>Tracking ID:</label>
-                                    <input
-                                        type="text"
-                                        value={trackingId}
-                                        onChange={handleTrackingIdChange}
-                                        className={styles.textInput}
-                                    />
-                                </div>
-
-                                {receipts && receipts.length > 0 ? (
-                                    <div className={styles.receiptSection}>
-                                        <h4 className={styles.infoLabel}>Receipts:</h4>
-                                        <div className={styles.docsContainer}>
-                                            {receipts.map((doc: Document) => (
-                                                <div key={doc.id} className={styles.docItem}>
-                                                    <a
-                                                        href={doc.url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className={styles.docLink}
-                                                    >
-                                                        <span className={styles.docIcon}>📄</span>
-                                                        <span className={styles.docName}>{doc.url.split('/').pop()}</span>
-                                                    </a>
-                                                    <button
-                                                        onClick={() => handleDeleteReceipt(doc.id)}
-                                                        className={styles.deleteButton}
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className={styles.receiptSection}>
-                                        <h4 className={styles.infoLabel}>Receipts:</h4>
-                                        <p className={styles.infoText}>No receipts added yet.</p>
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </div>
+                                        {canEdit && receipts.map((doc) => (
+                                            <li key={`receipt-${doc.id}`} className={styles.fileRow}>
+                                                <a href={doc.url} target="_blank" rel="noopener noreferrer" className={styles.docLink} title={fileName(doc.url)}>
+                                                    <FileText size={16} aria-hidden />
+                                                    <span className={styles.docName}>{fileName(doc.url)}</span>
+                                                </a>
+                                                <span className={styles.fileKind}>Receipt</span>
+                                                <button
+                                                    onClick={() => handleDeleteReceipt(doc.id)}
+                                                    className={styles.iconButton}
+                                                    aria-label={`Delete receipt ${fileName(doc.url)}`}
+                                                    title="Delete receipt"
+                                                >
+                                                    <Trash2 size={14} aria-hidden />
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    {canEdit && receipts.length === 0 && (
+                                        <p className={styles.emptyFiles}>No receipts yet. Add the PDF once the order is paid.</p>
+                                    )}
+                                </section>
+                            )}
+                        </>
+                    )}
                 </div>
 
-                {(canEdit || canDeleteOrder) && (
-                    <div className={styles.receiptButton}>
-                        {canEdit && (
-                            <>
-                                <button onClick={handleAddReceipt} className={`${styles.saveButton} ${styles.button}`}>
-                                    Add Receipt
-                                </button>
-                                <input
-                                    type="file"
-                                    multiple
-                                    accept="application/pdf"
-                                    ref={fileInputRef}
-                                    style={{ display: 'none' }}
-                                    onChange={handleFileUpload}
-                                />
-                            </>
-                        )}
-                        {order && (
-                            <button
-                                onClick={handleDeleteOrder}
-                                className={`${styles.deleteOrderButton} ${styles.button}`}
-                            >
-                                Delete Order
-                            </button>
-                        )}
+                <footer className={styles.buttonGroup}>
+                    {showDelete && (
+                        <button onClick={handleDeleteOrder} className={`${styles.button} ${styles.dangerButton}`}>
+                            Delete order
+                        </button>
+                    )}
+                    <div className={styles.footerEnd}>
+                        <button onClick={onClose} className={`${styles.button} ${styles.cancelButton}`}>
+                            Cancel
+                        </button>
+                        <button onClick={handleSave} className={`${styles.button} ${styles.saveButton}`} disabled={isAdminLoading}>
+                            Save
+                        </button>
                     </div>
-                )}
-
-                <div className={styles.buttonGroup}>
-                    <button onClick={onClose} className={`${styles.cancelButton} ${styles.button}`}>
-                        Cancel
-                    </button>
-                    <button onClick={handleSave} className={`${styles.saveButton} ${styles.button}`}>
-                        Save
-                    </button>
-                </div>
+                </footer>
             </div>
         </div>
     );
