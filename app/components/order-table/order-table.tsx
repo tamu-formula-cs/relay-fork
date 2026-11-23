@@ -389,6 +389,19 @@ const OrderTable: React.FC = () => {
         }
     };
 
+    // Hide the status tooltip on scroll or resize. Must stay above the early return
+    // below, or an SWR error renders fewer hooks and React throws error #300.
+    useEffect(() => {
+        if (!statusTip) return;
+        const hide = () => setStatusTip(null);
+        window.addEventListener('scroll', hide, true);
+        window.addEventListener('resize', hide);
+        return () => {
+            window.removeEventListener('scroll', hide, true);
+            window.removeEventListener('resize', hide);
+        };
+    }, [statusTip]);
+
     if (error) {
         return <div>Error loading orders.</div>;
     }
@@ -437,17 +450,6 @@ const OrderTable: React.FC = () => {
         const x = Math.min(window.innerWidth - 160, Math.max(160, rect.left + rect.width / 2));
         setStatusTip({ text, x, y: below ? rect.bottom + 8 : rect.top - 8, below });
     };
-
-    useEffect(() => {
-        if (!statusTip) return;
-        const hide = () => setStatusTip(null);
-        window.addEventListener('scroll', hide, true);
-        window.addEventListener('resize', hide);
-        return () => {
-            window.removeEventListener('scroll', hide, true);
-            window.removeEventListener('resize', hide);
-        };
-    }, [statusTip]);
 
     const handleStatusClick = (event: React.MouseEvent, order : SerializedOrderWithRelations) => {
         event.stopPropagation();
