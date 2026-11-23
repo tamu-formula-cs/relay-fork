@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
+import { publicUser } from '../../../lib/access';
+import { denyMember } from '../../../lib/requireUser';
 
 export async function GET(
     request: Request,
     { params }: { params: Promise<{ orderId: string }> }
 ) {
+    const denied = await denyMember();
+    if (denied) return denied;
     try {
         const orderId = parseInt((await params).orderId);
 
@@ -30,7 +34,7 @@ export async function GET(
             createdAt: order.createdAt.toISOString(),
             updatedAt: order.updatedAt.toISOString(),
             user: {
-                ...order.user,
+                ...publicUser(order.user),
                 createdAt: order.user.createdAt.toISOString(),
                 updatedAt: order.user.updatedAt.toISOString(),
             },

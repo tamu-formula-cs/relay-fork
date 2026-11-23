@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
+import { denyUnlessEditor } from '../../../lib/requireUser';
 import { del } from '@vercel/blob';
 
 export async function DELETE(request: Request) {
+  const denied = await denyUnlessEditor();
+  if (denied) return denied;
   try {
     const body = await request.json();
     const { orderId } = body;

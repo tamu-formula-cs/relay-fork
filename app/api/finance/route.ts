@@ -2,9 +2,12 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../lib/prisma';
+import { denyMember } from '../../lib/requireUser';
 import { CURRENT_CAR_YEAR, isCarYear } from '../../lib/car-year';
 
 export async function GET(request: NextRequest) {
+  const denied = await denyMember();
+  if (denied) return denied;
   const carYearParam = request.nextUrl.searchParams.get('carYear');
   if (carYearParam !== null && !isCarYear(carYearParam)) {
     return NextResponse.json({ error: `Invalid car year: ${carYearParam}` }, { status: 400 });

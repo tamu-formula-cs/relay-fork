@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../lib/prisma';
+import { denyMember } from '../../lib/requireUser';
 import { normalizeSubteam } from '../../lib/budget-config';
 import { ItemStatus, OrderStatus, Prisma } from '@prisma/client';
 
@@ -97,6 +98,8 @@ function serialize(orders: Prisma.OrderGetPayload<{ select: typeof orderSelect }
 }
 
 export async function GET(request: NextRequest) {
+    const denied = await denyMember();
+    if (denied) return denied;
     try {
         const { searchParams } = request.nextUrl;
         const offset = Math.max(0, parseInt(searchParams.get('offset') || '0', 10) || 0);

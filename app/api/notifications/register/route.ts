@@ -1,15 +1,19 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
+import { requireMember } from '../../../lib/requireUser';
 import { Expo } from 'expo-server-sdk';
 
 export async function POST(request: Request) {
+  const actor = await requireMember();
+  if (actor instanceof NextResponse) return actor;
   try {
     const body = await request.json();
-    const { userId, pushToken, platform, deviceId } = body;
+    const { pushToken, platform, deviceId } = body;
+    const userId = actor.user.id;
 
-    if (!userId || !pushToken) {
+    if (!pushToken) {
       return NextResponse.json(
-        { error: 'userId and pushToken are required' },
+        { error: 'pushToken is required' },
         { status: 400 }
       );
     }
@@ -20,18 +24,6 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-
-    const user = await prisma.user.findUnique({
-      where: { id: Number(userId) },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-
 
     const token = await prisma.pushToken.upsert({
       where: { token: pushToken },

@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
+import { requireMember } from '../../../lib/requireUser';
 
 export async function POST(request: Request) {
+  const actor = await requireMember();
+  if (actor instanceof NextResponse) return actor;
   try {
     const body = await request.json();
     const { pushToken } = body;
@@ -14,7 +17,7 @@ export async function POST(request: Request) {
     }
 
     const result = await prisma.pushToken.deleteMany({
-      where: { token: pushToken },
+      where: { token: pushToken, userId: actor.user.id },
     });
 
     if (result.count === 0) {

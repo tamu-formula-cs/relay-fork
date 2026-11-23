@@ -1,6 +1,7 @@
 import { google } from 'googleapis';
 import { NextResponse } from 'next/server';
 import { loadCredentials } from '../../lib/google-auth';
+import { denyUnlessAdmin } from '../../lib/requireUser';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,5 +34,7 @@ async function authorize() {
 }
 
 export async function GET() {
+  const denied = await denyUnlessAdmin();
+  if (denied) return denied;
   return await authorize();
 }

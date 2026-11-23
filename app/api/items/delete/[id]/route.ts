@@ -2,11 +2,14 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
+import { denyMember } from '../../../../lib/requireUser';
 
 export async function DELETE(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const denied = await denyMember();
+    if (denied) return denied;
     try {
         const id = Number((await params).id);
         if (!id) {

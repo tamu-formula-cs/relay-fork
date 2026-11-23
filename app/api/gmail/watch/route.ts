@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { loadOAuthClient } from '../../../lib/google-auth';
+import { machineDenied } from '../../../lib/requireUser';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const denied = machineDenied(request);
+  if (denied) return denied;
   try {
     const auth = await loadOAuthClient();
     const gmail = google.gmail({ version: 'v1', auth });

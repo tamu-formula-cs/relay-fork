@@ -1,7 +1,10 @@
 import { handleUpload } from '@vercel/blob/client';
 import { NextResponse } from 'next/server';
+import { denyMember } from '../../../lib/requireUser';
 
 export async function POST(request: Request) {
+    const denied = await denyMember();
+    if (denied) return denied;
     const body = await request.json();
     
     try {

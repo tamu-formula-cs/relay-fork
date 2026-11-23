@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
+import { requireMember } from '../../../lib/requireUser';
 import { parse } from 'csv-parse/sync';
 import { ItemStatus, OrderStatus } from '@prisma/client';
 import { checkBudgetExceeded } from '../../../lib/budgets';
@@ -24,19 +25,13 @@ interface SupportingDoc {
 }
 
 export async function POST(request: NextRequest) {
+    const actor = await requireMember();
+    if (actor instanceof NextResponse) return actor;
+    const user = actor.user;
     try {
         // Parse the multipart/form-data
         const formData = await request.formData();
         const file = formData.get('file') as File | null;
-        const userEmail = formData.get('userEmail') as string;
-
-        const user = await prisma.user.findUnique({
-            where: { email: userEmail },
-        });
-
-        if (!user) {
-            return NextResponse.json({ error: 'User not found' }, { status: 404 });
-        }
 
         const orderName = formData.get('orderName') as string;
         const vendor = formData.get('vendor') as string;

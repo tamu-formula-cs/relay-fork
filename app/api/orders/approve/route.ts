@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
+import { denyUnlessApprover } from '../../../lib/requireUser';
 import { OrderStatus } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
+  const denied = await denyUnlessApprover();
+  if (denied) return denied;
   try {
     const body = await request.json();
     const { orderId } = body;

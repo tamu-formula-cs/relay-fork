@@ -2,6 +2,8 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from "next/server";
 import { OpenAI } from "openai";
+import { machineAuthOk } from "../../lib/access";
+import { denyMember } from "../../lib/requireUser";
 
 let openai: OpenAI | null = null;
 
@@ -128,6 +130,10 @@ async function parseData(query: string): Promise<OrderDetails | null> {
 }
 
 export async function GET(req: NextRequest) {
+    if (!machineAuthOk(req.headers.get('authorization'), req.nextUrl.searchParams.get('token'))) {
+        const denied = await denyMember();
+        if (denied) return denied;
+    }
     try {
         const query = req.nextUrl.searchParams.get('query');
 
