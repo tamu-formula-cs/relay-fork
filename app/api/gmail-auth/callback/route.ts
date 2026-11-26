@@ -1,6 +1,7 @@
 import { google } from 'googleapis';
 import { NextResponse } from 'next/server';
 import { loadCredentials } from '../../../lib/google-auth';
+import { denyUnlessAdmin } from '../../../lib/requireUser';
 import { put } from '@vercel/blob';
 import prisma from '../../../lib/prisma';
 
@@ -24,6 +25,8 @@ async function exchangeCodeForToken(code: string) {
 }
 
 export async function GET(request: Request) {
+  const denied = await denyUnlessAdmin();
+  if (denied) return denied;
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
 

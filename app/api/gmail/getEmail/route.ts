@@ -4,6 +4,8 @@ import { gmail_v1, google } from 'googleapis';
 import { NextRequest, NextResponse } from 'next/server';
 import { OAuth2Client } from 'google-auth-library';
 import { loadOAuthClient } from '../../../lib/google-auth';
+import { machineAuthOk } from '../../../lib/access';
+import { denyUnlessAdmin } from '../../../lib/requireUser';
 
 interface PartialEmailData {
   body: string;
@@ -127,6 +129,11 @@ async function fetchEmails(
 }
 
 export async function GET(req: NextRequest) {
+  const token = req.nextUrl.searchParams.get('token');
+  if (!machineAuthOk(req.headers.get('authorization'), token)) {
+    const denied = await denyUnlessAdmin();
+    if (denied) return denied;
+  }
   try {
     // const { searchParams } = new URL(req.url);
     // const historyId = searchParams.get('historyId');

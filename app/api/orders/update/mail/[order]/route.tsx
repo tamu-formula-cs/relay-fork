@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../../lib/prisma';
+import { machineDenied } from '../../../../../lib/requireUser';
 import { ItemStatus, OrderStatus } from '@prisma/client';
 
 const orderStatusIndices: { [key in OrderStatus]: number } = {
@@ -53,6 +54,8 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ order: string }> }
 ) {
+  const denied = machineDenied(request);
+  if (denied) return denied;
   const { order } = await params;
   const itemName = decodeURIComponent(order);
   console.log(itemName)

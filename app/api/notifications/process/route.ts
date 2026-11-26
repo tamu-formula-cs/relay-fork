@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import sanitize from 'sanitize-html';
+import { machineDenied, machineHeader } from '../../../lib/requireUser';
 
 export async function POST(req: NextRequest) {
+    const denied = machineDenied(req);
+    if (denied) return denied;
+    const authorization = machineHeader(req);
     try {
         const { historyId } = await req.json();
         
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
         
-        const response = await fetch(`${baseUrl}/api/gmail/getEmail?historyId=${historyId}`);
+        const response = await fetch(`${baseUrl}/api/gmail/getEmail?historyId=${historyId}`, {
+            headers: { authorization },
+        });
         if (!response.ok) {
             throw new Error('Failed to fetch emails');
         }
@@ -16,7 +22,9 @@ export async function POST(req: NextRequest) {
         const sanitizedQuery = fetchedEmails[0].subject + sanitize(fetchedEmails[0].body!);
         const encodedQuery = encodeURIComponent(sanitizedQuery);
 
-        const llmResponse = await fetch(`${baseUrl}/api/llm?query=${encodedQuery}`);
+        const llmResponse = await fetch(`${baseUrl}/api/llm?query=${encodedQuery}`, {
+            headers: { authorization },
+        });
         if (!llmResponse.ok) {
             throw new Error('Failed to fetch order status');
         }
@@ -26,6 +34,7 @@ export async function POST(req: NextRequest) {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
+                authorization,
             },
             body: JSON.stringify({
                 meenId: llmData.meenId || '', 

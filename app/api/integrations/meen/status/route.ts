@@ -75,35 +75,47 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, error: 'invalid_status' }, { status: 400 });
   }
 
-  const order = await prisma.order.findFirst({
+  const orders = await prisma.order.findMany({
     where: { meenOrderId: meenId },
     select: { id: true },
+    orderBy: { id: 'asc' },
   });
 
-  if (!order) {
+  if (orders.length === 0) {
     return NextResponse.json(
       { ok: false, error: 'not_found', meen_id: meenId },
       { status: 404 }
     );
   }
 
-  const updated = await prisma.order.update({
-    where: { id: order.id },
-    data: { status: status as OrderStatus },
-    select: {
-      id: true,
-      internalOrderId: true,
-      meenOrderId: true,
-      status: true,
-    },
-  });
+  // Per-row update (not updateMany) so the prisma middleware still notifies each order.
+  const updated = await prisma.$transaction(
+    orders.map((order) =>
+      prisma.order.update({
+        where: { id: order.id },
+        data: { status: status as OrderStatus },
+        select: {
+          id: true,
+          internalOrderId: true,
+          meenOrderId: true,
+          status: true,
+        },
+      })
+    )
+  );
 
   return NextResponse.json({
     ok: true,
     found: true,
-    meen_id: updated.meenOrderId,
-    order_id: updated.id,
-    internal_order_id: updated.internalOrderId,
-    status: updated.status,
+    meen_id: updated[0].meenOrderId,
+    order_id: updated[0].id,
+    internal_order_id: updated[0].internalOrderId,
+    status: updated[0].status,
+    updated_count: updated.length,
+    orders: updated.map((order) => ({
+      order_id: order.id,
+      internal_order_id: order.internalOrderId,
+      status: order.status,
+    })),
   });
 }

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
 import { ItemStatus, OrderStatus, Prisma } from '@prisma/client';
 import { isCarYear } from '../../../../lib/car-year';
+import { editDenied, publicUser } from '../../../../lib/access';
+import { requireMember } from '../../../../lib/requireUser';
 
 // Define the progression of statuses with corresponding indices
 const orderStatusIndices: { [key in OrderStatus]: number } = {
@@ -65,6 +67,8 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const actor = await requireMember();
+  if (actor instanceof NextResponse) return actor;
   const { id } = await params;
   const orderId = Number(id);
   const body = await request.json();
@@ -89,11 +93,15 @@ export async function PUT(
     // Fetch the current order status before updating
     const currentOrder = await prisma.order.findUnique({
       where: { id: orderId },
-      select: { status: true },
+      select: { status: true, comments: true, subteam: true },
     });
 
     if (!currentOrder) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    }
+
+    if (editDenied(actor, body, currentOrder)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const currentOrderStatus = currentOrder.status;
@@ -174,7 +182,8 @@ export async function PUT(
     });
 
     console.log('Returning updated order:', updatedOrder);
-    return NextResponse.json(updatedOrder);
+    if (!updatedOrder) return NextResponse.json(updatedOrder);
+    return NextResponse.json({ ...updatedOrder, user: publicUser(updatedOrder.user) });
   } catch (error) {
     console.error('Failed to update order:', error);
     console.error('Error details:', {

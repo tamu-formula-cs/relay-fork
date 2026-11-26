@@ -1,17 +1,18 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../lib/auth';
 import prisma from '../../../lib/prisma';
+import { signupAllowed } from '../../../lib/access';
+import { requireKnownEmail } from '../../../lib/requireUser';
 
 export async function POST(request: Request) {
-    const session = await getServerSession(authOptions);
+    const known = await requireKnownEmail();
+    if (known instanceof NextResponse) return known;
 
-    if (!session?.user?.email) {
-        return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
-
-    const email = session.user.email;
+    const email = known.email;
     const { name, role, subteam, phone, carrier } = await request.json();
+
+    if (!signupAllowed(role, subteam)) {
+        return NextResponse.json({ error: 'Invalid role or subteam' }, { status: 400 });
+    }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {

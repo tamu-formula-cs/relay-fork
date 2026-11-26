@@ -1,8 +1,11 @@
 import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
+import { denyUnlessEditor } from '../../../lib/requireUser';
 
 export async function POST(request: Request) {
+    const denied = await denyUnlessEditor();
+    if (denied) return denied;
     try {
       const url = new URL(request.url);
       const orderId = url.searchParams.get('orderId');

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
+import { denyMember } from '../../../../lib/requireUser';
 import { OrderStatus, ItemStatus, StockLevel } from '@prisma/client';
 
 function mapItemStatusToOrderStatus(itemStatus: ItemStatus): OrderStatus | null {
@@ -25,6 +26,8 @@ export async function PUT(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const denied = await denyMember();
+    if (denied) return denied;
     const itemId = Number((await params).id);
     const {
         internalSKU,

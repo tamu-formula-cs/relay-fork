@@ -1,8 +1,11 @@
 // app/api/orders/[orderId]/documents/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
+import { denyMember } from '../../../../lib/requireUser';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ orderId: string }> }) {
+    const denied = await denyMember();
+    if (denied) return denied;
     const { orderId } = await params;
 
     try {

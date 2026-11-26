@@ -6,8 +6,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { loadOAuthClient } from '../../../lib/google-auth';
 import prisma from '../../../lib/prisma';
 import { OpenAI } from 'openai';
-
-const SYNC_SECRET = process.env.SYNC_SECRET;
+import { machineDenied } from '../../../lib/requireUser';
 
 interface EmailData {
   messageId: string;
@@ -212,11 +211,8 @@ const VALID_ORDER_STATUSES = new Set([
 ]);
 
 export async function POST(req: NextRequest) {
-  // Simple shared-secret auth for the GitLab runner
-  const authHeader = req.headers.get('authorization');
-  if (SYNC_SECRET && authHeader !== `Bearer ${SYNC_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const denied = machineDenied(req);
+  if (denied) return denied;
 
   const syncRecord = await prisma.gmailSync.upsert({
     where: { id: 1 },

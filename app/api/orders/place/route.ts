@@ -1,30 +1,25 @@
 // /api/orders/place
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
+import { requireMember } from '../../../lib/requireUser';
 import { ItemStatus, OrderStatus } from '@prisma/client';
 import { checkBudgetExceeded } from '../../../lib/budgets';
 import { CURRENT_CAR_YEAR, isCarYear } from '../../../lib/car-year';
 
 export async function POST(request: NextRequest) {
+    const actor = await requireMember();
+    if (actor instanceof NextResponse) return actor;
 
     const body = await request.json();
     const { orderName, cartUrl, items, vendor, totalCost, comments, costBreakdown, supportingDocs, deliveryLocation } = body;
 
-    const userEmail = body.userEmail;
+    const user = actor.user;
     if (body.carYear !== undefined && !isCarYear(body.carYear)) {
         return NextResponse.json({ error: `Invalid car year: ${body.carYear}` }, { status: 400 });
     }
     const carYear: string = body.carYear ?? CURRENT_CAR_YEAR;
 
     // Get the user from the database
-    const user = await prisma.user.findUnique({
-        where: { email: userEmail },
-    });
-
-    if (!user) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
     if (!orderName || !vendor) {
         return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }

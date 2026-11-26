@@ -1,11 +1,14 @@
 import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
+import { denyMember } from '../../../../lib/requireUser';
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ orderId: string }> }
 ) {
+  const denied = await denyMember();
+  if (denied) return denied;
   try {
     const { orderId } = await params;
 
@@ -83,6 +86,8 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ orderId: string }> }
 ) {
+  const denied = await denyMember();
+  if (denied) return denied;
   try {
     const { orderId } = await params;
 

@@ -2,9 +2,12 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
+import { denyMember } from '../../../lib/requireUser';
 import { ItemStatus, StockLevel } from '@prisma/client';
 
 export async function POST(req: Request) {
+    const denied = await denyMember();
+    if (denied) return denied;
     try {
         const body = await req.json();
 

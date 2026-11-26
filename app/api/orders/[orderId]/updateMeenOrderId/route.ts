@@ -1,12 +1,15 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
+import { denyUnlessEditor } from '../../../../lib/requireUser';
 import { OrderStatus } from '@prisma/client';
 
 export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ orderId: string }> }
 ) {
+    const denied = await denyUnlessEditor();
+    if (denied) return denied;
     const orderId = parseInt((await params).orderId, 10);
     const { meenOrderId } = await request.json();
 

@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import prisma from '../../../lib/prisma';
 import { OrderStatus } from '@prisma/client';
+import { machineDenied } from '../../../lib/requireUser';
 
 const carrier_domain = {
   "AT&T" : "@txt.att.net",
@@ -42,7 +43,9 @@ const carrier_domain = {
   "TracFone" : "@txt.att.net"
 };
 
-export async function POST() {
+export async function POST(request: Request) {
+    const denied = machineDenied(request);
+    if (denied) return denied;
 
     // get all the orders that are now delivered and updated in the last hour
 

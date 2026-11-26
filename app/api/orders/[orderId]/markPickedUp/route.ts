@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { OrderStatus, ItemStatus } from '@prisma/client';
 import prisma from '../../../../lib/prisma';
+import { denyUnlessAdmin } from '../../../../lib/requireUser';
 
 export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ orderId: string }> }
 ) {
+    const denied = await denyUnlessAdmin();
+    if (denied) return denied;
     const orderId = parseInt((await params).orderId, 10);
 
     try {

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { machineDenied, machineHeader } from '../../lib/requireUser';
 
 // endpoint to receive pub/sub messages
 export async function POST(req: NextRequest) {
+    const denied = machineDenied(req);
+    if (denied) return denied;
 
     try {
         const body = await req.json();
@@ -15,8 +18,11 @@ export async function POST(req: NextRequest) {
         console.log('notification:', notification);
 
         const processResponse = await fetch(`https://relay.tamuformulaelectric.com/api/notifications/process`, {
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json' },
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                authorization: machineHeader(req),
+            },
             body: JSON.stringify({ historyId: notification.historyId }),
         });
 
